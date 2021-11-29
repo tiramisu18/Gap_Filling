@@ -29,7 +29,7 @@ def Fill_m4 (fileDatas, index, position_nan, LC_Value, MQC_File):
   spa_cu_dataset = fileDatas[index]
   spa_cu_before_dataset = fileDatas[index - 1]
   spa_cu_after_dataset = fileDatas[index + 1]
-  spa_winSize_unilateral = 10 # n*2 + 1
+  spa_winSize_unilateral = 5 # n*2 + 1
 
   sampleLength =  6  #len(fileDatas)
   tem_result_inter = 0
@@ -60,6 +60,7 @@ def Fill_m4 (fileDatas, index, position_nan, LC_Value, MQC_File):
     if MQC_value >= 70 and or_value <= 70: 
       X_final.append(or_value)
       origin_value.append(or_value)
+      print('great')
     elif MQC_value < 70: 
     # spatial relationship
       if(or_value <= 70):
@@ -143,17 +144,22 @@ def Fill_m4 (fileDatas, index, position_nan, LC_Value, MQC_File):
                 backward_count += wei_len 
               if denominator[tem_index] != 0 :        
                 inter = round(numerator[tem_index] / denominator[tem_index])
-              else : inter = 250       
-              if(i == pos[0] and j == pos[1]):
-                tem_result_inter = inter
-              else:
-                dif_value = abs(inter - spa_cu_dataset[i][j])
-                tem_wei_count += dif_value
+                if(i == pos[0] and j == pos[1]):
+                  tem_result_inter = inter
+                else:
+                  dif_value = abs(inter - spa_cu_dataset[i][j])
+                  tem_wei_count += dif_value
+              # else : inter = 250       
+              # if(i == pos[0] and j == pos[1]):
+              #   tem_result_inter = inter
+              # else:
+              #   dif_value = abs(inter - spa_cu_dataset[i][j])
+              #   tem_wei_count += dif_value
               tem_index += 1
         tem_weight = tem_wei_count
         # print(spa_weight, tem_weight)
         
-      # total Calculation
+    # total Calculation
         if (MQC_value >= 30 and MQC_value < 70):        
           final = round((or_value * MQC_value + spa_result_inter * spa_weight + tem_result_inter * tem_weight) / (MQC_value + spa_weight + tem_weight))  
           X_final.append(final)
@@ -175,16 +181,16 @@ def Fill_m4 (fileDatas, index, position_nan, LC_Value, MQC_File):
   # cbar = plt.colorbar()
   # cbar.set_ticklabels(['0','10','20','30','40','50','60','70','250'])
 # # 去除图片空白区域
-  fig = plt.gcf()
-  fig.set_size_inches(7.0/3,7.0/3) #dpi = 300, output = 700*700 pixels
-  plt.gca().xaxis.set_major_locator(plt.NullLocator())
-  plt.gca().yaxis.set_major_locator(plt.NullLocator())
-  plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
-  plt.margins(0,0)
-  fig.savefig("./result/h27v07_png/h27v07_" + str(index + 1) + ".png", format='png', transparent=True, dpi=300, pad_inches = 0)
-  plt.show()
+  # fig = plt.gcf()
+  # fig.set_size_inches(7.0/3,7.0/3) #dpi = 300, output = 700*700 pixels
+  # plt.gca().xaxis.set_major_locator(plt.NullLocator())
+  # plt.gca().yaxis.set_major_locator(plt.NullLocator())
+  # plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace = 0)
+  # plt.margins(0,0)
+  # fig.savefig("./result/h27v07_png/h27v07_" + str(index + 1) + ".png", format='png', transparent=True, dpi=300, pad_inches = 0)
+  # plt.show()
 
-  np.savetxt('./result/h27v07_data/h27v07_' + str(index + 1) ,LAI_Result)
+  # np.savetxt('./result/h27v07_data/h27v07_' + str(index + 1) ,LAI_Result)
 
 # line chart
   # print(len(X_final), len(origin_value))
