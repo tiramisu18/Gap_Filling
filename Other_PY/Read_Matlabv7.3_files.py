@@ -1,5 +1,3 @@
-import scipy 
-import scipy.io as scio
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.colors as pltcolor

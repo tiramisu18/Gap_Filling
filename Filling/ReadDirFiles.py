@@ -7,6 +7,7 @@ def readDir(dirPath):
     allFiles = []
     if os.path.isdir(dirPath):
         fileList = os.listdir(dirPath)
+        fileList.sort()
         # print(fileList)
         for f in fileList:
             f = dirPath+'/'+f
