@@ -85,24 +85,23 @@ def render_GIF (data, title='Image'):
     # ani.save('sin_dot.gif', fps=30)
     # plt.show()
 
-def draw_multiLine (data, key, url):
-    aa = np.arange(1, 21, 1)
+def draw_multiLine (x, y1, y2, y3, y4, savePath, issave, title = 'title'):
+    # aa = np.arange(1, 21, 1)
     # plt.xticks(aa)
-    plt.figure(figsize=(15, 6)) #宽，高
-    # plt.title('MRE', family='Times New Roman', fontsize=18)   
-    plt.xlabel('WinSize', fontsize=15, family='Times New Roman') 
-    plt.ylabel(key, fontsize=15, family='Times New Roman')
-    line1=plt.plot(aa,data[0][key], label='count', color='#fd7400',  marker='o', markersize=5)
-    line2=plt.plot(aa,data[1][key], label='count', color='#bfdb39',  marker='o', markersize=5)
-    line3=plt.plot(aa,data[2][key], label='count', color='#016382',  marker='o', markersize=5)
-    line4=plt.plot(aa,data[3][key], label='count', color='#1f8a6f',  marker='o', markersize=5)
-    line5=plt.plot(aa,data[4][key], label='count',color='#ffe117',  marker='o', markersize=5)
+    # plt.figure(figsize=(15, 6)) #宽，高
+    plt.title(title, family='Times New Roman', fontsize=18)   
+    plt.xlabel('day', fontsize=15, family='Times New Roman') 
+    plt.ylabel('LAI', fontsize=15, family='Times New Roman')
+    line1=plt.plot(x,y1, label='count', color='gray',  marker='o', markersize=3, linestyle= 'dashed')
+    line2=plt.plot(x,y2, label='count', color='#fd7400',  marker='s', markersize=3)
+    line3=plt.plot(x,y3, label='count', color='#ffe117',  marker='^', markersize=3)
+    line4=plt.plot(x,y4, label='count', color='#bfdb39',  marker='.', markersize=3)
     plt.legend(
-    (line1[0],  line2[0],  line3[0],  line4[0],  line5[0]), 
-    ('Pow_1', 'Pow_2','Pow_3','Pow_4','Pow_5',),
-    loc = 1, prop={'size':15, 'family':'Times New Roman'},
+    (line1[0],  line2[0],  line3[0],  line4[0]), 
+    ('Original', 'Filling1', 'Filling2', 'Fil_NOM'),
+    loc = 2, prop={'size':15, 'family':'Times New Roman'},
     )
-    plt.savefig(url, dpi=300)
+    if issave :plt.savefig(savePath, dpi=300)
     plt.show()
 
 def draw_plot(x, y):
@@ -127,7 +126,7 @@ def draw_plot_two(x, y1, y2, savePath, issave, title = 'title'):
     plt.legend(
     (line2[0],  line3[0]), 
     ('Original', 'Filling',),
-    loc = 1, prop={'size':15, 'family':'Times New Roman'},
+    loc = 0, prop={'size':15, 'family':'Times New Roman'},
     )
     if issave :plt.savefig(savePath, dpi=300)
     plt.show()
@@ -139,51 +138,6 @@ def get_GreatPixel (MQC_Score, data):
             if MQC_Score[i][j] > 80 and data[i][j] <= 70:
                 result_data.append([i, j])
     return result_data
-
-def random_pos ():
-    # rand_i = int_random(0, 500, fill_pos_length)
-    # rand_j = int_random(700, 1200, fill_pos_length)
-
-    # print(aa)
-    # print(bb)
-    rand_i = [
-    313, 307, 204, 370, 372, 414, 
-    361, 433, 331, 10, 351, 403, 
-    340, 197, 175, 377, 372, 66, 
-    23, 337, 213, 21, 88, 449, 
-    396, 147, 22, 336, 103, 236, 
-    60, 23, 374, 156, 136, 412, 
-    217, 90, 29, 246, 16, 261, 
-    270, 264, 181, 376, 342, 27, 
-    227, 342, 208, 247, 254, 168, 
-    177, 469, 117, 83, 21, 209, 
-    230, 399, 353, 302, 276, 373, 
-    488, 380, 222, 404, 21, 231, 
-    84, 358, 354, 286, 81, 15, 
-    318, 262, 351, 184, 72, 474,
-    454, 466, 482, 239, 241, 284, 
-    487, 438, 195, 455, 390, 20, 
-    347, 417, 496, 429]
-    rand_j = [
-    939, 940, 717, 1050, 839, 1085, 
-    1080, 956, 935, 1169, 705, 1117, 
-    936, 830, 1140, 942, 1160, 756, 
-    752, 898, 1027, 706, 761, 1133, 
-    778, 846, 1116, 881, 1043, 759, 
-    800, 721, 944, 1001, 765, 1192, 
-    1150, 1186, 727, 746, 715, 997, 
-    942, 1042, 1005, 804, 1025, 1073, 
-    1104, 1026, 1147, 796, 793, 833, 
-    911, 718, 841, 878, 1033, 1035, 
-    1071, 955, 1020, 830, 805, 1144, 
-    975, 1082, 728, 1081, 754, 869, 
-    1056, 1079, 1159, 861, 1155, 1108, 
-    969, 945, 893, 956, 769, 1128, 
-    959, 703, 883, 921, 1079, 704, 
-    1149, 847, 1159, 984, 1012, 1170, 
-    1156, 1083, 1157, 835]
-
-    return {'i': rand_i, 'j': rand_j}
 
 def read_MQC (path, savepath):
     MQC_File=h5py.File(path) 
@@ -217,44 +171,54 @@ LC_info = gdal.Open(LC_subdatasets[0][0]).ReadAsArray()
 # read MQC file
 # read_MQC('../MQC/h11v04_2018_MQC_Score_part.mat', './MQC_NP/h11v04_2018_part')          
 
-# MQC_All = np.load('./MQC_NP/h11v04_2018.npy')
-MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
+MQC_All = np.load('./MQC_NP/h11v04_2018.npy')
+# MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
 
-# fileIndex = 10
+fileIndex = 10
 # render_MQC(MQC_All[fileIndex - 1])
 # render_Img(fileDatas[fileIndex])
-
+x_v = 1200
+y_v = 1200
 pixel_data = []
 pixel_score = []
-pixel_pos = {'x': 1200, 'y': 1200}
+pixel_pos = {'x': x_v, 'y': y_v}
 for i in range(2, 43):
     pixel_val = fileDatas[i][pixel_pos['x']][pixel_pos['y']] / 10
-    pixel_mqc = MQC_All[i - 1][pixel_pos['x']][pixel_pos['y']]
+    # pixel_mqc = MQC_All[i - 1][pixel_pos['x']][pixel_pos['y']]
     pixel_data.append(pixel_val)
-    pixel_score.append(pixel_mqc)
+    # pixel_score.append(pixel_mqc)
 
 # print(pixel_score)
-print(pixel_data)
+# print(pixel_data)
 # draw_plot(np.arange(1, 45, 1), pixel_score)
 
 # draw_plot(np.arange(2, 43, 1),pixel_data)
-Filling_Pos = [[1200, 1200]]
-Fil_val = []
-
-# for index in range(2, 43):
-#     re = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 3, 6)
-#     Fil_val.append((re['Fil'])[0] / 10)
-# print(Fil_val)
-
-
-# draw_plot_two(np.arange(2, 43, 1),pixel_data, Fil_val, './Daily_cache/pos_1200_1200', True, 'pos_1200_1200')
-
+Filling_Pos = [[x_v, y_v]]
+Fil_val_1 = []
+Fil_val_2 = []
+Fil_val_3 = []
 
 
 for index in range(2, 43):
-    re = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 3, 6)
-    Fil_val.append((re['Fil'])[0] / 10)
-print(Fil_val)
+    re1 = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6)
+    Fil_val_1.append((re1['Fil'])[0] / 10)
+# print(Fil_val)
+# draw_plot_two(np.arange(2, 43, 1),pixel_data, Fil_val_1, './Daily_cache/pos_%s_%s' % (x_v, y_v), False, 'pos_%s_%s' % (x_v, y_v))
 
 
-draw_plot_two(np.arange(2, 43, 1),pixel_data, Fil_val, './Daily_cache/pos_1200_1200_part_no_MQC', True, 'pos_1200_1200_part_no_MQC')
+MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
+for index in range(2, 43):
+    re2 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) 
+    re3 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 1) # no MQC
+    Fil_val_2.append((re2['Fil'])[0] / 10)
+    Fil_val_3.append((re3['Fil'])[0] / 10)
+
+draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_all' % (x_v, y_v), False, 'pos_%s_%s_all' % (x_v, y_v))
+
+
+# Fil_val = []
+# for index in range(2, 43):
+#     re = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 3, 12, 0.35, 3, 6 , 1)
+#     Fil_val.append((re['Fil'])[0] / 10)
+# print(Fil_val)
+# draw_plot_two(np.arange(2, 43, 1),pixel_data, Fil_val, './Daily_cache/pos_%s_%s_part_no_MQC' % (x_v, y_v), False, 'pos_%s_%s_part_no_MQC' % (x_v, y_v))

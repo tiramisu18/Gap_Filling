@@ -89,7 +89,6 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLeng
 
 def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, MQC_File, EUC_pow, spa_winSize_unilateral):
     # print('begin_spa', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-
     spa_filling_value = 0
     spa_weight = 0
     spa_cu_dataset = fileDatas[index]
@@ -168,11 +167,12 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength
         tem_filling_value = tem_ob['filling']
         tem_weight = tem_ob['weight']
         # total Calculation
-        if (MQC_value >= 30):        
-            final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
-        else :
-            if spa_weight != 0 and tem_weight != 0 : 
-                final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
+        final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight)) 
+        # if (MQC_value >= 30):        
+        #     final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
+        # else :
+        #     if spa_weight != 0 and tem_weight != 0 : 
+        #         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
         
         Fil_value.append(final)
 
@@ -180,7 +180,7 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength
     # LAI_Result[pos[0]][pos[1]] = final
     return {'tem': Fil_tem, 'spa': Fil_spa, 'Fil': Fil_value}
 
-def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral):
+def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
  
     # LAI_Result = copy.deepcopy(fileDatas[index])
     # interpolation
@@ -204,12 +204,14 @@ def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, tempor
         tem_weight = tem_ob['weight']
         # total Calculation
         # final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
-        final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
-        # if (MQC_value >= 10):        
-        #     final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
-        # else :
-        #     if spa_weight != 0 and tem_weight != 0 : 
-        #         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
+        if method == 1 :
+            final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
+        else :
+            if (MQC_value >= 10):        
+                final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
+            else :
+                if spa_weight != 0 and tem_weight != 0 : 
+                    final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
         
         Fil_value.append(final)
 

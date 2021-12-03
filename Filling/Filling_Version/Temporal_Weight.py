@@ -39,8 +39,12 @@ def Temporal_w3 (fileDatas, index, position_nan, LC_Value, MQC_File, SES_pow, te
     w_array = []
     F_value = []
     O_value = []
-    for size in range(3, 23):
-        tem_winSize_unilateral = size
+    # for size in range(12, 13):
+        # tem_winSize_unilateral = size
+    SES_pow_array = [0.1, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.65, 0.7, 0.8, 0.9]
+    for s_pow in SES_pow_array:
+        SES_pow = s_pow
+        tem_winSize_unilateral = 12
         oneSize_arr = []
         one_F_value = []
         one_O_value = []    
@@ -118,7 +122,7 @@ def Temporal_w3 (fileDatas, index, position_nan, LC_Value, MQC_File, SES_pow, te
 def calculatedif (O_value, F_value):
     MRE = []
     RMSE = []
-    for i in range(0, 20):
+    for i in range(0, 12):
         numera_mre = 0 
         denomin = 0
         numera_rmse = 0
@@ -136,11 +140,14 @@ def calculatedif (O_value, F_value):
     return {'MRE': MRE, 'RMSE': RMSE}
 
 def draw_multiLine (data, key, url, state):
-    aa = np.arange(3, 23, 1)
+    # aa = np.arange(3, 23, 1)
+    # aa = np.arange(0.3, 0.7, 0.05)
+    aa = [0.1, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.65, 0.7, 0.8, 0.9]
     # plt.xticks(aa)
-    plt.figure(figsize=(15, 6)) #宽，高
+    # plt.figure(figsize=(15, 6)) #宽，高
     # plt.title('MRE', family='Times New Roman', fontsize=18)   
-    plt.xlabel('WinSize', fontsize=15, family='Times New Roman') 
+    # plt.xlabel('WinSize', fontsize=15, family='Times New Roman') 
+    plt.xlabel('Pow', fontsize=15, family='Times New Roman') 
     plt.ylabel(key, fontsize=15, family='Times New Roman')
     line1=plt.plot(aa,data[0][key], label='count', color='#1f8a6f',  marker='o', markersize=5)
     line2=plt.plot(aa,data[1][key], label='count', color='#bfdb39',  marker='o', markersize=5)
@@ -157,44 +164,45 @@ def draw_multiLine (data, key, url, state):
         plt.legend(
         (line1[0],  line2[0],  line3[0],  line4[0],  line5[0]),     
         ('Length_4','Length_5','Length_6','Length_7','Length_8'),
-        loc = 1, prop={'size':15, 'family':'Times New Roman'},
+        loc = 2, prop={'size':15, 'family':'Times New Roman'},
         )
     # plt.savefig(url, dpi=300)
     plt.show()
 
 
 fileLists = ReadDirFiles.readDir(
-  'C:\JR_Program\Filling_Missing_Values\h27v06')
+  '../HDF/h27v06')
 # print('lists', len(fileLists))
 
 fileDatas = []
-count = 20
 for file in fileLists:
   fileDatas.append(ReadFile(file))
 
 
-LC_file = gdal.Open('C:\JR_Program\Filling_Missing_Values\LC\MCD12Q1.A2018001.h27v06.006.2019200015326.hdf')
+LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h27v06.006.2019200015326.hdf')
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
 
 LC_info = gdal.Open(LC_subdatasets[0][0]).ReadAsArray()
 
 
 # read MQC file
-path='./MQC_files/h27v06_2018_MQC_Score.mat'             
+path='../MQC/h27v06_2018_MQC_Score.mat'             
 MQC_File=h5py.File(path) 
 # print(MQC_File.keys())
 file_Content = MQC_File["MQC_Score"]
 
 
-print('1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-MQC_All = []
-for idx in range(0, 44):
-    MQC_data = MQC_File[file_Content[0,idx]]  # [column, row]
-    # MQC_Score = np.transpose(MQC_data[:])
-    MQC_Score = MQC_data[:]
-    MQC_All.append(MQC_Score)
-print(len(MQC_All))
-print('2', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+# print('begin', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+# MQC_All = []
+# for idx in range(0, 44):
+#     MQC_data = MQC_File[file_Content[0,idx]]  # [column, row]
+#     MQC_Score = np.transpose(MQC_data[:])
+#     MQC_All.append(MQC_Score)
+# print(len(MQC_All))
+# print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+# np.save('./MQC_NP/h27v06_2018', MQC_All)
+
+MQC_All = np.load('./MQC_NP/h27v06_2018.npy')
 
 fileIndex = 12
 
@@ -242,7 +250,7 @@ fill_pos = []
 for i in range(0, 100):
     try :
         fill_pos.append([rand_i[i], rand_j[i]])
-        fill_pos_mqc.append(MQC_Score[rand_i[i]][rand_j[i]])
+        fill_pos_mqc.append(MQC_All[fileIndex - 1][rand_i[i]][rand_j[i]])
         fill_pos_val.append(fileDatas[fileIndex][rand_i[i]][rand_j[i]])
     except:
         print(i)
@@ -259,30 +267,33 @@ for i in range(0, 100):
 # draw_multiLine (line_array, 'MRE', './Spatial_W2_Result/MRE/Temporal_line_1123_length_4', 1) 
 # draw_multiLine (line_array, 'RMSE', './Spatial_W2_Result/RMSE/Temporal_line_1123_length_4', 1)
 
-line_array = []
-for length in range(4, 9):
-    result = Temporal_w3(fileDatas, fileIndex, fill_pos, LC_info, MQC_All, 0.35, length)
-    line_array.append(result)
+# line_array = []
+# for length in range(2, 10):
+#     result = Temporal_w3(fileDatas, fileIndex, fill_pos, LC_info, MQC_All, 0.35, length)
+#     line_array.append(result)
 
+# print(line_array)
+
+# line_array = [
+#     # {'MRE': [0.068, 0.068, 0.068, 0.067, 0.067, 0.068, 0.067, 0.068, 0.066, 0.067, 0.067, 0.067], 'RMSE': [9.465, 9.465, 9.465, 9.46, 9.443, 9.465, 9.46, 9.465, 9.438, 9.46, 9.46, 9.443]}, 
+#     # {'MRE': [0.051, 0.051, 0.051, 0.052, 0.052, 0.051, 0.051, 0.052, 0.053, 0.052, 0.053, 0.055], 'RMSE': [6.583, 6.564, 6.564, 6.788, 6.739, 6.904, 6.904, 6.922, 7.228, 7.171, 7.478, 7.794]}, 
+#     # {'MRE': [0.051, 0.051, 0.051, 0.051, 0.05, 0.052, 0.051, 0.051, 0.052, 0.052, 0.052, 0.053], 'RMSE': [5.393, 5.523, 5.612, 5.708, 5.802, 6.035, 6.028, 6.144, 6.397, 6.538, 6.752, 7.263]}, 
+#     {'MRE': [0.044, 0.044, 0.044, 0.043, 0.044, 0.046, 0.047, 0.048, 0.049, 0.051, 0.053, 0.054], 'RMSE': [4.655, 4.848, 4.983, 4.958, 5.148, 5.354, 5.583, 5.802, 5.993, 6.455, 6.745, 7.036]}, 
+#     {'MRE': [0.04, 0.039, 0.039, 0.043, 0.043, 0.046, 0.046, 0.048, 0.049, 0.05, 0.051, 0.054], 'RMSE': [4.34, 4.5, 4.5, 4.839, 4.958, 5.339, 5.545, 5.737, 5.993, 6.164, 6.633, 7.036]}, 
+#     {'MRE': [0.041, 0.04, 0.038, 0.039, 0.042, 0.043, 0.045, 0.046, 0.048, 0.049, 0.051, 0.054], 'RMSE': [4.34, 4.301, 4.311, 4.518, 4.735, 5.066, 5.315, 5.545, 5.972, 6.117, 6.633, 7.036]}, 
+#     {'MRE': [0.041, 0.04, 0.04, 0.041, 0.043, 0.043, 0.044, 0.046, 0.048, 0.049, 0.051, 0.054], 'RMSE': [4.093, 4.183, 4.262, 4.463, 4.682, 4.924, 5.292, 5.515, 5.909, 6.117, 6.633, 7.036]}, 
+#     {'MRE': [0.036, 0.035, 0.038, 0.041, 0.041, 0.043, 0.045, 0.046, 0.049, 0.049, 0.051, 0.054], 'RMSE': [3.742, 3.775, 3.99, 4.387, 4.463, 4.848, 5.268, 5.515, 5.979, 6.117, 6.633, 7.036]}
+# ]
+
+line_array = [
+    # {'MRE': [0.068, 0.068, 0.068, 0.067, 0.067, 0.068, 0.068, 0.067, 0.067, 0.067, 0.068, 0.067], 'RMSE': [9.465, 9.465, 9.465, 9.46, 9.443, 9.465, 9.465, 9.46, 9.46, 9.443, 9.465, 9.46]}, 
+    # {'MRE': [0.051, 0.051, 0.051, 0.052, 0.052, 0.051, 0.052, 0.052, 0.053, 0.055, 0.058, 0.06], 'RMSE': [6.583, 6.564, 6.564, 6.788, 6.739, 6.904, 6.922, 7.171, 7.478, 7.794, 8.251, 8.617]}, 
+    # {'MRE': [0.051, 0.051, 0.051, 0.051, 0.05, 0.052, 0.051, 0.052, 0.052, 0.053, 0.057, 0.06], 'RMSE': [5.393, 5.523, 5.612, 5.708, 5.802, 6.035, 6.144, 6.538, 6.752, 7.263, 7.885, 8.617]}, 
+    {'MRE': [0.044, 0.044, 0.044, 0.043, 0.044, 0.046, 0.048, 0.051, 0.053, 0.054, 0.057, 0.06], 'RMSE': [4.655, 4.848, 4.983, 4.958, 5.148, 5.354, 5.802, 6.455, 6.745, 7.036, 7.885, 8.617]}, 
+    {'MRE': [0.04, 0.039, 0.039, 0.043, 0.043, 0.046, 0.048, 0.05, 0.051, 0.054, 0.057, 0.06], 'RMSE': [4.34, 4.5, 4.5, 4.839, 4.958, 5.339, 5.737, 6.164, 6.633, 7.036, 7.885, 8.617]}, 
+    {'MRE': [0.041, 0.04, 0.038, 0.039, 0.042, 0.043, 0.046, 0.049, 0.051, 0.054, 0.057, 0.06], 'RMSE': [4.34, 4.301, 4.311, 4.518, 4.735, 5.066, 5.545, 6.117, 6.633, 7.036, 7.885, 8.617]}, 
+    {'MRE': [0.041, 0.04, 0.04, 0.041, 0.043, 0.043, 0.046, 0.049, 0.051, 0.054, 0.057, 0.06], 'RMSE': [4.093, 4.183, 4.262, 4.463, 4.682, 4.924, 5.515, 6.117, 6.633, 7.036, 7.885, 8.617]}, 
+    {'MRE': [0.036, 0.035, 0.038, 0.041, 0.041, 0.043, 0.046, 0.049, 0.051, 0.054, 0.057, 0.06], 'RMSE': [3.742, 3.775, 3.99, 4.387, 4.463, 4.848, 5.515, 6.117, 6.633, 7.036, 7.885, 8.617]}
+    ]
 draw_multiLine (line_array, 'MRE', './Spatial_W2_Result/MRE/Temporal_line_1123_length_4', 2)
 draw_multiLine (line_array, 'RMSE', './Spatial_W2_Result/RMSE/Temporal_line_1123_length_4', 2)
-
-
-# for file_index in range(2, 3):
-#     print(file_index)
-#     MQC_Score = MQC_All[file_index - 1]
-#     oneSample = fileDatas[file_index]
-#     Filling_Pos = []
-#   # data_one = copy.deepcopy(MQC_Score)
-#     for i in range(2400):
-#         for j in range(2400):
-#             if MQC_Score[i][j] < 35 and oneSample[i][j] <= 70 : 
-#                 Filling_Pos.append([i, j])
-#                 # data_one[i][j] = 'nan'
-
-#     print(len(Filling_Pos))
-#     Temporal_w3(fileDatas, file_index, Filling_Pos, LC_info, MQC_All, 0.5)
-
-
-
-
