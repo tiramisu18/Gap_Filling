@@ -93,12 +93,13 @@ def draw_multiLine (x, y1, y2, y3, y4, savePath, issave, title = 'title'):
     plt.xlabel('day', fontsize=15, family='Times New Roman') 
     plt.ylabel('LAI', fontsize=15, family='Times New Roman')
     line1=plt.plot(x,y1, label='count', color='gray',  marker='o', markersize=3, linestyle= 'dashed')
-    line2=plt.plot(x,y2, label='count', color='#fd7400',  marker='s', markersize=3)
+    line2=plt.plot(x,y2, label='count', color='#bfdb39',  marker='.', markersize=3)
     line3=plt.plot(x,y3, label='count', color='#ffe117',  marker='^', markersize=3)
-    line4=plt.plot(x,y4, label='count', color='#bfdb39',  marker='.', markersize=3)
+    line4=plt.plot(x,y4, label='count', color='#fd7400',  marker='s', markersize=3)
     plt.legend(
     (line1[0],  line2[0],  line3[0],  line4[0]), 
-    ('Original', 'Filling1', 'Filling2', 'Fil_NOM'),
+    # ('Original', 'Filling1', 'Filling2', 'Fil_NOM'),
+    ('Original', 'Tem', 'Spa', 'Fil'),
     loc = 2, prop={'size':15, 'family':'Times New Roman'},
     )
     if issave :plt.savefig(savePath, dpi=300)
@@ -120,12 +121,12 @@ def draw_plot_two(x, y1, y2, savePath, issave, title = 'title'):
     # plt.figure(figsize=(15, 6)) #宽，高
     plt.title(title, family='Times New Roman', fontsize=18)   
     plt.xlabel('day', fontsize=15, family='Times New Roman') 
-    plt.ylabel('LAI', fontsize=15, family='Times New Roman')
+    plt.ylabel('Weight', fontsize=15, family='Times New Roman')
     line2=plt.plot(x,y1, label='count', color='#fd7400',  marker='o', markersize=3)
     line3=plt.plot(x,y2, label='count', color='#bfdb39',  marker='^', markersize=3)
     plt.legend(
     (line2[0],  line3[0]), 
-    ('Original', 'Filling',),
+    ('Tem', 'Spa',),
     loc = 0, prop={'size':15, 'family':'Times New Roman'},
     )
     if issave :plt.savefig(savePath, dpi=300)
@@ -171,8 +172,8 @@ LC_info = gdal.Open(LC_subdatasets[0][0]).ReadAsArray()
 # read MQC file
 # read_MQC('../MQC/h11v04_2018_MQC_Score_part.mat', './MQC_NP/h11v04_2018_part')          
 
-MQC_All = np.load('./MQC_NP/h11v04_2018.npy')
-# MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
+# MQC_All = np.load('./MQC_NP/h11v04_2018.npy')
+MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
 
 fileIndex = 10
 # render_MQC(MQC_All[fileIndex - 1])
@@ -197,23 +198,49 @@ Filling_Pos = [[x_v, y_v]]
 Fil_val_1 = []
 Fil_val_2 = []
 Fil_val_3 = []
+Tem_W = []
+Spa_W = []
 
 
 for index in range(2, 43):
-    re1 = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6)
-    Fil_val_1.append((re1['Fil'])[0] / 10)
+    # re1 = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6)
+    re1 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 1) # no MQC
+    Fil_val_1.append(re1['Tem'][0] / 10)
+    Fil_val_2.append(re1['Spa'][0] / 10)
+    Fil_val_3.append(re1['Fil'][0] / 10)
+    Tem_W.append(re1['T_W'][0])
+    Spa_W.append(re1['S_W'][0])
 # print(Fil_val)
-# draw_plot_two(np.arange(2, 43, 1),pixel_data, Fil_val_1, './Daily_cache/pos_%s_%s' % (x_v, y_v), False, 'pos_%s_%s' % (x_v, y_v))
+draw_plot_two(np.arange(2, 43, 1),Tem_W, Spa_W, './Daily_cache/pos_%s_%s' % (x_v, y_v), False, 'pos_%s_%s_W' % (x_v, y_v))
+draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 'pos_%s_%s_indep_part' % (x_v, y_v))
+
+Fil_val_1 = []
+Fil_val_2 = []
+Fil_val_3 = []
+Tem_W = []
+Spa_W = []
 
 
-MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
 for index in range(2, 43):
-    re2 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) 
-    re3 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 1) # no MQC
-    Fil_val_2.append((re2['Fil'])[0] / 10)
-    Fil_val_3.append((re3['Fil'])[0] / 10)
+    # re1 = Filling_Pixel.Fill_Pixel_revise(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6)
+    re1 = Filling_Pixel.Fill_Pixel_MQCPart_revise(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 1) # no MQC
+    Fil_val_1.append(re1['Tem'][0] / 10)
+    Fil_val_2.append(re1['Spa'][0] / 10)
+    Fil_val_3.append(re1['Fil'][0] / 10)
+    Tem_W.append(re1['T_W'][0])
+    Spa_W.append(re1['S_W'][0])
+# print(Fil_val)
+draw_plot_two(np.arange(2, 43, 1),Tem_W, Spa_W, './Daily_cache/pos_%s_%s' % (x_v, y_v), False, 'pos_%s_%s_W' % (x_v, y_v))
+draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 'pos_%s_%s_indep_part' % (x_v, y_v))
 
-draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_all' % (x_v, y_v), False, 'pos_%s_%s_all' % (x_v, y_v))
+# MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
+# for index in range(2, 43):
+#     re2 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) 
+#     re3 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 1) # no MQC
+#     Fil_val_2.append((re2['Fil'])[0] / 10)
+#     Fil_val_3.append((re3['Fil'])[0] / 10)
+
+# draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_all_1205' % (x_v, y_v), False, 'pos_%s_%s_all' % (x_v, y_v))
 
 
 # Fil_val = []
