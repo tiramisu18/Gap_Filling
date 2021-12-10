@@ -144,11 +144,9 @@ def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, MQC_File, EUC_pow, spa_
    
     return {'weight': spa_weight, 'filling': spa_filling_value, 'or_value': or_value}
 
-def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral):
- 
+def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral): 
     # LAI_Result = copy.deepcopy(fileDatas[index])
     # interpolation
-
     Fil_tem = []
     Fil_spa = []
     Fil_value = []
@@ -185,10 +183,8 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength
     return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'T_W': Tem_W, 'S_W': Spa_W}
 
 def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
- 
     # LAI_Result = copy.deepcopy(fileDatas[index])
     # interpolation
-
     Fil_tem = []
     Fil_spa = []
     Fil_value = []
@@ -217,7 +213,7 @@ def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, tempor
         if method == 1 :
             final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
         else :
-            if (MQC_value >= 10):        
+            if (MQC_value >= 40):        
                 final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
             else :
                 if spa_weight != 0 and tem_weight != 0 : 

@@ -16,6 +16,7 @@ import h5py
 import time
 import random
 import Filling_Pixel
+import Draw_PoltLine
 
 def ReadFile(path):
     file = gdal.Open(path)
@@ -64,99 +65,7 @@ def render_GIF (data, title='Image'):
     ax.imshow(data, cmap=cmap, norm=norm)
     cbar = ax.colorbar()
     cbar.set_ticklabels(['0','10','20','30','40','50','60','70','250'])
-    plt.show()
-
-    # fig, ax = plt.subplots()
-    # xdata, ydata = [], []
-    # ln, = ax.plot([], [], 'r-', animated=True)
- 
-    # def init():
-    #   ax.set_xlim(0, 2*np.pi)
-    #   ax.set_ylim(-1, 1)
-    #   return ln,
- 
-    # def update(frame):
-    #   xdata.append(frame)
-    #   ydata.append(np.sin(frame))
-    #   ln.set_data(xdata, ydata)
-    #   return ln,
-    
-    # ani = animation.FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 128), init_func=init, blit=True)
-    # ani.save('sin_dot.gif', fps=30)
-    # plt.show()
-
-def draw_multiLine (x, y1, y2, y3, y4, savePath, issave, title = 'title'):
-    # aa = np.arange(1, 21, 1)
-    # plt.xticks(aa)
-    # plt.figure(figsize=(15, 6)) #宽，高
-    plt.title(title, family='Times New Roman', fontsize=18)   
-    plt.xlabel('day', fontsize=15, family='Times New Roman') 
-    plt.ylabel('LAI', fontsize=15, family='Times New Roman')
-    line1=plt.plot(x,y1, label='count', color='gray',  marker='o', markersize=3, linestyle= 'dashed')
-    line2=plt.plot(x,y2, label='count', color='#bfdb39',  marker='.', markersize=3)
-    line3=plt.plot(x,y3, label='count', color='#ffe117',  marker='^', markersize=3)
-    line4=plt.plot(x,y4, label='count', color='#fd7400',  marker='s', markersize=3)
-    plt.legend(
-    (line1[0],  line2[0],  line3[0],  line4[0]), 
-    # ('Original', 'Filling1', 'Filling2', 'Fil_NOM'),
-    ('Original', 'Tem', 'Spa', 'Fil'),
-    loc = 2, prop={'size':15, 'family':'Times New Roman'},
-    )
-    if issave :plt.savefig(savePath, dpi=300)
-    plt.show()
-
-def draw_plot(x, y):
-    fig, ax = plt.subplots()
-    ax.plot(x, y, '#fd7400')
-    # plt.plot(x, y, 'r--', x, t**2, 'bs', t, t**3, 'g^')
-    # plt.plot(t, y1, '#fd7400', t, y2, '#bfdb39')
-    ax.set(xlabel='day', ylabel='LAI', title='title')
-    # ax.grid()
-
-    # fig.savefig("test.png")
-    plt.show()    
-
-def draw_plot_two(x, y1, y2, savePath, issave, title = 'title'):
-    # plt.xticks(aa)
-    # plt.figure(figsize=(15, 6)) #宽，高
-    plt.title(title, family='Times New Roman', fontsize=18)   
-    plt.xlabel('day', fontsize=15, family='Times New Roman') 
-    plt.ylabel('Weight', fontsize=15, family='Times New Roman')
-    line2=plt.plot(x,y1, label='count', color='#fd7400',  marker='o', markersize=3)
-    line3=plt.plot(x,y2, label='count', color='#bfdb39',  marker='^', markersize=3)
-    plt.legend(
-    (line2[0],  line3[0]), 
-    ('Tem', 'Spa',),
-    loc = 0, prop={'size':15, 'family':'Times New Roman'},
-    )
-    if issave :plt.savefig(savePath, dpi=300)
-    plt.show()
-
-
-def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
-    color_arr = ['#548bb7', '#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#987b2d', '#dd8146', '#a4ac80', '#d9b15c', '#7ba79c', '#958b8c']
-    marker_arr = ['o', '.', '^', 's', ',', 'v', '8', '*', 'H', '+', 'x', '_']
-    if obj['color'] : color_arr = obj['color']
-    if obj['marker'] : marker_arr = obj['marker']
-    plt.title(obj['title'], family='Times New Roman', fontsize=18)   
-    plt.xlabel(obj['xlable'], fontsize=15, family='Times New Roman') 
-    plt.ylabel(obj['ylable'], fontsize=15, family='Times New Roman')
-    obe_len = len(obj['line'])
-    if obe_len == 1:
-        plt.plot(x, obj['line'][0], '#548bb7')
-        if issave :plt.savefig(savePath, dpi=300)
-        plt.show() 
-    else:
-        line_arr = []
-        for i in range(0, obe_len):
-            line_arr.append((plt.plot(x,obj['line'][i], label='count', color=color_arr[i],  marker=marker_arr[i], markersize=3))[0])
-        plt.legend(
-        (line_arr), 
-        (obj['le_name']),
-        loc = loc, prop={'size':15, 'family':'Times New Roman'},
-        )
-        if issave :plt.savefig(savePath, dpi=300)
-        plt.show()
+    plt.show()   
 
 def get_GreatPixel (MQC_Score, data):
     result_data = []
@@ -203,8 +112,8 @@ MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
 fileIndex = 10
 # render_MQC(MQC_All[fileIndex - 1])
 # render_Img(fileDatas[fileIndex])
-x_v = 800
-y_v = 800
+x_v = 1200
+y_v = 1200
 pixel_data = []
 pixel_score = []
 pixel_pos = {'x': x_v, 'y': y_v}
@@ -225,29 +134,42 @@ Fil_val_2 = []
 Fil_val_3 = []
 Tem_W = []
 Spa_W = []
+Mqc_W = []
 
 
 for index in range(2, 43):
     # re1 = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6)
-    re1 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 1) # no MQC
+    re1 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) # no MQC
     Fil_val_1.append(re1['Tem'][0] / 10)
     Fil_val_2.append(re1['Spa'][0] / 10)
     Fil_val_3.append(re1['Fil'][0] / 10)
     Tem_W.append(re1['T_W'][0])
     Spa_W.append(re1['S_W'][0])
+    Mqc_W.append(re1['M_W'][0])
 # print(Fil_val)
-draw_plot_two(np.arange(2, 43, 1),Tem_W, Spa_W, './Daily_cache/pos_%s_%s' % (x_v, y_v), False, 'pos_%s_%s_W' % (x_v, y_v))
-draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 'pos_%s_%s_indep_part' % (x_v, y_v))
+# Draw_PoltLine.draw_Line(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 'pos_%s_%s_indep_part' % (x_v, y_v))
 
-draw_polt_Line(np.arange(2, 43, 1),{
-    'title': 'title',
-    'xlable': 'LAI',
-    'ylable': 'Day',
+Draw_PoltLine.draw_polt_Line(np.arange(2, 43, 1),{
+    'title': 'pos_%s_%s_W' % (x_v, y_v),
+    'xlable': 'Day',
+    'ylable': 'Weight',
+    'line': [Tem_W, Spa_W, Mqc_W],
+    'le_name': ['Tem', 'Spa', 'Mqc'],
+    'color': False,
+    'marker': False,
+    'lineStyle': []
+    },'./Daily_cache/pos_%s_%s' % (x_v, y_v), False, 2)
+
+Draw_PoltLine.draw_polt_Line(np.arange(2, 43, 1),{
+    'title': 'pos_%s_%s_indep_part' % (x_v, y_v),
+    'xlable': 'Day',
+    'ylable': 'LAI',
     'line': [pixel_data, Fil_val_1, Fil_val_2, Fil_val_3],
     'le_name': ['Original', 'Tem', 'Spa', 'Fil'],
     'color': ['gray', '#bfdb39', '#ffe117', '#fd7400'],
     'marker': False,
-    })
+    'lineStyle': ['dashed']
+    },'./Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 2)
 # MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
 # for index in range(2, 43):
 #     re2 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) 
