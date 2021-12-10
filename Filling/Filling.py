@@ -132,6 +132,32 @@ def draw_plot_two(x, y1, y2, savePath, issave, title = 'title'):
     if issave :plt.savefig(savePath, dpi=300)
     plt.show()
 
+
+def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
+    color_arr = ['#548bb7', '#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#987b2d', '#dd8146', '#a4ac80', '#d9b15c', '#7ba79c', '#958b8c']
+    marker_arr = ['o', '.', '^', 's', ',', 'v', '8', '*', 'H', '+', 'x', '_']
+    if obj['color'] : color_arr = obj['color']
+    if obj['marker'] : marker_arr = obj['marker']
+    plt.title(obj['title'], family='Times New Roman', fontsize=18)   
+    plt.xlabel(obj['xlable'], fontsize=15, family='Times New Roman') 
+    plt.ylabel(obj['ylable'], fontsize=15, family='Times New Roman')
+    obe_len = len(obj['line'])
+    if obe_len == 1:
+        plt.plot(x, obj['line'][0], '#548bb7')
+        if issave :plt.savefig(savePath, dpi=300)
+        plt.show() 
+    else:
+        line_arr = []
+        for i in range(0, obe_len):
+            line_arr.append((plt.plot(x,obj['line'][i], label='count', color=color_arr[i],  marker=marker_arr[i], markersize=3))[0])
+        plt.legend(
+        (line_arr), 
+        (obj['le_name']),
+        loc = loc, prop={'size':15, 'family':'Times New Roman'},
+        )
+        if issave :plt.savefig(savePath, dpi=300)
+        plt.show()
+
 def get_GreatPixel (MQC_Score, data):
     result_data = []
     for i in range(0, 2400):
@@ -155,8 +181,7 @@ def read_MQC (path, savepath):
     print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     np.save(savepath, MQC_All)
 
-fileLists = ReadDirFiles.readDir(
-  '../HDF/h11v04')
+fileLists = ReadDirFiles.readDir('../HDF/h11v04')
 # print('lists', len(fileLists))
 fileDatas = []
 for file in fileLists:
@@ -178,8 +203,8 @@ MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
 fileIndex = 10
 # render_MQC(MQC_All[fileIndex - 1])
 # render_Img(fileDatas[fileIndex])
-x_v = 1200
-y_v = 1200
+x_v = 800
+y_v = 800
 pixel_data = []
 pixel_score = []
 pixel_pos = {'x': x_v, 'y': y_v}
@@ -214,25 +239,15 @@ for index in range(2, 43):
 draw_plot_two(np.arange(2, 43, 1),Tem_W, Spa_W, './Daily_cache/pos_%s_%s' % (x_v, y_v), False, 'pos_%s_%s_W' % (x_v, y_v))
 draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 'pos_%s_%s_indep_part' % (x_v, y_v))
 
-Fil_val_1 = []
-Fil_val_2 = []
-Fil_val_3 = []
-Tem_W = []
-Spa_W = []
-
-
-for index in range(2, 43):
-    # re1 = Filling_Pixel.Fill_Pixel_revise(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6)
-    re1 = Filling_Pixel.Fill_Pixel_MQCPart_revise(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 1) # no MQC
-    Fil_val_1.append(re1['Tem'][0] / 10)
-    Fil_val_2.append(re1['Spa'][0] / 10)
-    Fil_val_3.append(re1['Fil'][0] / 10)
-    Tem_W.append(re1['T_W'][0])
-    Spa_W.append(re1['S_W'][0])
-# print(Fil_val)
-draw_plot_two(np.arange(2, 43, 1),Tem_W, Spa_W, './Daily_cache/pos_%s_%s' % (x_v, y_v), False, 'pos_%s_%s_W' % (x_v, y_v))
-draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 'pos_%s_%s_indep_part' % (x_v, y_v))
-
+draw_polt_Line(np.arange(2, 43, 1),{
+    'title': 'title',
+    'xlable': 'LAI',
+    'ylable': 'Day',
+    'line': [pixel_data, Fil_val_1, Fil_val_2, Fil_val_3],
+    'le_name': ['Original', 'Tem', 'Spa', 'Fil'],
+    'color': ['gray', '#bfdb39', '#ffe117', '#fd7400'],
+    'marker': False,
+    })
 # MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
 # for index in range(2, 43):
 #     re2 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) 

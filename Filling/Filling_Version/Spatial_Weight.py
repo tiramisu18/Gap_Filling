@@ -42,15 +42,6 @@ def Spatial_W2 (fileDatas, index, Filling_Pos, LC_Value, MQC_File, euc_pow, fill
     test_posi_nan = Filling_Pos   
     # test_posi_nan = Filling_Pos[1000600: 1000700]
     # print(len(test_posi_nan), test_posi_nan)
-    
-    # random_pos = [1357014, 64580, 1614800, 1475407, 1437849, 1268490, 1906901, 1779502, 1269123, 1218517, 438127, 1983877, 666523, 382462, 953449, 1664506, 26541, 164652, 340312, 942213, 1120944, 1917218, 595743, 1428464, 1146849, 674744, 653850, 1732185, 649105, 1857483, 1651886, 921660, 1355108, 1672042, 1758674, 1528441, 770445, 264914, 169181, 591573, 1342472, 950553, 490852, 991788, 780714, 1191097, 558402, 1623274, 406704, 878968, 55637, 1235597, 440304, 1730134, 13632, 1106432, 951711, 2595, 1098209, 1913674, 1738643, 928997, 836309, 1550047, 1172073, 1097860, 1837628, 1380302, 771129, 1782911, 2054519, 170868, 1551374, 1464954, 1722847, 1752209, 2030930, 428020, 1176203, 1031184, 591186, 3055, 1941129, 1116496, 2025878, 498899, 924412, 512907, 1310214, 894081, 149721, 1959503, 548949, 1013993, 615769, 1556444, 357461, 1836331, 737808, 1532753]
-    random_pos_1 = [277571, 1905328, 1636417, 977632, 124750, 1958541, 318085, 284845, 384361, 470948, 179682, 1239124, 1532915, 680389, 325237, 37190, 626692, 423558, 1740277, 1437388, 1307806, 1464623, 1480660, 1010158, 517348, 1978000, 1207013, 98076, 388062, 1475472, 699801, 965017, 863808, 293299, 659766, 1318790, 889336, 1487816, 1233725, 1402682, 1638549, 1437189, 907725, 238432, 1888861, 1009447, 1360904, 385694, 685730, 661973, 61988, 706459, 1093202, 1284857, 1162561, 471960, 1724816, 902455, 1286264, 1903879, 1616841, 600309, 141284, 1333861, 58588, 1504626, 1686220, 394960, 324009, 554291, 929436, 1799999, 191329, 640244, 972325, 1362605, 1164801, 1238637, 1382083, 1149997, 693047, 876139, 1027683, 1507533, 1247670, 123537, 816786, 155581, 1379025, 1578739, 1426787, 540413, 690491, 1339521, 1096674, 1650076, 775817, 1963384, 1634810, 755476]
-    random_pos_2 = [117033, 215923, 19545, 178608, 206533, 104448, 493174, 593402, 563877, 264287, 447831, 638355, 421925, 62935, 160771, 369520, 241072, 532718, 507544, 398501, 459725, 149051, 557946, 363302, 398297, 172282, 380515, 137483, 557487, 552165, 497512, 236889, 230470, 142129, 224183, 394895, 55874, 581908, 337548, 183142, 118797, 568549, 280308, 95905, 204570, 126624, 317658, 241895, 316623, 150586, 568195, 307313, 373819, 70780, 424473, 430174, 587716, 71866, 275200, 470197, 364445, 390166, 218550, 130564, 615200, 622796, 168633, 398053, 606943, 533371, 405288, 144614, 567736, 215775, 205195, 551093, 178796, 503244, 406358, 443631, 637063, 488439, 115497, 24476, 371582, 426381, 417515, 545968, 641860, 646749, 74867, 68963, 7700, 347493, 348891, 384069, 417761, 392185, 27832, 172902]
-    random_pos_3 = [206394, 307990, 137102, 415495, 500363, 173167, 302351, 76375, 548307, 132180, 45385, 113314, 483739, 253358, 334440, 68939, 511830, 58001, 427444, 73297, 547384, 301866, 533999, 66664, 57869, 92119, 353850, 379532, 551443, 96062, 325448, 463010, 40168, 447657, 462709, 12975, 481284, 68014, 112249, 408549, 488109, 271721, 121429, 217381, 434355, 252382, 413751, 121019, 333641, 239501, 434226, 66017, 75980, 413830, 150403, 38603, 494969, 65852, 34458, 32564, 318178, 446986, 9391, 342480, 428667, 109048, 126448, 498003, 442683, 408301, 98924, 134166, 519576, 124892, 549205, 151564, 17540, 445238, 20380, 92952, 57556, 109349, 84536, 508405, 404719, 481961, 46653, 424207, 498049, 308721, 77585, 426453, 216897, 5288, 327835, 552859, 43429, 256518, 25225, 540808]
-    # for ele in random_pos_3:
-    #     one_pos = Filling_Pos[ele]
-    #     test_posi_nan.append(one_pos)
-    # print(len(test_posi_nan))
     spa_result_inter = 0
     spa_weight = 0
     spa_cu_dataset = fileDatas[index]
@@ -59,12 +50,9 @@ def Spatial_W2 (fileDatas, index, Filling_Pos, LC_Value, MQC_File, euc_pow, fill
 
     # spa_winSize_unilateral = 10 # n*2 + 1
 
-    MQC_data = MQC_File[MQC_File["MQC_Score"][0,index - 1]]  # [column, row]
-    MQC_Score = np.transpose(MQC_data[:])
-    MQC_data_before = MQC_File[MQC_File["MQC_Score"][0,index - 2]]  # [column, row]
-    MQC_Score_before = np.transpose(MQC_data_before[:])
-    MQC_data_after = MQC_File[MQC_File["MQC_Score"][0,index]]  # [column, row]
-    MQC_Score_after = np.transpose(MQC_data_after[:])
+    MQC_Score = MQC_File[index - 1]
+    MQC_Score_before = MQC_File[index - 2]
+    MQC_Score_after = MQC_File[index]
 
     w_array = []
     F_value = []
@@ -229,7 +217,7 @@ def draw_multiLine (data, key, url):
     ('Pow_1', 'Pow_2','Pow_3','Pow_4','Pow_5',),
     loc = 1, prop={'size':15, 'family':'Times New Roman'},
     )
-    plt.savefig(url, dpi=300)
+    # plt.savefig(url, dpi=300)
     plt.show()
 
 def get_GreatPixel (MQC_Score, data):
@@ -285,8 +273,7 @@ def random_pos ():
 
     return {'i': rand_i, 'j': rand_j}
 
-fileLists = ReadDirFiles.readDir(
-  'C:\JR_Program\Filling_Missing_Values\h27v06')
+fileLists = ReadDirFiles.readDir('../HDF/h11v04')
 # print('lists', len(fileLists))
 
 fileDatas = []
@@ -295,24 +282,19 @@ for file in fileLists:
   fileDatas.append(ReadFile(file))
 
 
-LC_file = gdal.Open('C:\JR_Program\Filling_Missing_Values\LC\MCD12Q1.A2018001.h27v06.006.2019200015326.hdf')
+LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h11v04.006.2019199203448.hdf')
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
 
 LC_info = gdal.Open(LC_subdatasets[0][0]).ReadAsArray()
 
 
 # read MQC file
-path='./MQC_files/h27v06_2018_MQC_Score.mat'             
-MQC_File=h5py.File(path) 
-# print(MQC_File.keys())
-file_Content = MQC_File["MQC_Score"]
+MQC_All = np.load('./MQC_NP/h11v04_2018.npy')
 
-fileIndex = 10
+fileIndex = 8
 
-ds = MQC_File[file_Content[0, fileIndex - 1]]
-MQC_Score = np.transpose(ds[:])
 # print(ds)
-# render_MQC(MQC_Score)
+# render_MQC(MQC_All[fileIndex - 1])
 # render_Img(fileDatas[fileIndex])
 # print(MQC_Score)
 # MQC_part = []
@@ -324,63 +306,24 @@ MQC_Score = np.transpose(ds[:])
 # print(MQC_part)
 # print(np.mean(array(MQC_part,'f').flatten()))
 # render_MQC(MQC_part, 'MQC_Part')
-fill_pos_length = 2000
-for i in range(0, 10):
 
-    all_great_pos = get_GreatPixel (MQC_Score, fileDatas[fileIndex])
+
+fill_pos_length = 500
+
+
+all_great_pos = get_GreatPixel (MQC_All[fileIndex - 1], fileDatas[fileIndex])
 # print(len(all_great_pos))
 
-    rand_pos = int_random(500, 300000, fill_pos_length)
-    fill_pos = []
-    for ele in rand_pos:
-        fill_pos.append(all_great_pos[ele])
+rand_pos = int_random(500, 300000, fill_pos_length)
+fill_pos = []
+for ele in rand_pos:
+    fill_pos.append(all_great_pos[ele])
 
-# randomPos = random_pos
-# rand_i = randomPos['i']
-# rand_j = randomPos['j']
-# fill_pos_mqc = []
-# fill_pos_val = []
-# fill_pos = []
-# for i in range(0, fill_pos_length):
-#     try :
-#         value = fileDatas[fileIndex][rand_i[i]][rand_j[i]]
-#         # print(value)
-#         if (value <= 70):
-#             fill_pos.append([rand_i[i], rand_j[i]])
-#             fill_pos_mqc.append(MQC_Score[rand_i[i]][rand_j[i]])
-#             fill_pos_val.append(fileDatas[fileIndex][rand_i[i]][rand_j[i]])
-#     except:
-#         print(i)
-
-# # print(fill_pos_mqc, mean(fill_pos_mqc))
-# # print(fill_pos_val)
-# # print(len(fill_pos_val))
-
-    line_array = []
-    for euc_pow in range(1, 6):
-        result = Spatial_W2(fileDatas, fileIndex, fill_pos, LC_info, MQC_File, euc_pow, fill_pos_length)
-        line_array.append(result)
+line_array = []
+for euc_pow in range(1, 6):
+    result = Spatial_W2(fileDatas, fileIndex, fill_pos, LC_info, MQC_All, euc_pow, fill_pos_length)
+    line_array.append(result)
 
 
-    draw_multiLine (line_array, 'MRE', './Spatial_W2_Result/MRE/Spatial_line_1125_'+ str(i))
-    draw_multiLine (line_array, 'RMSE', './Spatial_W2_Result/RMSE/Spatial_line_1125'+ str(i))
-
-# for file_index in range(2, 3):
-#     print(file_index)
-#     ds = MQC_File[file_Content[0,file_index - 1]]
-#     MQC_Score = np.transpose(ds[:])
-#     oneSample = fileDatas[file_index]
-#     Filling_Pos = []
-#   # data_one = copy.deepcopy(MQC_Score)
-#     for i in range(2400):
-#         for j in range(2400):
-#             if MQC_Score[i][j] < 45 and oneSample[i][j] <= 70 : 
-#                 Filling_Pos.append([i, j])
-#                 # data_one[i][j] = 'nan'
-
-#     print(len(Filling_Pos))
-    # Spatial_W2(fileDatas, file_index, Filling_Pos, LC_info, MQC_File)
-
-
-
-
+draw_multiLine (line_array, 'MRE', './Spatial_W2_Result/MRE/Spatial_line_1209')
+draw_multiLine (line_array, 'RMSE', './Spatial_W2_Result/RMSE/Spatial_line_1209')

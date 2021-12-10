@@ -184,52 +184,6 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength
     # LAI_Result[pos[0]][pos[1]] = final
     return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'T_W': Tem_W, 'S_W': Spa_W}
 
-def Fill_Pixel_revise (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral):
- 
-    # LAI_Result = copy.deepcopy(fileDatas[index])
-    # interpolation
-
-    Fil_tem = []
-    Fil_spa = []
-    Fil_value = []
-    Tem_W = []
-    Spa_W = []
-
-    for pos in Filling_Pos:    
-        tem_ob = Temporal_Cal (fileDatas, index, pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-        spa_ob = Spatial_Cal (fileDatas, index, pos, LC_info, MQC_File, EUC_pow, spa_winSize_unilateral) 
-        MQC_value = MQC_File[index - 1][pos[0]][pos[1]]  
-        or_value = fileDatas[index][pos[0]][pos[1]] 
-        final = or_value
-        spa_filling_value = spa_ob['filling']
-        if spa_ob['weight'] != 0:
-            spa_weight = (spa_ob['weight'] + tem_ob['weight']) / spa_ob['weight']
-        else:
-            spa_weight = 0
-        tem_filling_value = tem_ob['filling']
-        if tem_ob['weight'] != 0:
-            tem_weight = (spa_ob['weight'] + tem_ob['weight']) / tem_ob['weight']
-        else: 
-            tem_weight = 0
-
-        Fil_tem.append(tem_filling_value)
-        Fil_spa.append(spa_filling_value)
-        Tem_W.append(tem_weight)
-        Spa_W.append(spa_weight)
-        # total Calculation
-        final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight)) 
-        # if (MQC_value >= 30):        
-        #     final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
-        # else :
-        #     if spa_weight != 0 and tem_weight != 0 : 
-        #         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
-        
-        Fil_value.append(final)
-
-    # print({'tem': Fil_tem, 'spa': Fil_spa, 'Fil': Fil_value})      
-    # LAI_Result[pos[0]][pos[1]] = final
-    return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'T_W': Tem_W, 'S_W': Spa_W}
-
 def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
  
     # LAI_Result = copy.deepcopy(fileDatas[index])
@@ -240,6 +194,7 @@ def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, tempor
     Fil_value = []
     Tem_W = []
     Spa_W = []
+    Mqc_W = []
 
     for pos in Filling_Pos:    
         tem_ob = Temporal_Cal (fileDatas, index, pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow)
@@ -256,6 +211,7 @@ def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, tempor
         Fil_spa.append(spa_filling_value)
         Tem_W.append(tem_weight)
         Spa_W.append(spa_weight)
+        Mqc_W.append(MQC_value * 0.1)
         # total Calculation
         # final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
         if method == 1 :
@@ -271,57 +227,4 @@ def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, tempor
 
     # print({'tem': Fil_tem, 'spa': Fil_spa, 'Fil': Fil_value})      
     # LAI_Result[pos[0]][pos[1]] = final
-    return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'T_W': Tem_W, 'S_W': Spa_W}
-
-
-def Fill_Pixel_MQCPart_revise (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
- 
-    # LAI_Result = copy.deepcopy(fileDatas[index])
-    # interpolation
-
-    Fil_tem = []
-    Fil_spa = []
-    Fil_value = []
-    Tem_W = []
-    Spa_W = []
-
-    for pos in Filling_Pos:    
-        tem_ob = Temporal_Cal (fileDatas, index, pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-        spa_ob = Spatial_Cal (fileDatas, index, pos, LC_info, MQC_File, EUC_pow, spa_winSize_unilateral) 
-        MQC_value = MQC_File[index - 1][pos[0]][pos[1]]  
-        or_value = fileDatas[index][pos[0]][pos[1]] 
-        final = or_value
-        spa_filling_value = spa_ob['filling']
-        tem_weight = 0
-        spa_weight = 0
-        if spa_ob['weight'] != 0:
-            spa_weight = (spa_ob['weight'] + tem_ob['weight']) / spa_ob['weight']
-        else:
-            tem_weight = 0
-        
-        tem_filling_value = tem_ob['filling']
-        if tem_ob['weight'] != 0:
-            tem_weight = (spa_ob['weight'] + tem_ob['weight']) / tem_ob['weight']
-        else: 
-            spa_weight = 0
-
-        Fil_tem.append(tem_filling_value)
-        Fil_spa.append(spa_filling_value)
-        Tem_W.append(tem_weight)
-        Spa_W.append(spa_weight)
-        # total Calculation
-        # final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
-        if method == 1 :
-            final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
-        else :
-            if (MQC_value >= 10):        
-                final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
-            else :
-                if spa_weight != 0 and tem_weight != 0 : 
-                    final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
-        
-        Fil_value.append(final)
-
-    # print({'tem': Fil_tem, 'spa': Fil_spa, 'Fil': Fil_value})      
-    # LAI_Result[pos[0]][pos[1]] = final
-    return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'T_W': Tem_W, 'S_W': Spa_W}
+    return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'T_W': Tem_W, 'S_W': Spa_W, 'M_W': Mqc_W}
