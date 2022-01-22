@@ -9,7 +9,7 @@ import copy
 import math
 import time
 
-def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):
+def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow):
     # print('begin_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
   # interpolation
     cu_dataset = fileDatas[index]
@@ -54,22 +54,18 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
                     value = fileDatas[forward_index][i][j]
                     tem_SES = SES_pow * math.pow((1 - SES_pow), forward_i - 1)
                     if(value <= 70):
-                        QC_Score = QC_File[forward_index] 
-                        numerator[tem_index] += value * tem_SES * QC_Score[i][j] * 0.1
-                        denominator[tem_index] += tem_SES * QC_Score[i][j] * 0.1   
-                        # numerator[tem_index] += value * tem_SES  * 0.1
-                        # denominator[tem_index] += tem_SES * 0.1                              
+                        MQC_Score = MQC_File[forward_index - 1] 
+                        numerator[tem_index] += value * tem_SES * MQC_Score[i][j] * 0.1
+                        denominator[tem_index] += tem_SES * MQC_Score[i][j] * 0.1                                
                     forward_index -= 1
                     forward_i += 1
                 while (backward_index < tem_back_index):
                     value = fileDatas[backward_index][i][j]
                     tem_SES = SES_pow * math.pow((1 - SES_pow), backward_i - 1)
                     if(value <= 70):
-                        QC_Score = QC_File[backward_index]
-                        numerator[tem_index] += value * tem_SES * QC_Score[i][j] * 0.1
-                        denominator[tem_index] += tem_SES * QC_Score[i][j] * 0.1 
-                        # numerator[tem_index] += value * tem_SES * 0.1
-                        # denominator[tem_index] += tem_SES * 0.1 
+                        MQC_Score = MQC_File[backward_index - 1]
+                        numerator[tem_index] += value * tem_SES * MQC_Score[i][j] * 0.1
+                        denominator[tem_index] += tem_SES * MQC_Score[i][j] * 0.1 
                     backward_index += 1
                     backward_i += 1
                 if denominator[tem_index] != 0 : 
@@ -91,7 +87,7 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
    
     return {'weight': tem_weight, 'filling': tem_filling_value, 'or_value': or_value}
 
-def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral):
+def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, MQC_File, EUC_pow, spa_winSize_unilateral):
     # print('begin_spa', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     spa_filling_value = 0
     spa_weight = 0
@@ -100,9 +96,9 @@ def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_w
     spa_cu_after_dataset = fileDatas[index + 1]
     # spa_winSize_unilateral = 10 # n*2 + 1
 
-    QC_Score = QC_File[index]
-    QC_Score_before = QC_File[index - 1]
-    QC_Score_after = QC_File[index + 1]
+    MQC_Score = MQC_File[index - 1]
+    MQC_Score_before = MQC_File[index - 2]
+    MQC_Score_after = MQC_File[index]
     pos = Filling_Pos  
 
     lc_type = LC_info[pos[0]][pos[1]]    
@@ -126,18 +122,12 @@ def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_w
                 euclideanDis = math.sqrt(math.pow((pos[0] - i), 2) + math.pow((pos[1] - j), 2))
                 if euclideanDis != 0 : euclideanDis = math.pow(euclideanDis, -EUC_pow)
                 # 在欧氏距离的基础上再按照MQC比重分配
-                numerator[0] += (euclideanDis * spa_cu_before_dataset[i][j] * QC_Score_before[i][j] * 0.1)
-                numerator[1] += (euclideanDis * spa_cu_dataset[i][j] * QC_Score[i][j] * 0.1)
-                numerator[2] += (euclideanDis * spa_cu_after_dataset[i][j] * QC_Score_after[i][j] * 0.1)
-                denominator[0] += euclideanDis * QC_Score_before[i][j] * 0.1
-                denominator[1] += euclideanDis * QC_Score[i][j] * 0.1
-                denominator[2] += euclideanDis * QC_Score_after[i][j] * 0.1
-                # numerator[0] += (euclideanDis * spa_cu_before_dataset[i][j] * 0.1)
-                # numerator[1] += (euclideanDis * spa_cu_dataset[i][j] * 0.1)
-                # numerator[2] += (euclideanDis * spa_cu_after_dataset[i][j]* 0.1)
-                # denominator[0] += euclideanDis * 0.1
-                # denominator[1] += euclideanDis * 0.1
-                # denominator[2] += euclideanDis * 0.1
+                numerator[0] += (euclideanDis * spa_cu_before_dataset[i][j] * MQC_Score_before[i][j] * 0.1)
+                numerator[1] += (euclideanDis * spa_cu_dataset[i][j] * MQC_Score[i][j] * 0.1)
+                numerator[2] += (euclideanDis * spa_cu_after_dataset[i][j] * MQC_Score_after[i][j] * 0.1)
+                denominator[0] += euclideanDis * MQC_Score_before[i][j] * 0.1
+                denominator[1] += euclideanDis * MQC_Score[i][j] * 0.1
+                denominator[2] += euclideanDis * MQC_Score_after[i][j] * 0.1
                         
     # 当n*n范围内无相同lc时，使用原始值填充
     if denominator[0] > 0:
@@ -154,7 +144,7 @@ def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_w
    
     return {'weight': spa_weight, 'filling': spa_filling_value, 'or_value': or_value}
 
-def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral): 
+def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral): 
     # LAI_Result = copy.deepcopy(fileDatas[index])
     # interpolation
     Fil_tem = []
@@ -164,9 +154,9 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
     Spa_W = []
 
     for pos in Filling_Pos:    
-        tem_ob = Temporal_Cal (fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-        spa_ob = Spatial_Cal (fileDatas, index, pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral) 
-        QC_value = QC_File[index][pos[0]][pos[1]]  
+        tem_ob = Temporal_Cal (fileDatas, index, pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow)
+        spa_ob = Spatial_Cal (fileDatas, index, pos, LC_info, MQC_File, EUC_pow, spa_winSize_unilateral) 
+        MQC_value = MQC_File[index - 1][pos[0]][pos[1]]  
         or_value = fileDatas[index][pos[0]][pos[1]] 
         final = or_value
         spa_filling_value = spa_ob['filling']
@@ -180,8 +170,8 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
         Spa_W.append(spa_weight)
         # total Calculation
         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight)) 
-        # if (QC_value >= 30):        
-        #     final = round((or_value * QC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (QC_value * 0.1 + spa_weight + tem_weight))  
+        # if (MQC_value >= 30):        
+        #     final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
         # else :
         #     if spa_weight != 0 and tem_weight != 0 : 
         #         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
@@ -192,7 +182,7 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
     # LAI_Result[pos[0]][pos[1]] = final
     return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'T_W': Tem_W, 'S_W': Spa_W}
 
-def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
+def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
     # LAI_Result = copy.deepcopy(fileDatas[index])
     # interpolation
     Fil_tem = []
@@ -203,9 +193,9 @@ def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, QC_File, tempora
     Mqc_W = []
 
     for pos in Filling_Pos:    
-        tem_ob = Temporal_Cal (fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-        spa_ob = Spatial_Cal (fileDatas, index, pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral) 
-        QC_value = QC_File[index][pos[0]][pos[1]]  
+        tem_ob = Temporal_Cal (fileDatas, index, pos, LC_info, MQC_File, temporalLength, tem_winSize_unilateral, SES_pow)
+        spa_ob = Spatial_Cal (fileDatas, index, pos, LC_info, MQC_File, EUC_pow, spa_winSize_unilateral) 
+        MQC_value = MQC_File[index - 1][pos[0]][pos[1]]  
         or_value = fileDatas[index][pos[0]][pos[1]] 
         final = or_value
         spa_filling_value = spa_ob['filling']
@@ -217,14 +207,14 @@ def Fill_Pixel_MQCPart (fileDatas, index, Filling_Pos, LC_info, QC_File, tempora
         Fil_spa.append(spa_filling_value)
         Tem_W.append(tem_weight)
         Spa_W.append(spa_weight)
-        Mqc_W.append(QC_value * 0.1)
+        Mqc_W.append(MQC_value * 0.1)
         # total Calculation
-        # final = round((or_value * QC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (QC_value * 0.1 + spa_weight + tem_weight))  
+        # final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
         if method == 1 :
             final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
         else :
-            if (QC_value >= 40):        
-                final = round((or_value * QC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (QC_value * 0.1 + spa_weight + tem_weight))  
+            if (MQC_value >= 40):        
+                final = round((or_value * MQC_value * 0.1 + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (MQC_value * 0.1 + spa_weight + tem_weight))  
             else :
                 if spa_weight != 0 and tem_weight != 0 : 
                     final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  

@@ -32,6 +32,47 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
         plt.show()
 
 
+def polt_Line_twoScale (x, obj, savePath = '', issave = False, loc = 0):
+    color_arr = ['#548bb7', '#958b8c', '#bfdb39', '#ffe117', '#fd7400', '#7ba79c', '#016382', '#dd8146', '#a4ac80', '#d9b15c', '#1f8a6f', '#987b2d']
+    marker_arr = ['o', '.', '^', 's', ',', 'v', '8', '*', 'H', '+', 'x', '_']
+    if obj['color'] : color_arr = obj['color']
+    if obj['marker'] : marker_arr = obj['marker']
+    fig, ax1 = plt.subplots()
+    ax1.set_title(obj['title'], family='Times New Roman', fontsize=18)   
+    ax1.set_xlabel(obj['xlable'], fontsize=15, family='Times New Roman') 
+    ax1.set_ylabel(obj['ylable'], fontsize=15, family='Times New Roman')
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    color = 'tab:blue'
+    ax2.set_ylabel('Weight', color=color)  # we already handled the x-label with ax1
+    # ax2.plot(x, obj['line'][4], color=color)
+    # ax2.tick_params(axis='y', labelcolor=color)
+
+    fig.tight_layout() # otherwise the right y-label is slightly clipped
+    line_arr = []
+    count_i = -1
+    for idx in range(0, len(obj['line'][0])):
+        count_i += 1 
+        line_arr.append((ax1.plot(x,obj['line'][0][idx], label='count', color=color_arr[count_i],  marker=marker_arr[count_i], markersize=3))[0])
+    for idx in range(0, len(obj['line'][1])):
+        count_i += 1 
+        line_arr.append((ax2.plot(x,obj['line'][1][idx], label='count', color=color_arr[count_i],  marker=marker_arr[count_i], markersize=3, linestyle='dashed'))[0])
+    
+    # for i in range(0, 2): 
+    #     for j in range(0, len(obj['line'][i])):  
+    #         line_arr.append()         
+    #     if i < ls_len : 
+    #         line_arr.append((ax1.plot(x,obj['line'][0][i], label='count', color=color_arr[i],  marker=marker_arr[i], markersize=3, linestyle=obj['lineStyle'][i]))[0])
+    #     else: 
+    #         line_arr.append((ax1.plot(x,obj['line'][0][i], label='count', color=color_arr[i],  marker=marker_arr[i], markersize=3))[0])
+    plt.legend(
+    (line_arr), 
+    (obj['le_name']),
+    loc = loc, prop={'size':15, 'family':'Times New Roman'},
+    )
+    if issave :plt.savefig(savePath, dpi=300)
+    plt.show()
+
 def draw_Line (x, y1, y2, y3, y4, savePath, issave, title = 'title'):
     # aa = np.arange(1, 21, 1)
     # plt.xticks(aa)
