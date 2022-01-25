@@ -44,9 +44,9 @@ def polt_Line_twoScale (x, obj, savePath = '', issave = False, loc = 0):
 
     ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
     color = 'tab:blue'
-    ax2.set_ylabel('Weight', color=color)  # we already handled the x-label with ax1
+    ax2.set_ylabel('Weight', color=color, fontsize=15, family='Times New Roman')  # we already handled the x-label with ax1
     # ax2.plot(x, obj['line'][4], color=color)
-    # ax2.tick_params(axis='y', labelcolor=color)
+    ax2.tick_params(axis='y', labelcolor=color)
 
     fig.tight_layout() # otherwise the right y-label is slightly clipped
     line_arr = []

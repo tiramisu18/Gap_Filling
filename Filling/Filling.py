@@ -39,23 +39,34 @@ def int_random(a, b, n) :
     return a_list
 
 
-def render_QC (MQC_Score, title='MQC'):
-    plt.imshow(MQC_Score, cmap = plt.cm.jet)  # cmap= plt.cm.jet
+def render_QC (QC_data, title='Algo Path', issave=False, savepath=''):
+    plt.imshow(QC_data, cmap = plt.cm.jet)  # cmap= plt.cm.jet
     plt.title(title, family='Times New Roman', fontsize=18)
     colbar = plt.colorbar()
     plt.axis('off')
-    # plt.savefig('test.png', dpi=300)
+    if issave :plt.savefig(savepath, dpi=300)
     plt.show()
+    # colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
+    # bounds = [-1,0,5,10]
+    # cmap = pltcolor.ListedColormap(colors)
+    # norm = pltcolor.BoundaryNorm(bounds, cmap.N)
+    # plt.title(title, family='Times New Roman', fontsize=18)
+    # plt.imshow(QC_data, cmap=cmap, norm=norm)
+    # cbar = plt.colorbar()
+    # cbar.set_ticklabels(['-1','0','5','10'])
+    # plt.show()
 
-def render_Img (data, title='Image'):
+def render_Img (data, title='Image', issave=False, savepath=''):
     colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
     bounds = [0,10,20,30,40,50,60,70,250]
     cmap = pltcolor.ListedColormap(colors)
     norm = pltcolor.BoundaryNorm(bounds, cmap.N)
     plt.title(title, family='Times New Roman', fontsize=18)
     plt.imshow(data, cmap=cmap, norm=norm)
+    plt.axis('off')
     cbar = plt.colorbar()
-    cbar.set_ticklabels(['0','10','20','30','40','50','60','70','250'])
+    cbar.set_ticklabels(['0','1','2','3','4','5','6','7','250'])
+    if issave :plt.savefig(savepath, dpi=300)
     plt.show()
 
 def render_GIF (data, title='Image'):
@@ -82,7 +93,6 @@ def read_MQC (path, savepath):
     MQC_File=h5py.File(path) 
     # print(MQC_File.keys())
     file_Content = MQC_File["MQC_Score"]
-
     print('begin', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     MQC_All = []
     for idx in range(0, 44):
@@ -92,6 +102,97 @@ def read_MQC (path, savepath):
     print(len(MQC_All))
     print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     np.save(savepath, MQC_All)
+
+def read_QC(QC):
+    QC_Bin = []
+    for idx in range(0, 46):
+        print(idx)
+        file_bin = []
+        for i in range(0, 2400):
+            weight = 0 
+            row_bin = []
+            for j in range(0, 2400):
+                one = '%08d' % int((bin(round(float((QC[idx][i][j])))).split('b')[1]))
+                row_bin.append(one)
+            file_bin.append(row_bin)
+        QC_Bin.append(file_bin)
+    np.save('../QC/h11v04_2018_Bin', QC_Bin)
+
+def QC_AgloPath(QCBin):
+    QC_Wei = []
+    for idx in range(0, 46):
+        print(idx)
+        file_wei = []
+        for i in range(0, 2400):
+            weight = 0 
+            row_wei = []
+            for j in range(0, 2400):
+                one = str(QCBin[idx][i][j])[0:3]
+                if one == '000' or  one == '001': weight = 10
+                elif one == '010' or one == '011' : weight = 5
+                else: weight = 0
+                row_wei.append(weight)
+            file_wei.append(row_wei)
+        QC_Wei.append(file_wei)
+    np.save('../QC/h11v04_2018_AgloPath_Wei', QC_Wei)
+
+def QC_CloudState(QCBin):
+    QC_Wei = []
+    for idx in range(0, 46):
+        print(idx)
+        file_wei = []
+        for i in range(0, 2400):
+            weight = 0 
+            row_wei = []
+            for j in range(0, 2400):
+                one = str(QCBin[idx][i][j])[3:5]
+                if one == '00' : weight = 10
+                elif one == '01' : weight = 6
+                elif one == '10' : weight = 3
+                else: weight = 0
+                row_wei.append(weight)
+            file_wei.append(row_wei)
+        QC_Wei.append(file_wei)
+    np.save('../QC/h11v04_2018_CloudState_Wei', QC_Wei)
+
+#calculate MRE and RMSE
+def calculatedif (O_value, F_value, first_length, fill_pos_length):
+    MRE = []
+    RMSE = []
+    for i in range(0, first_length):
+        numera_mre = 0 
+        denomin = 0
+        numera_rmse = 0
+        for j in range(0, fill_pos_length):
+            v_mre = abs(O_value[i][j] - F_value[i][j])
+            v_rmse = math.pow((O_value[i][j] - F_value[i][j]), 2)
+            numera_mre += v_mre
+            denomin += O_value[i][j]
+            numera_rmse += v_rmse
+        MRE.append(round(numera_mre / denomin, 3))
+        RMSE.append(round(math.sqrt(numera_rmse / fill_pos_length), 3))
+    
+    # print(MRE)
+    # print(RMSE)
+    return {'MRE': MRE, 'RMSE': RMSE}
+
+def get_GreatPixel (QC, data, len):
+    result_data = []
+    for i in range(0, 2400):
+        for j in range(0, 2400):
+            if QC[i][j] == 10 and data[i][j] <= 70:
+                result_data.append([i, j])
+                if len(result_data) > len: return result_data
+    # return result_data
+
+def random_pos(QC, ran_len, length):
+    rand_pos_1 = int_random(0, 2399, ran_len)
+    rand_pos_2 = int_random(0, 2399, ran_len)
+    fill_pos = []
+    for ele in range(0, ran_len):
+        if QC[rand_pos_1[ele]][rand_pos_2[ele]] == 10:
+            fill_pos.append([rand_pos_1[ele], rand_pos_2[ele]])
+            if len(fill_pos) == length: return fill_pos
 
 fileLists = ReadDirFiles.readDir('../HDF/h11v04')
 # print('lists', len(fileLists))
@@ -106,87 +207,55 @@ for file in fileLists:
 
 LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h11v04.006.2019199203448.hdf')
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
-LC_info = gdal.Open(LC_subdatasets[0][0]).ReadAsArray()
+LC_info = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
 
-# print(bin(16))
+fileIndex = 15
 
-# fileIndex = 10
-# QC_Bin = []
-# QC_Wei = []
-# for idx in range(0, 46):
-#     file_bin = []
-#     file_wei = []
-#     for i in range(0, 2400):
-#         weight = 0 
-#         row_bin = []
-#         row_wei = []
-#         for j in range(0, 2400):
-#             one = str('%08d' % int((bin(round(float((QCDatas[fileIndex][i][j])))).split('b')[1])))[0:3]
-#             if one == '000': weight = 10
-#             elif one == '001': weight = 6
-#             elif one == '010' or one == '011' : weight = 3
-#             else: weight = 0
-#             row_bin.append(one)
-#             row_wei.append(weight)
-#         file_bin.append(row_bin)
-#         file_wei.append(row_wei)
-#     QC_Bin.append(file_bin)
-#     QC_Wei.append(file_wei)
-
-# np.save('../QC/h11v04_2018_Bin', QC_Bin)
-# np.save('../QC/h11v04_2018_Wei', QC_Wei)
-
-# QC_All = np.load('../QC/h11v04_2018_Bin.npy')
-QC_All = np.load('../QC/h11v04_2018_Wei.npy')
-# print(len(QC_All), len(QC_All[0]), QC_All[0][0][0:10], QC_W[0][0][0:10])
-
-# read MQC file
-# read_MQC('../MQC/h11v04_2018_MQC_Score_part.mat', './MQC_NP/h11v04_2018_part')          
-
-# MQC_All = np.load('./MQC_NP/h11v04_2018.npy')
-# MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
-
+QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 
 # print(QCDatas[fileIndex])
-# render_QC(QCDatas[fileIndex])
+# for i in range(0, 46):
+#     render_QC(QC_All[i], '2018_%02d' %(i * 8 + 1), True, '../QC/Img/h11v04_2018/h11v04_2018_%d' %(i+1))
+#     render_Img(fileDatas[i], '2018_%02d' %(i * 8 + 1), True, '../Original_Data/PNG/h11v04_2018/h11v04_2018_%d' %(i+1))
+#     render_QC(QC_Cloud[i], '2018_%02d' %(i * 8 + 1), True, '../QC/Img/h11v04_2018_CloudState/h11v04_2018_%d' %(i+1))
+
 # render_Img(fileDatas[fileIndex])
-x_v = 1800
-y_v = 1800
+# print(LC_info[800][800], LC_info[1200][1200])
+
+x_v = 1200
+y_v = 1200
 pixel_data = []
-pixel_score = []
 pixel_pos = {'x': x_v, 'y': y_v}
 for i in range(1, 45):
     pixel_val = fileDatas[i][pixel_pos['x']][pixel_pos['y']] / 10
-    # pixel_mqc = MQC_All[i - 1][pixel_pos['x']][pixel_pos['y']]
     pixel_data.append(pixel_val)
-    # pixel_score.append(pixel_mqc)
 
-# print(pixel_score)
-# print(pixel_data)
-# draw_plot(np.arange(1, 45, 1), pixel_score)
-
-# draw_plot(np.arange(2, 43, 1),pixel_data)
 Filling_Pos = [[x_v, y_v]]
 Fil_val_1 = []
 Fil_val_2 = []
 Fil_val_3 = []
 Tem_W = []
 Spa_W = []
-Mqc_W = []
+Qc_W = []
 
+# ses_pow = 0.8
+# for index in range(1, 45):
+#     # if index < 10: ses_pow = 0.3
+#     # if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
+#     # elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
+#     # else: ses_pow = 0.3
+#     # elif 20 < index < 30: ses_pow = 0.3
 
-for index in range(1, 45):
-    re1 = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, QC_All, 6, 12, 0.35, 2, 6)
-    # re1 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) # no MQC
-    Fil_val_1.append(re1['Tem'][0] / 10)
-    Fil_val_2.append(re1['Spa'][0] / 10)
-    Fil_val_3.append(re1['Fil'][0] / 10)
-    Tem_W.append(re1['T_W'][0])
-    Spa_W.append(re1['S_W'][0])
-    # Mqc_W.append(re1['M_W'][0])
+#     re1 = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, QC_All, 6, 12, ses_pow, 2, 5)
+#     # re1 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) # no MQC
+#     Fil_val_1.append(re1['Tem'][0] / 10)
+#     Fil_val_2.append(re1['Spa'][0] / 10)
+#     Fil_val_3.append(re1['Fil'][0] / 10)
+#     Tem_W.append(re1['T_W'][0])
+#     Spa_W.append(re1['S_W'][0])
+#     Qc_W.append(re1['Qc_W'][0])
 # print(Fil_val)
 # Draw_PoltLine.draw_Line(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 'pos_%s_%s_indep_part' % (x_v, y_v))
-
 
 # Draw_PoltLine.draw_polt_Line(np.arange(2, 43, 1),{
 #     'title': 'pos_%s_%s' % (x_v, y_v),
@@ -200,41 +269,81 @@ for index in range(1, 45):
 #     },'./Daily_cache/1215_4', True, 2)
 
 
-Draw_PoltLine.draw_polt_Line(np.arange(1, 45, 1),{
-    'title': 'pos_%s_%s_0121_qc' % (x_v, y_v),
-    'xlable': 'Day',
-    'ylable': 'LAI',
-    'line': [pixel_data, Fil_val_1, Fil_val_2, Fil_val_3],
-    'le_name': ['Original', 'Tem', 'Spa', 'Fil', ],
-    'color': ['gray', '#bfdb39', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
-    'marker': False,
-    'lineStyle': ['dashed']
-    },'./Daily_cache/0121/pos_%s_%s_0121_qc' % (x_v, y_v), True, 2)
-
-# Draw_PoltLine.polt_Line_twoScale(np.arange(2, 43, 1),{
-#     'title': 'pos_%s_%s_0121' % (x_v, y_v),
+# Draw_PoltLine.draw_polt_Line(np.arange(1, 45, 1),{
+#     'title': 'pos_%s_%s' % (x_v, y_v),
 #     'xlable': 'Day',
 #     'ylable': 'LAI',
-#     'line': [[pixel_data, Fil_val_1, Fil_val_2, Fil_val_3], [Tem_W, Spa_W]],
-#     'le_name': ['Original', 'Tem', 'Spa', 'Fil', 'Tem_W', 'Spa_W'],
+#     'line': [pixel_data, Fil_val_1, Fil_val_2, Fil_val_3],
+#     'le_name': ['Original', 'Tem', 'Spa', 'Fil'],
 #     'color': ['gray', '#bfdb39', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
 #     'marker': False,
 #     'lineStyle': ['dashed']
-#     },'./Daily_cache/pos_%s_%s_0121' % (x_v, y_v), False, 2)
+#     },'./Daily_cache/pos_%s_%s_0125' % (x_v, y_v), True, 2)
 
-# MQC_All = np.load('./MQC_NP/h11v04_2018_part.npy')
-# for index in range(2, 43):
-#     re2 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) 
-#     re3 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 1) # no MQC
-#     Fil_val_2.append((re2['Fil'])[0] / 10)
-#     Fil_val_3.append((re3['Fil'])[0] / 10)
+# Draw_PoltLine.polt_Line_twoScale(np.arange(1, 45, 1),{
+#     'title': 'pos_%s_%s_w' % (x_v, y_v),
+#     'xlable': 'Day',
+#     'ylable': 'LAI',
+#     'line': [[pixel_data], [Tem_W, Spa_W, Qc_W]],
+#     'le_name': ['Original', 'Tem_W', 'Spa_W', 'Qc_W'],
+#     'color': ['gray', '#bfdb39', '#ffe117', '#fd7400', ],
+#     'marker': False,
+#     'lineStyle': ['dashed']
+#     },'./Daily_cache/0125/pos_%s_%s_0125_w' % (x_v, y_v), True, 2)
 
-# draw_multiLine(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_all_1205' % (x_v, y_v), False, 'pos_%s_%s_all' % (x_v, y_v))
 
+# 求权重的最佳值
+#Spatial
+pos_count = 200
+Filling_Pos = random_pos(QC_All[fileIndex], 2000, pos_count)
+print(len(Filling_Pos))
+winsi_len = 11
+line_array = []
+for euc_pow in range(1, 6):
+    print(euc_pow)
+    pow_one_or = []
+    pow_one_fil = []
+    for win_size in range(1, winsi_len):
+        re = Filling_Pixel.Fill_Pixel(fileDatas, fileIndex, Filling_Pos, LC_info, QC_All, 6, 12, 0.35, euc_pow, win_size)
+        pow_one_or.append(re['Or'])
+        pow_one_fil.append(re['Fil'])
+    result = calculatedif(pow_one_or, pow_one_fil, winsi_len-1, len(Filling_Pos))
+    line_array.append(result['RMSE'])
+Draw_PoltLine.draw_polt_Line(np.arange(1, winsi_len, 1),{
+    'title': 'Count_%d' % pos_count,
+    'xlable': 'Half Width',
+    'ylable': 'RMSE',
+    'line': line_array,
+    'le_name': ['Pow=1', 'Pow=2', 'Pow=3', 'Pow=4', 'Pow=5'],
+    'color': False,
+    'marker': False,
+    'lineStyle': []
+    },'./Daily_cache/0125/0125_Spa_Count_%d'% pos_count, False, 1)
 
-# Fil_val = []
-# for index in range(2, 43):
-#     re = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 3, 12, 0.35, 3, 6 , 1)
-#     Fil_val.append((re['Fil'])[0] / 10)
-# print(Fil_val)
-# draw_plot_two(np.arange(2, 43, 1),pixel_data, Fil_val, './Daily_cache/pos_%s_%s_part_no_MQC' % (x_v, y_v), False, 'pos_%s_%s_part_no_MQC' % (x_v, y_v))
+# Temporal
+# pos_count = 50
+# Filling_Pos = random_pos(QC_All[fileIndex], 2000, pos_count)
+# print(len(Filling_Pos))
+# winsi_len = 16
+# line_array = []
+# SES_pow_array = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
+# for ses_pow in SES_pow_array:
+#     print(ses_pow)
+#     pow_one_or = []
+#     pow_one_fil = []
+#     for win_size in range(5, winsi_len):
+#         re = Filling_Pixel.Fill_Pixel(fileDatas, fileIndex, Filling_Pos, LC_info, QC_All, 3, win_size, ses_pow, 2, 5)
+#         pow_one_or.append(re['Or'])
+#         pow_one_fil.append(re['Fil'])
+#     result = calculatedif(pow_one_or, pow_one_fil, winsi_len-5, len(Filling_Pos))
+#     line_array.append(result['RMSE'])
+# Draw_PoltLine.draw_polt_Line(np.arange(5, winsi_len, 1),{
+#     'title': 'Count_%d' % pos_count,
+#     'xlable': 'Half Width',
+#     'ylable': 'RMSE',
+#     'line': line_array,
+#     'le_name': ['Pow=0.3', 'Pow=0.4', 'Pow=0.5', 'Pow=0.6', 'Pow=0.7', 'Pow=0.8'],
+#     'color': False,
+#     'marker': False,
+#     'lineStyle': []
+#     },'./Daily_cache/0125/0125_Tem_Count_%d'% pos_count, True, 1)
