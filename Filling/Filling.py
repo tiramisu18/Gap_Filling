@@ -209,7 +209,7 @@ LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h11v04.006.2019199203448.hdf')
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
 LC_info = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
 
-fileIndex = 15
+fileIndex = 7
 
 QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 
@@ -238,35 +238,35 @@ Tem_W = []
 Spa_W = []
 Qc_W = []
 
-# ses_pow = 0.8
-# for index in range(1, 45):
-#     # if index < 10: ses_pow = 0.3
-#     # if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
-#     # elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
-#     # else: ses_pow = 0.3
-#     # elif 20 < index < 30: ses_pow = 0.3
+ses_pow = 0.8
+for index in range(1, 45):
+    if index < 10: ses_pow = 0.3
+    if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
+    elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
+    else: ses_pow = 0.3
+    # elif 20 < index < 30: ses_pow = 0.3
 
-#     re1 = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, QC_All, 6, 12, ses_pow, 2, 5)
-#     # re1 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) # no MQC
-#     Fil_val_1.append(re1['Tem'][0] / 10)
-#     Fil_val_2.append(re1['Spa'][0] / 10)
-#     Fil_val_3.append(re1['Fil'][0] / 10)
-#     Tem_W.append(re1['T_W'][0])
-#     Spa_W.append(re1['S_W'][0])
-#     Qc_W.append(re1['Qc_W'][0])
+    re1 = Filling_Pixel.Fill_Pixel(fileDatas, index, Filling_Pos, LC_info, QC_All, 6, 12, ses_pow, 2, 5)
+    # re1 = Filling_Pixel.Fill_Pixel_MQCPart(fileDatas, index, Filling_Pos, LC_info, MQC_All, 6, 12, 0.35, 2, 6, 2) # no MQC
+    Fil_val_1.append(re1['Tem'][0] / 10)
+    Fil_val_2.append(re1['Spa'][0] / 10)
+    Fil_val_3.append(re1['Fil'][0] / 10)
+    Tem_W.append(re1['T_W'][0])
+    Spa_W.append(re1['S_W'][0])
+    Qc_W.append(re1['Qc_W'][0])
 # print(Fil_val)
 # Draw_PoltLine.draw_Line(np.arange(2, 43, 1),pixel_data, Fil_val_1, Fil_val_2, Fil_val_3, './Daily_cache/pos_%s_%s_indep_part' % (x_v, y_v), False, 'pos_%s_%s_indep_part' % (x_v, y_v))
 
-# Draw_PoltLine.draw_polt_Line(np.arange(2, 43, 1),{
-#     'title': 'pos_%s_%s' % (x_v, y_v),
-#     'xlable': 'Day',
-#     'ylable': 'LAI',
-#     'line': [pixel_data, Fil_val_1],
-#     'le_name': ['Original', 'Filling'],
-#     'color': ['gray', '#fd7400'],
-#     'marker': False,
-#     'lineStyle': ['dashed']
-#     },'./Daily_cache/1215_4', True, 2)
+Draw_PoltLine.draw_polt_Line(np.arange(1, 45, 1),{
+    'title': 'pos_%s_%s' % (x_v, y_v),
+    'xlable': 'Day',
+    'ylable': 'LAI',
+    'line': [pixel_data, Fil_val_1],
+    'le_name': ['Original', 'Temporal'],
+    'color': ['gray', '#bfdb39'],
+    'marker': False,
+    'lineStyle': ['dashed'],
+    },'./Daily_cache/1215_4', True, 2)
 
 
 # Draw_PoltLine.draw_polt_Line(np.arange(1, 45, 1),{
@@ -294,56 +294,64 @@ Qc_W = []
 
 # 求权重的最佳值
 #Spatial
-pos_count = 200
-Filling_Pos = random_pos(QC_All[fileIndex], 2000, pos_count)
-print(len(Filling_Pos))
-winsi_len = 11
-line_array = []
-for euc_pow in range(1, 6):
-    print(euc_pow)
-    pow_one_or = []
-    pow_one_fil = []
-    for win_size in range(1, winsi_len):
-        re = Filling_Pixel.Fill_Pixel(fileDatas, fileIndex, Filling_Pos, LC_info, QC_All, 6, 12, 0.35, euc_pow, win_size)
-        pow_one_or.append(re['Or'])
-        pow_one_fil.append(re['Fil'])
-    result = calculatedif(pow_one_or, pow_one_fil, winsi_len-1, len(Filling_Pos))
-    line_array.append(result['RMSE'])
-Draw_PoltLine.draw_polt_Line(np.arange(1, winsi_len, 1),{
-    'title': 'Count_%d' % pos_count,
-    'xlable': 'Half Width',
-    'ylable': 'RMSE',
-    'line': line_array,
-    'le_name': ['Pow=1', 'Pow=2', 'Pow=3', 'Pow=4', 'Pow=5'],
-    'color': False,
-    'marker': False,
-    'lineStyle': []
-    },'./Daily_cache/0125/0125_Spa_Count_%d'% pos_count, False, 1)
-
-# Temporal
-# pos_count = 50
+# pos_count = 500
 # Filling_Pos = random_pos(QC_All[fileIndex], 2000, pos_count)
 # print(len(Filling_Pos))
-# winsi_len = 16
+# winsi_len = 11
 # line_array = []
-# SES_pow_array = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8]
-# for ses_pow in SES_pow_array:
-#     print(ses_pow)
+# for euc_pow in range(1, 6):
+#     print(euc_pow)
 #     pow_one_or = []
 #     pow_one_fil = []
-#     for win_size in range(5, winsi_len):
-#         re = Filling_Pixel.Fill_Pixel(fileDatas, fileIndex, Filling_Pos, LC_info, QC_All, 3, win_size, ses_pow, 2, 5)
+#     pow_one_we = []
+#     for win_size in range(3, winsi_len):
+#         # re = Filling_Pixel.Fill_Pixel(fileDatas, fileIndex, Filling_Pos, LC_info, QC_All, 6, 12, 0.35, euc_pow, win_size)
+#         re = Filling_Pixel.Fill_Pixel_One(fileDatas, fileIndex, Filling_Pos, LC_info, QC_All, 6, 12, 0.35, euc_pow, win_size, 2)
 #         pow_one_or.append(re['Or'])
 #         pow_one_fil.append(re['Fil'])
-#     result = calculatedif(pow_one_or, pow_one_fil, winsi_len-5, len(Filling_Pos))
-#     line_array.append(result['RMSE'])
-# Draw_PoltLine.draw_polt_Line(np.arange(5, winsi_len, 1),{
+#         pow_one_we.append(round(np.mean(re['Weight']), 3))
+#     line_array.append(pow_one_we)
+#     # result = calculatedif(pow_one_or, pow_one_fil, winsi_len-1, len(Filling_Pos))
+#     # line_array.append(result['RMSE'])
+# Draw_PoltLine.draw_polt_Line(np.arange(3, winsi_len, 1),{
 #     'title': 'Count_%d' % pos_count,
 #     'xlable': 'Half Width',
-#     'ylable': 'RMSE',
+#     'ylable': 'Weight',
 #     'line': line_array,
-#     'le_name': ['Pow=0.3', 'Pow=0.4', 'Pow=0.5', 'Pow=0.6', 'Pow=0.7', 'Pow=0.8'],
+#     'le_name': ['Pow=1', 'Pow=2', 'Pow=3', 'Pow=4', 'Pow=5'],
 #     'color': False,
 #     'marker': False,
 #     'lineStyle': []
-#     },'./Daily_cache/0125/0125_Tem_Count_%d'% pos_count, True, 1)
+#     },'./Daily_cache/0126/0126_Spa_%s_Count_%d'% (fileIndex, pos_count), True, 1)
+
+# Temporal
+pos_count = 50
+Filling_Pos = random_pos(QC_All[fileIndex], 2000, pos_count)
+# print(len(Filling_Pos))
+winsi_len = 10
+line_array = []
+SES_pow_array = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+for ses_pow in SES_pow_array:
+    print(ses_pow)
+    pow_one_or = []
+    pow_one_fil = []
+    pow_one_we = []
+    for win_size in range(2, winsi_len):
+        re = Filling_Pixel.Fill_Pixel_One(fileDatas, fileIndex, Filling_Pos, LC_info, QC_All, 6, win_size, ses_pow, 2, 5, 1)
+        pow_one_or.append(re['Or'])
+        pow_one_fil.append(re['Fil'])
+        pow_one_we.append(round(np.mean(re['Weight']), 3))
+    line_array.append(pow_one_we)
+# print(line_array)
+    # result = calculatedif(pow_one_or, pow_one_fil, winsi_len-5, len(Filling_Pos))
+    # line_array.append(result['RMSE'])
+Draw_PoltLine.draw_polt_Line(np.arange(2, winsi_len, 1),{
+    'title': 'Count_%d' % pos_count,
+    'xlable': 'Half Width',
+    'ylable': 'Weight',
+    'line': line_array,
+    'le_name': ['Pow=0.2', 'Pow=0.3','Pow=0.4', 'Pow=0.5', 'Pow=0.6', 'Pow=0.7'],
+    'color': False,
+    'marker': False,
+    'lineStyle': []
+    },'./Daily_cache/0126/0126_Tem_%s_Count_%d'% (fileIndex, pos_count), False, 1)

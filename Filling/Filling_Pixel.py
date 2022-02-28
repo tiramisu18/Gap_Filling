@@ -86,6 +86,7 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
                 tem_index += 1
     if valid_lc == 0 :
         tem_weight = 0 
+        print('eq zero', tem_winSize_unilateral, pos)
     else :
         tem_weight = (round(tem_wei_count/valid_lc, 2)) 
     # print('end_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
@@ -148,7 +149,7 @@ def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_w
         spa_weight = round((before_weight + after_weight) / 2, 2)
     else : 
         spa_filling_value = or_value
-        # print('eq zero', winsize, pos)
+        print('eq zero', spa_winSize_unilateral, pos)
 
 
     # print('end_spa', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
