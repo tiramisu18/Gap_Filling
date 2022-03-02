@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
 import matplotlib.patches as patches
 from matplotlib import animation 
-from scipy import stats
+from scipy import stats, signal
+from scipy.interpolate import interp1d
 import ReadDirFiles
 import math
 import h5py
@@ -146,6 +147,60 @@ def random_pos(QC, ran_len, length):
             fill_pos.append([rand_pos_1[ele], rand_pos_2[ele]])
             if len(fill_pos) == length: return fill_pos
 
+def get_mode_mean(dataList):
+    result_list = []
+    i_count = 0
+    while len(dataList) > 0:
+        i_count += 1
+        num = stats.mode(dataList)[0][0]
+        result_list.append(num)
+        num_count = str(dataList).count('%s' % num)
+        for i in range(0, int(num_count)):
+            dataList.remove(num)
+        if i_count == 3: dataList = []
+    # return {'result_list': result_list, 'ori': dataList }   
+    return round(np.mean(result_list), 2) 
+
+def get_vege_linedata(vege_type, fileDatas, LC_info, QC_All):
+    LC_part = []
+    index_arr_num = []
+    for i in range(500, 1000):
+        row = []
+        for j in range(1000, 1500):
+            oneof = LC_info[i][j]
+            if oneof == vege_type: index_arr_num.append([i,j])
+            row.append(oneof)
+        LC_part.append(row)
+
+    # print(str(LC_info).count('5'))
+    # print(index_arr_num, len(index_arr_num))
+    # render_Img(LC_part)
+
+    vegeType_LAI = []
+    for day_idx in range(0, 46):
+        tile_one = []
+        for ele in index_arr_num:
+            pos_one = fileDatas[day_idx][ele[0]][ele[1]]
+            if pos_one <= 70 and QC_All[day_idx][ele[0]][ele[1]] == 10: tile_one.append(pos_one/10)
+            # if pos_one <= 70: tile_one.append(pos_one/10)
+        vegeType_LAI.append(tile_one)  
+
+    # print(vegeType_LAI, len(vegeType_LAI[0]))  
+    # print(round(np.mean(vegeType_LAI[0]), 2))
+
+    vege_line = []
+    period_len = []
+    for period in range(0, 46):
+        # print(period)
+        if len(vegeType_LAI[period]) > 0:
+            vege_line.append(round(np.mean(vegeType_LAI[period]), 2))
+            # vege_line.append(stats.mode(vegeType_LAI[period])[0][0])
+            # vege_line.append(get_mode_mean(vegeType_LAI[period]))
+        else:
+            vege_line.append(0)
+        period_len.append(len(vegeType_LAI[period]))
+    return vege_line
+
 fileLists = ReadDirFiles.readDir('../HDF/h11v04')
 # print('lists', len(fileLists))
 
@@ -162,62 +217,46 @@ LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
 LC_info = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
 
 
-
-nums = [1,2,3,4,4,4,4,5,6]
-b = stats.mode(nums)[0][0]
-print(b)
-
 fileIndex = 7
 
 QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 
 
-# print(QCDatas[fileIndex])
-# for i in range(0, 46):
-#     render_QC(QC_All[i], '2018_%02d' %(i * 8 + 1), True, '../QC/Img/h11v04_2018/h11v04_2018_%d' %(i+1))
-#     render_Img(fileDatas[i], '2018_%02d' %(i * 8 + 1), True, '../Original_Data/PNG/h11v04_2018/h11v04_2018_%d' %(i+1))
-#     render_QC(QC_Cloud[i], '2018_%02d' %(i * 8 + 1), True, '../QC/Img/h11v04_2018_CloudState/h11v04_2018_%d' %(i+1))
+vege_type_list = [1,3,4,6,7,8]
+all_vege_data = []
+for i in vege_type_list:
+    line = get_vege_linedata(i, fileDatas, LC_info, QC_All)
+    vege_line = signal.savgol_filter(line, 10, 2) 
+    all_vege_data.append((vege_line))
 
-vege_type = 8
+Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
+    'title': 'Vege_Line',
+    'xlable': 'Day',
+    'ylable': 'LAI',
+    'line': all_vege_data,
+    'le_name': ['B1', 'B3', 'B4', 'B6', 'B7', 'B8'],
+    'color': False,
+    'marker': False,
+    'lineStyle': []
+    },'./Daily_cache/0229/vegeType_All', True, 2)
+# vege_type = 1
 
-LC_part = []
-index_arr_num = []
-for i in range(500, 1000):
-    row = []
-    for j in range(1000, 1500):
-        oneof = LC_info[i][j]
-        if oneof == vege_type: index_arr_num.append([i,j])
-        row.append(oneof)
-    LC_part.append(row)
+# vege_line = get_vege_linedata(vege_type, fileDatas, LC_info, QC_All)
+# vege_line = signal.savgol_filter(vege_line, 10, 2) 
+# 99是滤波器窗口的长度（即系数的数目）。窗口长度必须是正奇数整数。一般是修改这个系数，如果你想平滑程度高一点，就提高这个系数；平滑程度低一点就降低这个系数。但是数值一定只能是奇数。
+# # 1是拟合样本的多项式的阶数
 
-# print(str(LC_info).count('5'))
-# print(index_arr_num, len(index_arr_num))
-# render_Img(LC_part)
+# def smooth_curve(points, factor=0.5):
+#     smoothed_points = []
+#     for point in points:
+#         if smoothed_points:
+#             previous = smoothed_points[-1]
+#             smoothed_points.append(previous * factor + point * (1 - factor))
+#         else:
+#             smoothed_points.append(point)
+#     return  smoothed_points
 
-vegeType_LAI = []
-for day_idx in range(0, 46):
-    tile_one = []
-    for ele in index_arr_num:
-        pos_one = fileDatas[day_idx][ele[0]][ele[1]]
-        if pos_one <= 70 and QC_All[day_idx][ele[0]][ele[1]] == 10: tile_one.append(pos_one/10)
-    vegeType_LAI.append(tile_one)  
-
-# print(vegeType_LAI, len(vegeType_LAI[0]))  
-# print(round(np.mean(vegeType_LAI[0]), 2))
-
-vege_line = []
-period_len = []
-for period in range(0, 46):
-    # print(period)
-    if len(vegeType_LAI[period]) > 0:
-        # vege_line.append(round(np.mean(vegeType_LAI[period]), 2))
-        vege_line.append(stats.mode(vegeType_LAI[period])[0][0])
-    else:
-        vege_line.append(0)
-    period_len.append(len(vegeType_LAI[period]))
-
-# print(period_len)
-# print(vege_line)
+# vege_line = smooth_curve(vege_line)
 
 
 # 统计各植被类型像元个数
@@ -233,14 +272,14 @@ for period in range(0, 46):
 
 
 
-Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
-    'title': 'B%s'% vege_type,
-    'xlable': 'Day',
-    'ylable': 'LAI',
-    'line': [vege_line],
-    'le_name': ['Original', 'Tem', 'Spa', 'Fil'],
-    'color': ['gray', '#bfdb39', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
-    'marker': False,
-    'lineStyle': ['dashed']
-    },'./Daily_cache/0228/vegeType_B%s_mode' % vege_type, True, 2)
+# Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
+#     'title': 'B%s'% vege_type,
+#     'xlable': 'Day',
+#     'ylable': 'LAI',
+#     'line': [vege_line],
+#     'le_name': ['Original', 'Tem', 'Spa', 'Fil'],
+#     'color': ['gray', '#bfdb39', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
+#     'marker': False,
+#     'lineStyle': ['dashed']
+#     },'./Daily_cache/0229/vegeType_B%s_mean_filter' % vege_type, True, 2)
 
