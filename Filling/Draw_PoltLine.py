@@ -12,7 +12,7 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
     plt.ylabel(obj['ylable'], fontsize=15, family='Times New Roman')
     obe_len = len(obj['line'])
     if obe_len == 1:
-        plt.plot(x, obj['line'][0], '#548bb7')
+        plt.plot(x, obj['line'][0], '#fd7400')
         if issave :plt.savefig(savePath, dpi=300)
         plt.show() 
     else:

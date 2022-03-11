@@ -1,18 +1,12 @@
 import os
-from tokenize import String
-from typing import MappingView
 import numpy as np
-from numpy.core.fromnumeric import mean
-from numpy.ma.core import array
-from numpy.random.mtrand import sample
 from osgeo import gdal
 import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
 import matplotlib.patches as patches
 from matplotlib import animation 
-from scipy import stats, signal
-from scipy.interpolate import interp1d
-import ReadDirFiles
+from scipy import stats, signal, interpolate
+import ReadDirFiles 
 import math
 import h5py
 import time
@@ -51,6 +45,19 @@ def render_Img (QC_data, title='', issave=False, savepath=''):
 def render_LAI (data, title='Image', issave=False, savepath=''):
     colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
     bounds = [0,10,20,30,40,50,60,70,250]
+    cmap = pltcolor.ListedColormap(colors)
+    norm = pltcolor.BoundaryNorm(bounds, cmap.N)
+    plt.title(title, family='Times New Roman', fontsize=18)
+    plt.imshow(data, cmap=cmap, norm=norm)
+    plt.axis('off')
+    cbar = plt.colorbar()
+    cbar.set_ticklabels(['0','1','2','3','4','5','6','7','250'])
+    if issave :plt.savefig(savepath, dpi=300)
+    plt.show()
+
+def render_LAI_Simu (data, title='Image', issave=False, savepath=''):
+    colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
+    bounds = [0,1,2,3,4,5,6,7,250]
     cmap = pltcolor.ListedColormap(colors)
     norm = pltcolor.BoundaryNorm(bounds, cmap.N)
     plt.title(title, family='Times New Roman', fontsize=18)
@@ -172,9 +179,16 @@ def get_vege_linedata(vege_type, fileDatas, LC_info, QC_All):
             row.append(oneof)
         LC_part.append(row)
 
-    # print(str(LC_info).count('5'))
-    # print(index_arr_num, len(index_arr_num))
     # render_Img(LC_part)
+    # 统计各植被类型像元个数
+    # print(str(LC_part).count("1"))
+    # print(str(LC_part).count("2"))
+    # print(str(LC_part).count("3"))
+    # print(str(LC_part).count("4"))
+    # print(str(LC_part).count("5"))
+    # print(str(LC_part).count("6"))
+    # print(str(LC_part).count("7"))
+    # print(str(LC_part).count("8"))
 
     vegeType_LAI = []
     for day_idx in range(0, 46):
@@ -201,76 +215,135 @@ def get_vege_linedata(vege_type, fileDatas, LC_info, QC_All):
         period_len.append(len(vegeType_LAI[period]))
     return vege_line
 
-fileLists = ReadDirFiles.readDir('../HDF/h11v04')
-# print('lists', len(fileLists))
+# 简单平滑
+def smooth_curve(points, factor=0.8):
+    smoothed_points = []
+    for point in points:
+        if smoothed_points:
+            previous = smoothed_points[-1]
+            smoothed_points.append(previous * factor + point * (1 - factor))
+        else:
+            smoothed_points.append(point)
+    return  smoothed_points
 
-fileDatas = []
-QCDatas = []
-for file in fileLists:
-    result = ReadFile(file)
-    fileDatas.append(result['LAI'])
-    QCDatas.append(result['QC'])
+# fileLists = ReadDirFiles.readDir('../HDF/h11v04')
+# # print('lists', len(fileLists))
+
+# fileDatas = []
+# QCDatas = []
+# for file in fileLists:
+#     result = ReadFile(file)
+#     fileDatas.append(result['LAI'])
+#     QCDatas.append(result['QC'])
 
 
-LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h11v04.006.2019199203448.hdf')
-LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
-LC_info = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
+# LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h11v04.006.2019199203448.hdf')
+# LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
+# LC_info = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
 
 
-fileIndex = 7
+# QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 
-QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
+# Vage_All = np.load('../Validation/Simulation_Dataset/Vege_data.npz', allow_pickle=True)
+# # print(Vage_All)
+# print(Vage_All['B8'])
+
+# LAI_data = []
+# for  day in range(0, 46):
+#     day_arr = []
+#     for i in range(500, 1000):
+#         row = []
+#         for j in range(1000, 1500):
+#             oneof = fileDatas[day][i][j]
+#             row.append(oneof)
+#         day_arr.append(row)
+#     LAI_data.append(day_arr)
+
+# np.save('../Validation/Simulation_Dataset/LAI_Ori', LAI_data)
+
+Vage_All = np.load('../Validation/Simulation_Dataset/Vege_data.npz', allow_pickle=True)
+LC_part = np.load('../Validation/Simulation_Dataset/LandCover.npy')
+LAI_Ori = np.load('../Validation/Simulation_Dataset/LAI_Ori.npy')
 
 
-vege_type_list = [1,3,4,6,7,8]
-all_vege_data = []
-for i in vege_type_list:
-    line = get_vege_linedata(i, fileDatas, LC_info, QC_All)
-    vege_line = signal.savgol_filter(line, 10, 2) 
-    all_vege_data.append((vege_line))
+# 生成模拟数据
+# LAI_data = []
+# for  day in range(0, 46):
+#     print('time', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+#     print(day)
+#     day_arr = []
+#     for i in range(0, 500):
+#         row = []
+#         for j in range(0, 500):
+#             LC_v = LC_part[i][j]
+#             lai_one = LAI_Ori[day][i][j]/10
+#             if LC_v == 1 : lai_one = round(Vage_All['B1'][day],1)
+#             elif LC_v == 3 : lai_one = round(Vage_All['B3'][day],1)
+#             elif LC_v == 4 : lai_one = round(Vage_All['B4'][day],1)
+#             elif LC_v == 6 : lai_one = round(Vage_All['B6'][day],1)
+#             elif LC_v == 7 : lai_one = round(Vage_All['B7'][day],1)
+#             elif LC_v == 8 : lai_one = round(Vage_All['B8'][day],1)
+#             # if LC_v == 1 or LC_v == 3 or LC_v == 4 or LC_v == 6 or LC_v == 7 or LC_v == 8: lai_one = round(Vage_All['B%s'%LC_v][day],1)
+#             row.append(lai_one)
+#         day_arr.append(row)
+#     LAI_data.append(day_arr)
 
-Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
-    'title': 'Vege_Line',
-    'xlable': 'Day',
-    'ylable': 'LAI',
-    'line': all_vege_data,
-    'le_name': ['B1', 'B3', 'B4', 'B6', 'B7', 'B8'],
-    'color': False,
-    'marker': False,
-    'lineStyle': []
-    },'./Daily_cache/0229/vegeType_All', True, 2)
-# vege_type = 1
+# np.save('../Validation/Simulation_Dataset/LAI_Simu', LAI_data)
+
+LAI_Simu = np.load('../Validation/Simulation_Dataset/LAI_Simu.npy')
+# render_LAI(LAI_Simu[25])
+
+# aa = []
+for i in range(0,46):
+    render_LAI(LAI_Ori[i], 'ori_%s'%i)
+    render_LAI_Simu(LAI_Simu[i], 'Simu_%s'%i)
+    # aa.append(LAI_Simu[i][300][300])
+
+# Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
+#     'title': 'BX',
+#     'xlable': 'Day',
+#     'ylable': 'LAI',
+#     'line': [aa],
+#     'le_name': ['Original', 'Tem', 'Spa', 'Fil'],
+#     'color': ['gray', '#bfdb39', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
+#     'marker': False,
+#     'lineStyle': ['dashed']
+#     },'./Daily_cache/0309/vegeType_mirror',False, 2)
+
+# Vege_data = {'B1': [], 'B3':[], 'B4':[], 'B6':[], 'B7':[], 'B8':[]}
+# # 绘制所有植被类型
+# vege_type_list = [1,3,4,6,7,8]
+# all_vege_data = []
+# for i in vege_type_list:
+#     line = get_vege_linedata(i, fileDatas, LC_info, QC_All)
+#     vege_line = signal.savgol_filter(line, 25, 6, mode='mirror') 
+#     # vege_line = signal.savgol_filter(line, 11, 2, mode='nearest') 
+#     # Vege_data['B%s'%i] = vege_line
+#     all_vege_data.append((vege_line))
+
+# print(Vege_data)
+# np.savez('../Validation/Simulation_Dataset/Vege_data', 
+#     B1=all_vege_data[0], B3=all_vege_data[1], B4=all_vege_data[2], B6=all_vege_data[3], B7=all_vege_data[4], B8=all_vege_data[5])
+
+
+# Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
+#     'title': 'Vege_Line',
+#     'xlable': 'Day',
+#     'ylable': 'LAI',
+#     'line': all_vege_data,
+#     'le_name': ['B1', 'B3', 'B4', 'B6', 'B7', 'B8'],
+#     'color': False,
+#     'marker': False,
+#     'lineStyle': []
+#     },'./Daily_cache/0309/vegeType_All_26_6_mirror', True, 2)
+
+# vege_type = 8
 
 # vege_line = get_vege_linedata(vege_type, fileDatas, LC_info, QC_All)
-# vege_line = signal.savgol_filter(vege_line, 10, 2) 
-# 99是滤波器窗口的长度（即系数的数目）。窗口长度必须是正奇数整数。一般是修改这个系数，如果你想平滑程度高一点，就提高这个系数；平滑程度低一点就降低这个系数。但是数值一定只能是奇数。
-# # 1是拟合样本的多项式的阶数
-
-# def smooth_curve(points, factor=0.5):
-#     smoothed_points = []
-#     for point in points:
-#         if smoothed_points:
-#             previous = smoothed_points[-1]
-#             smoothed_points.append(previous * factor + point * (1 - factor))
-#         else:
-#             smoothed_points.append(point)
-#     return  smoothed_points
-
-# vege_line = smooth_curve(vege_line)
-
-
-# 统计各植被类型像元个数
-# print(str(LC_part).count("1"))
-# print(str(LC_part).count("2"))
-# print(str(LC_part).count("3"))
-# print(str(LC_part).count("4"))
-# print(str(LC_part).count("5"))
-# print(str(LC_part).count("6"))
-# print(str(LC_part).count("7"))
-# print(str(LC_part).count("8"))
-
-
-
+# # print(vege_line)
+# vege_line = signal.savgol_filter(vege_line, 25, 6, mode='mirror') # 25是滤波器窗口的长度（即系数的数目）# 6是拟合样本的多项式的阶数
+# # vege_line = signal.savgol_filter(vege_line, 11, 2) 
+# print(vege_line)
 
 # Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
 #     'title': 'B%s'% vege_type,
@@ -281,5 +354,17 @@ Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
 #     'color': ['gray', '#bfdb39', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
 #     'marker': False,
 #     'lineStyle': ['dashed']
-#     },'./Daily_cache/0229/vegeType_B%s_mean_filter' % vege_type, True, 2)
+#     },'./Daily_cache/0309/vegeType_B%s_mirror' % vege_type,True, 2)
 
+# 插值方法
+# line = get_vege_linedata(vege_type, fileDatas, LC_info, QC_All)
+# x = np.arange(46)
+# y = line
+# cs = interpolate.CubicSpline(x, y)
+# xs = np.arange(1,46, 1)
+# fig, ax = plt.subplots()
+# ax.plot(x, y, 'o', label='data')
+# # ax.plot(xs, np.sin(xs), label='true')
+# ax.plot(xs, cs(xs), label="S")
+# ax.legend(loc='lower left', ncol=2)
+# plt.show()
