@@ -27,7 +27,7 @@ def ReadFile(path):
     QC = gdal.Open(subdatasets[2][0]).ReadAsArray()
     return {'LAI': LAI, 'QC': QC}
 
-# 生成一个包含n个介于a和b之间随机整数的数组
+# 生成一个包含n个介于a和b之间随机整数的数组（不重复）
 def int_random(a, b, n) :
     a_list = []
     while len(a_list) < n :

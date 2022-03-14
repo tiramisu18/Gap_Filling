@@ -54,21 +54,7 @@ def render_LAI (data, title='Image', issave=False, savepath=''):
     cbar.set_ticklabels(['0','1','2','3','4','5','6','7','250'])
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
-
-def render_LAI_Simu (data, title='Image', issave=False, savepath=''):
-    colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
-    bounds = [0,1,2,3,4,5,6,7,250]
-    cmap = pltcolor.ListedColormap(colors)
-    norm = pltcolor.BoundaryNorm(bounds, cmap.N)
-    plt.title(title, family='Times New Roman', fontsize=18)
-    plt.imshow(data, cmap=cmap, norm=norm)
-    plt.axis('off')
-    cbar = plt.colorbar()
-    cbar.set_ticklabels(['0','1','2','3','4','5','6','7','250'])
-    if issave :plt.savefig(savepath, dpi=300)
-    plt.show()
   
-
 def read_MQC (path, savepath):
     MQC_File=h5py.File(path) 
     # print(MQC_File.keys())
@@ -244,10 +230,8 @@ def smooth_curve(points, factor=0.8):
 
 # QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 
-# Vage_All = np.load('../Validation/Simulation_Dataset/Vege_data.npz', allow_pickle=True)
-# # print(Vage_All)
-# print(Vage_All['B8'])
 
+# 独立原始LAI数据
 # LAI_data = []
 # for  day in range(0, 46):
 #     day_arr = []
@@ -276,7 +260,8 @@ LAI_Ori = np.load('../Validation/Simulation_Dataset/LAI_Ori.npy')
 #         row = []
 #         for j in range(0, 500):
 #             LC_v = LC_part[i][j]
-#             lai_one = LAI_Ori[day][i][j]/10
+#             lai_one = LAI_Ori[day][i][j]
+#             if lai_one < 70 : lai_one = lai_one/10
 #             if LC_v == 1 : lai_one = round(Vage_All['B1'][day],1)
 #             elif LC_v == 3 : lai_one = round(Vage_All['B3'][day],1)
 #             elif LC_v == 4 : lai_one = round(Vage_All['B4'][day],1)
@@ -290,35 +275,14 @@ LAI_Ori = np.load('../Validation/Simulation_Dataset/LAI_Ori.npy')
 
 # np.save('../Validation/Simulation_Dataset/LAI_Simu', LAI_data)
 
-LAI_Simu = np.load('../Validation/Simulation_Dataset/LAI_Simu.npy')
-# render_LAI(LAI_Simu[25])
 
-# aa = []
-for i in range(0,46):
-    render_LAI(LAI_Ori[i], 'ori_%s'%i)
-    render_LAI_Simu(LAI_Simu[i], 'Simu_%s'%i)
-    # aa.append(LAI_Simu[i][300][300])
-
-# Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
-#     'title': 'BX',
-#     'xlable': 'Day',
-#     'ylable': 'LAI',
-#     'line': [aa],
-#     'le_name': ['Original', 'Tem', 'Spa', 'Fil'],
-#     'color': ['gray', '#bfdb39', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
-#     'marker': False,
-#     'lineStyle': ['dashed']
-#     },'./Daily_cache/0309/vegeType_mirror',False, 2)
-
-# Vege_data = {'B1': [], 'B3':[], 'B4':[], 'B6':[], 'B7':[], 'B8':[]}
-# # 绘制所有植被类型
+# # 得到多个植被年际变化 绘制所有植被类型 滤波平滑处理
 # vege_type_list = [1,3,4,6,7,8]
 # all_vege_data = []
 # for i in vege_type_list:
 #     line = get_vege_linedata(i, fileDatas, LC_info, QC_All)
 #     vege_line = signal.savgol_filter(line, 25, 6, mode='mirror') 
 #     # vege_line = signal.savgol_filter(line, 11, 2, mode='nearest') 
-#     # Vege_data['B%s'%i] = vege_line
 #     all_vege_data.append((vege_line))
 
 # print(Vege_data)
@@ -337,8 +301,8 @@ for i in range(0,46):
 #     'lineStyle': []
 #     },'./Daily_cache/0309/vegeType_All_26_6_mirror', True, 2)
 
+# 得到单个植被年际变化、滤波平滑处理、绘制单个植被曲线
 # vege_type = 8
-
 # vege_line = get_vege_linedata(vege_type, fileDatas, LC_info, QC_All)
 # # print(vege_line)
 # vege_line = signal.savgol_filter(vege_line, 25, 6, mode='mirror') # 25是滤波器窗口的长度（即系数的数目）# 6是拟合样本的多项式的阶数
