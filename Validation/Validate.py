@@ -6,32 +6,7 @@ import scipy.io as scio
 
 # 随机增加误差后生成的误差数据集以及误差百分比数据集
 def get_ErrDataSet():
-    # # LAI_Err_Peren = [[[0] * 500] * 500] * 46
-    # # np.save('./Simulation_Dataset/Err_zero', LAI_Err_Peren)
-    LAI_Simu = np.load('./Simulation_Dataset/LAI_Simu.npy')
-    LAI_Err_Peren = np.load('./Simulation_Dataset/Err_zero.npy')
-    for day in range(0,46):
-        print(day)
-        x = int_random(0, 499, 50000)
-        y = int_random(0, 499, 50000)    
-        for i in range(0, 50000):
-            err = round(random.uniform(0.1, 1.5),1)
-            # print(day, x[i], y[i])
-            L_ori = LAI_Simu[day][x[i]][y[i]]
-            if LAI_Err_Peren[day][x[i]][y[i]] == 0 and L_ori <= 7 and L_ori > 0:            
-                LAI_addErr = LAI_Simu[day][x[i]][y[i]] + err
-                if LAI_addErr > 7:
-                    LAI_Simu[day][x[i]][y[i]] = 7
-                    err = 7 - L_ori
-                else:
-                    LAI_Simu[day][x[i]][y[i]] = round(LAI_addErr,2)
-                try :
-                    LAI_Err_Peren[day][x[i]][y[i]] = int(round(err / L_ori, 2) * 100)
-                except:
-                    print(err, L_ori)
-    np.save('./Simulation_Dataset/LAI_addErr', LAI_Simu)
-    np.save('./Simulation_Dataset/Err_peren', LAI_Err_Peren)   
-    # 测试上面程序是否正确运行的测试数据
+    # 测试下面程序是否正确运行的测试数据
     # LAI_Simu = [[[2.1,4],[4,8]], [[6.2,4],[4,12]]]
     # LAI_Err_Peren = [[[0,0], [0,0]],[[0,0], [0,0]]]
     # for day in range(0,2):
@@ -51,6 +26,62 @@ def get_ErrDataSet():
     #             LAI_Err_Peren[day][x[i]][y[i]] = int(round(err / L_ori, 2) * 100)
     # print(LAI_Simu)
     # print(LAI_Err_Peren)
+
+    # LAI_Err_Peren = [[[0] * 500] * 500] * 46
+    # np.save('./Simulation_Dataset/Err_zero', LAI_Err_Peren)
+    LAI_Simu = np.load('./Simulation_Dataset/LAI_Simu_noErr.npy')
+    Err_Peren = np.load('./Simulation_Dataset/Err_zero.npy')
+    Err_value = np.load('./Simulation_Dataset/Err_zero.npy')
+    for day in range(0,46):
+        print(day)
+        x = int_random(0, 499, 50000)
+        y = int_random(0, 499, 50000)    
+        for i in range(0, 50000): # 选取20%的像元            
+            # print(day, x[i], y[i])
+            L_ori = LAI_Simu[day][x[i]][y[i]]
+            if Err_Peren[day][x[i]][y[i]] == 0 and L_ori <= 7 and L_ori > 0:  
+                err = round(random.uniform(0.1, 1.5),1)          
+                LAI_addErr = LAI_Simu[day][x[i]][y[i]] + err
+                if LAI_addErr > 7:
+                    LAI_Simu[day][x[i]][y[i]] = 7
+                    err = 7 - L_ori
+                else:
+                    LAI_Simu[day][x[i]][y[i]] = round(LAI_addErr,2)
+                try :
+                    Err_Peren[day][x[i]][y[i]] = int(round(err / L_ori, 2) * 100)
+                    Err_value[day][x[i]][y[i]] = err
+                except:
+                    print(err, L_ori)
+    
+    np.save('./Simulation_Dataset/Err_peren', Err_Peren)       
+    np.save('./Simulation_Dataset/Err_value', Err_value) 
+
+    for idx in range(0, 46):
+        print(idx)
+        for i in range(0, 500):
+            for j in range(0,500):
+                if LAI_Simu[idx][i][j] <= 7 : 
+                    LAI_Simu[idx][i][j] = LAI_Simu[idx][i][j] * 10
+    np.save('./Simulation_Dataset/LAI_Simu_addErr', LAI_Simu)
+
+# 将误差百分比转换为对应的权重
+def set_err_weight():
+    LAI_Simu = np.load('./Simulation_Dataset/LAI_Simu_noErr.npy')     
+    Err = np.load('./Simulation_Dataset/Err_peren.npy')
+    for day in range(0,46):
+        print(day)
+        for i in range(0, 500):
+            for j in range(0,500):
+                if LAI_Simu[day][i][j] <= 7:
+                    val = Err[day][i][j]
+                    if val == 0 : Err[day][i][j] = 10
+                    elif val > 0 and val <= 100 : Err[day][i][j] = 8
+                    elif val > 100 and val <= 300 : Err[day][i][j] = 6
+                    elif val > 300 and val <= 500 : Err[day][i][j] = 4
+                    elif val > 500 and val <= 700 : Err[day][i][j] = 2
+                    else: Err[day][i][j] = 0
+                else: Err[day][i][j] = 0
+    np.save('./Simulation_Dataset/Err_weight', Err)
 
 def render_LAI (data, title='Image', issave=False, savepath=''):
     colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
@@ -130,29 +161,37 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
 # Vage_All = np.load('./Simulation_Dataset/Vege_data.npz', allow_pickle=True)
 # LandCover = np.load('./Simulation_Dataset/LandCover.npy')
 # LAI_Ori = np.load('./Simulation_Dataset/LAI_Ori.npy')
-LAI_Simu = np.load('./Simulation_Dataset/LAI_Simu.npy')
-LAI_addErr = np.load('./Simulation_Dataset/LAI_addErr.npy')
 Err = np.load('./Simulation_Dataset/Err_peren.npy')
 
-# dataNew = 'LAI_Err.mat'
-# scio.savemat(dataNew, {'Err':Err})
+
+LAI_Simu = np.load('./Simulation_Dataset/LAI_Simu_noErr.npy')
+LAI_addErr = np.load('./Simulation_Dataset/LAI_Simu_addErr.npy')
+
+# Err_weight= np.load('./Simulation_Dataset/Err_weight.npy')
+
+# dataNew = 'LAI_Simulation.mat'
+# scio.savemat(dataNew, {'LAI_noErr': LAI_Simu, 'LAI_addErr': LAI_addErr, 'Err_percentage':Err})
+# dataNew = 'LandCover.mat'
+# scio.savemat(dataNew, {'LandCover': LandCover})
 
 # render_Img(Err[5])
-print(LAI_Simu[4][2][1])
+print(LAI_Simu[4])
 print('----')
 print(LAI_addErr[4][2][1])
 print('----')
-print(Err[0])
+# print(Err[4])
 
 aa = []
 bb = []
+x_v = 100
+y_v = 100
 # (0,3) (2,1) （2，2） (499, 499)
 for i in range(0, 46):
-    # render_Img(Err[i])
-#     render_LAI_Simu(LAI_Simu[i], 'Simu_%s'%i)
-#     render_LAI_Simu(LAI_addErr[i], 'AddErr_%s'%i)   
-    aa.append(LAI_Simu[i][2][1])
-    bb.append(LAI_addErr[i][2][1])
+    # render_Img(Err_weight[i])
+    # render_LAI_Simu(LAI_Simu[i], 'Simu_%s'%i)
+    # render_LAI_Simu(LAI_addErr[i], 'AddErr_%s'%i)   
+    aa.append(LAI_Simu[i][x_v][y_v])
+    bb.append(LAI_addErr[i][x_v][y_v])
 
 draw_polt_Line(np.arange(1, 47, 1),{
     'title': 'BX',

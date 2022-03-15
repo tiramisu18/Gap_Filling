@@ -212,15 +212,15 @@ def smooth_curve(points, factor=0.8):
             smoothed_points.append(point)
     return  smoothed_points
 
-# fileLists = ReadDirFiles.readDir('../HDF/h11v04')
-# # print('lists', len(fileLists))
+fileLists = ReadDirFiles.readDir('../HDF/h11v04')
+# print('lists', len(fileLists))
 
-# fileDatas = []
-# QCDatas = []
-# for file in fileLists:
-#     result = ReadFile(file)
-#     fileDatas.append(result['LAI'])
-#     QCDatas.append(result['QC'])
+fileDatas = []
+QCDatas = []
+for file in fileLists:
+    result = ReadFile(file)
+    fileDatas.append(result['LAI'])
+    QCDatas.append(result['QC'])
 
 
 # LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h11v04.006.2019199203448.hdf')
@@ -234,6 +234,7 @@ def smooth_curve(points, factor=0.8):
 # 独立原始LAI数据
 # LAI_data = []
 # for  day in range(0, 46):
+#     print(day)
 #     day_arr = []
 #     for i in range(500, 1000):
 #         row = []
@@ -268,12 +269,13 @@ LAI_Ori = np.load('../Validation/Simulation_Dataset/LAI_Ori.npy')
 #             elif LC_v == 6 : lai_one = round(Vage_All['B6'][day],1)
 #             elif LC_v == 7 : lai_one = round(Vage_All['B7'][day],1)
 #             elif LC_v == 8 : lai_one = round(Vage_All['B8'][day],1)
+#             print(lai_one)
 #             # if LC_v == 1 or LC_v == 3 or LC_v == 4 or LC_v == 6 or LC_v == 7 or LC_v == 8: lai_one = round(Vage_All['B%s'%LC_v][day],1)
 #             row.append(lai_one)
 #         day_arr.append(row)
 #     LAI_data.append(day_arr)
 
-# np.save('../Validation/Simulation_Dataset/LAI_Simu', LAI_data)
+# np.save('../Validation/Simulation_Dataset/LAI_Simu_noErr', LAI_data)
 
 
 # # 得到多个植被年际变化 绘制所有植被类型 滤波平滑处理
