@@ -185,17 +185,17 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
         Spa_W.append(spa_weight)
         Qc_W.append(QC_value)
         # total Calculation
-        # final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight + or_value * QC_value) / (spa_weight + tem_weight + QC_value)) 
-        try: 
-            if spa_weight != 0 and tem_weight != 0:
-                final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight)) 
-        except:
-            print(spa_filling_value, spa_weight, tem_filling_value, tem_weight)
-        # if (QC_value >= 6):        
-        #     final = round((or_value * QC_value + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (QC_value + spa_weight + tem_weight))  
-        # else :
-        #     if spa_weight != 0 and tem_weight != 0 : 
-        #         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
+        final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight + or_value * QC_value) / (spa_weight + tem_weight + QC_value)) 
+        # try: 
+        #     if spa_weight != 0 and tem_weight != 0:
+        #         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight)) 
+        # except:
+        #     print(spa_filling_value, spa_weight, tem_filling_value, tem_weight)
+        if (QC_value >= 8):        
+            final = round((or_value * QC_value + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (QC_value + spa_weight + tem_weight))  
+        else :
+            if spa_weight != 0 and tem_weight != 0 : 
+                final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
         
         Fil_value.append(final)
 

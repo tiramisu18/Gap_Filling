@@ -38,11 +38,11 @@ def int_random(a, b, n) :
     return a_list
 
 
-def render_QC (QC_data, title='Algo Path', issave=False, savepath=''):
-    plt.imshow(QC_data, cmap = plt.cm.jet)  # cmap= plt.cm.jet
+def render_Img (data, title='Algo Path', issave=False, savepath=''):
+    plt.imshow(data, cmap = plt.cm.jet)  # cmap= plt.cm.jet
     plt.title(title, family='Times New Roman', fontsize=18)
     colbar = plt.colorbar()
-    plt.axis('off')
+    # plt.axis('off')
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
     # colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
@@ -55,7 +55,7 @@ def render_QC (QC_data, title='Algo Path', issave=False, savepath=''):
     # cbar.set_ticklabels(['-1','0','5','10'])
     # plt.show()
 
-def render_Img (data, title='Image', issave=False, savepath=''):
+def render_LAI (data, title='Image', issave=False, savepath=''):
     colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
     bounds = [0,10,20,30,40,50,60,70,250]
     cmap = pltcolor.ListedColormap(colors)
@@ -262,12 +262,13 @@ def get_wight_better_para(QC_All, fileIndex, fileDatas, LC_info, type):
             },'./Daily_cache/0126/0126_Tem_%s_Count_%d'% (fileIndex, pos_count), False, 1)
 
 # 模拟数据的时空填补
-def Simu_filling(x_v, y_v):
+def Simu_filling(x_v, y_v, idx):
     LAI_Simu_noErr = np.load('../Validation/Simulation_Dataset/LAI_Simu_noErr.npy')
     # LAI_Simu_addErr = np.load('../Validation/Simulation_Dataset/LAI_Ori.npy')
     LAI_Simu_addErr = np.load('../Validation/Simulation_Dataset/LAI_Simu_addErr.npy')
     LandCover = np.load('../Validation/Simulation_Dataset/LandCover.npy')
-    Err_weight= np.load('../Validation/Simulation_Dataset/Err_weight.npy')
+    # Err_weight= np.load('../Validation/Simulation_Dataset/Err_weight.npy')
+    Err_weight= np.load('../Validation/Simulation_Dataset/Test/Err_new_weight.npy')
     
     Filling_Pos = [[x_v, y_v]]
     Fil_val_1 = []
@@ -301,9 +302,19 @@ def Simu_filling(x_v, y_v):
         'color': ['gray', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
         'marker': False,
         'lineStyle': ['dashed'],
-        },'./Daily_cache/0315/Filling', True, 2)
+        },'./Daily_cache/0315/Filling_%s' % idx, False, 2)
 
-Simu_filling(55, 55)
+# Simu_filling(200, 200, 1)
+# Simu_filling(55, 55, 2)
+
+# LandCover = np.load('../Validation/Simulation_Dataset/LandCover.npy')
+
+# render_Img(LandCover, '', True, './Daily_cache/0316/LC_Part')
+
+LAI_Simu_noErr = np.load('../Validation/Simulation_Dataset/Test/LAI_Simu_Step2.npy')
+for i in range(0,46):
+    render_LAI(LAI_Simu_noErr[i], '2018_%d'% (1 + i*8),True, './Daily_cache/0316/Simu_Stpe2_LAI/2018_%s' % (i+1))
+
 
 fileLists = ReadDirFiles.readDir('../HDF/h11v04')
 # print('lists', len(fileLists))
@@ -319,6 +330,8 @@ for file in fileLists:
 LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h11v04.006.2019199203448.hdf')
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
 LC_info = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
+
+
 
 fileIndex = 7
 

@@ -4,7 +4,7 @@ import matplotlib.colors as pltcolor
 # color and marker  = False or ['xxx']; lineStyle = [] or ['xxx]
 def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
     color_arr = ['#548bb7', '#958b8c', '#bfdb39', '#ffe117', '#fd7400', '#7ba79c', '#016382', '#dd8146', '#a4ac80', '#d9b15c', '#1f8a6f', '#987b2d']
-    marker_arr = ['o', '.', '^', 's', ',', 'v', '8', '*', 'H', '+', 'x', '_']
+    marker_arr = ['s', 'o', '.', '^', ',', 'v', '8', '*', 'H', '+', 'x', '_']
     if obj['color'] : color_arr = obj['color']
     if obj['marker'] : marker_arr = obj['marker']
     plt.title(obj['title'], family='Times New Roman', fontsize=18)   

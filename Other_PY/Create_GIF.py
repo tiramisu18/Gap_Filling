@@ -8,8 +8,8 @@ def create_gif(image_list, gif_name):
 
 def main():
     print(('begin'))
-    image_list = ["/Users/wangjingr/Documents/01-MODIS_Reanalysis/002_Python/QC/Img/h11v04_2018_CloudState/h11v04_2018_"+str(x)+".png" for x in range(1,47) ]#图片名称列表
-    gif_name = 'h11v04_2018_CloudState.gif' #输出
+    image_list = ["/Users/wangjingr/Documents/01-MODIS_Reanalysis/002_Python/Filling/Daily_cache/0316/Simu_Stpe2_LAI/2018_"+str(x)+".png" for x in range(1,47) ]#图片名称列表
+    gif_name = '2018_Ori.gif' #输出
     create_gif(image_list, gif_name)
 
 
