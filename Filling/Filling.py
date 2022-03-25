@@ -255,11 +255,11 @@ def get_wight_better_para(QC_All, fileIndex, fileDatas, LC_info, type):
 
 # 模拟数据的时空填补(单像元)
 def Simu_filling(x_v, y_v, idx):
-    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
+    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     # LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70).npy')
+    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
     LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
-    Err_weight= np.load('../Simulation/Simulation_Dataset/Method_2/Err_weight.npy')
+    Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_weight.npy')
     
     Filling_Pos = [[x_v, y_v]]
     Fil_val_1 = []
@@ -298,13 +298,13 @@ def Simu_filling(x_v, y_v, idx):
 
 # 模拟数据的时空填补(所有像元)
 def Simu_filling_All():
-    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
+    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     # LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70).npy')
+    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
     LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
-    Err_weight= np.load('../Simulation/Simulation_Dataset/Method_2/Err_weight.npy')
+    Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_weight.npy')
     
-    pos_arr= np.load('../Simulation/Simulation_Dataset/Method_2/Filling_Pos.npy', allow_pickle=True)
+    pos_arr= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos.npy', allow_pickle=True)
     ses_pow = 0.8
     for index in range(6, 45):
         print(index)
@@ -325,9 +325,9 @@ def Simu_filling_All():
 # Simu_filling(362, 24, 2)
 
 def cal_RMSE():
-    pos_arr= np.load('../Simulation/Simulation_Dataset/Method_2/Filling_Pos.npy', allow_pickle=True)
-    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70).npy')   
+    pos_arr= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos.npy', allow_pickle=True)
+    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')   
     index = 1
     data_array = np.loadtxt('../Simulation/Filling/2018_%s' % (index+1))
     numera_rmse = 0
@@ -341,9 +341,9 @@ def cal_RMSE():
 cal_RMSE()
 
 def cal_R_R():
-    pos_arr= np.load('../Simulation/Simulation_Dataset/Method_2/Filling_Pos.npy', allow_pickle=True)
-    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70).npy')   
+    pos_arr= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos.npy', allow_pickle=True)
+    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')   
     index = 5
     data_array = np.loadtxt('../Simulation/Filling/2018_%s' % (index+1))
     val_t = 0
@@ -365,9 +365,9 @@ def cal_R_R():
 # Draw_PoltLine.density_scatter_plot()
 
 def density_scatter():
-    pos_arr= np.load('../Simulation/Simulation_Dataset/Method_2/Filling_Pos.npy', allow_pickle=True)
-    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70).npy')      
+    pos_arr= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos.npy', allow_pickle=True)
+    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')      
     index = 5
     data_array = np.loadtxt('../Simulation/Filling/2018_%s' % (index+1))
     x = []
@@ -381,7 +381,7 @@ def density_scatter():
 density_scatter()
 
 # 找出所有需填补的像元位置
-# Err= np.load('../Simulation/Simulation_Dataset/Method_2/Err_peren.npy')
+# Err= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_peren.npy')
 # pos_arr = []
 # for day in range(0, 46):
 #     print(day)
@@ -391,9 +391,9 @@ density_scatter()
 #             val = Err[day][i][j]
 #             if val > 0 : one.append([i,j])
 #     pos_arr.append(one)
-# np.save('../Simulation/Simulation_Dataset/Method_2/Filling_Pos', pos_arr)
+# np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos', pos_arr)
 
-pos_arr= np.load('../Simulation/Simulation_Dataset/Method_2/Filling_Pos.npy', allow_pickle=True)
+pos_arr= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos.npy', allow_pickle=True)
 print(len(pos_arr[0]))
 print(pos_arr[0][0])
 

@@ -6,19 +6,19 @@ import random
 
 # LAI数值转为0-7
 def LAI_multiples():
-    LAI_Simu = np.load('./Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
+    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     for idx in range(0, 46):
         print(idx)
         for i in range(0, 500):
             for j in range(0,500):
                 if LAI_Simu[idx][i][j] <= 70 : 
                     LAI_Simu[idx][i][j] = LAI_Simu[idx][i][j] / 10
-    np.save('./Simulation_Dataset/Method_2/LAI_Simu_noErr(0-7)', LAI_Simu)
+    np.save('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7)', LAI_Simu)
 
 # 将误差百分比转换为对应的权重
 def set_err_weight():
     LAI_Simu = np.load('./Simulation_Dataset/LAI_Simu_noErr.npy') # 不修改    
-    Err = np.load('./Simulation_Dataset/Method_2/Err_peren.npy')
+    Err = np.load('./Simulation_Dataset/LAI/Simu_Method_2/Err_peren.npy')
     for day in range(0,46):
         print(day)
         for i in range(0, 500):
@@ -32,20 +32,5 @@ def set_err_weight():
                     elif val > 300 and val <= 500 : Err[day][i][j] = 2
                     else: Err[day][i][j] = 0
                 else: Err[day][i][j] = 0
-    np.save('./Simulation_Dataset/Method_2/Err_weight', Err)
+    np.save('./Simulation_Dataset/LAI/Simu_Method_2/Err_weight', Err)
 
-# 将误差百分比乘以误差值
-def new_peren():
-    Err_new = np.load('./Simulation_Dataset/Err_zero.npy')
-    Err_per = np.load('./Simulation_Dataset/Err_peren.npy')
-    Err_value = np.load('./Simulation_Dataset/Err_value.npy')
-
-    for day in range(0,46):
-        print(day)
-        for i in range(0, 500):
-            for j in range(0,500):
-                Err_new[day][i][j] = Err_per[day][i][j] * Err_value[day][i][j]
-
-    np.save('./Simulation_Dataset/Test/Err_new_peren', Err_new)
-
-set_err_weight()

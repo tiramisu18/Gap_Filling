@@ -55,11 +55,10 @@ def vege_type_mean(datas, lc):
     return {'B1': B1_all, 'B3': B3_all, 'B4': B4_all, 'B6': B6_all, 'B7': B7_all,'B8': B8_all}
     
 
-
 LAI_ori = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
 # LAI_Simu = np.load('../Simulation/Simulation_Dataset/LAI_Simu_noErr_10.npy')
-LAI_Simu_2 = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
-# LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70).npy')
+LAI_Simu_2 = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+# LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
 # ori_mean = tile_mean(LAI_ori)
 # simu_mean = tile_mean(LAI_Simu)
 # simu_mean_2 = tile_mean(LAI_Simu_2)

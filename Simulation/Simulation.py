@@ -82,10 +82,10 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
 # 随机增加误差后生成的误差数据集、误差百分比数据集、误差值数据集
 def get_ErrDataSet():
     # LAI_Err_Peren = [[[0.0] * 500] * 500] * 46 # 生成浮点型的矩阵
-    # np.save('./Simulation_Dataset/Test/Err_zero', LAI_Err_Peren)
-    LAI_Simu = np.load('./Simulation_Dataset/Method_2/LAI_Simu_noErr(0-7).npy')
-    Err_Peren = np.load('./Simulation_Dataset/Err_zero.npy')
-    Err_value = np.load('./Simulation_Dataset/Test/Err_zero.npy')
+    # np.save('./Simulation_Dataset/Err_zero(double)', LAI_Err_Peren)
+    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
+    Err_Peren = np.load('./Simulation_Dataset/Err_zero(int).npy')
+    Err_value = np.load('./Simulation_Dataset/Err_zero(double).npy')
     for day in range(0,46):
         print(day)
         x = int_random(0, 499, 50000)
@@ -110,8 +110,8 @@ def get_ErrDataSet():
                 except:
                     print(err, L_ori)
     
-    np.save('./Simulation_Dataset/Method_2/Err_peren', Err_Peren)       
-    np.save('./Simulation_Dataset/Method_2/Err_value', Err_value) 
+    np.save('./Simulation_Dataset/LAI/Simu_Method_2/Err_peren', Err_Peren)       
+    np.save('./Simulation_Dataset/LAI/Simu_Method_2/Err_value', Err_value) 
 
     for idx in range(0, 46):
         print(idx)
@@ -119,14 +119,14 @@ def get_ErrDataSet():
             for j in range(0,500):
                 if LAI_Simu[idx][i][j] <= 7 : 
                     LAI_Simu[idx][i][j] = LAI_Simu[idx][i][j] * 10
-    np.save('./Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70)', LAI_Simu)
+    np.save('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70)', LAI_Simu)
 
 
-# LAI_Simu = np.load('./Simulation_Dataset/Method_2/LAI_Simu_noErr(0-7).npy')
-LAI_Simu = np.load('./Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
-LAI_addErr = np.load('./Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70).npy')
+# LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
+LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+LAI_addErr = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
 
-# err_value = np.load('./Simulation_Dataset/Method_2/Err_value.npy')
+# err_value = np.load('./Simulation_Dataset/LAI/Simu_Method_2/Err_value.npy')
 
 aa = []
 bb = []

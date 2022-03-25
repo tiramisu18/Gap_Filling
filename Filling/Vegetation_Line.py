@@ -253,7 +253,7 @@ def smooth_curve(points, factor=0.8):
 # LAI_Ori = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
 
 
-# 生成模拟数据
+# 生成模拟数据（Method_1)
 # LAI_data = []
 # for  day in range(0, 46):
 #     print('time', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
@@ -339,7 +339,7 @@ def smooth_curve(points, factor=0.8):
 
 
 # 模拟数据集方法2
-# 保留所有主算法像元数据，其余用标准曲线值代替，对所有像元单独使用滤波算法平滑
+# 保留所有主算法像元数据，其余用标准曲线值代替，逐像元(植被)使用滤波算法平滑
 def get_simu():
     Vage_All = np.load('../Simulation/Simulation_Dataset/Vege_data.npz', allow_pickle=True)
     LC_part = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
@@ -356,7 +356,7 @@ def get_simu():
             for j in range(0, 500):
                 lai_one = LAI_Ori[day][i][j]
                 lc = LC_part[i][j]
-                if lai_one < 70 and QC_All[day][i+500][j+1000] < 10: 
+                if lai_one < 70 and QC_All[day][i+500][j+1000] < 10: #替换掉所有备用算法像元
                     if lc == 1 : lai_one = round(Vage_All['B1'][day],1) * 10
                     elif lc == 3 : lai_one = round(Vage_All['B3'][day],1) * 10
                     elif lc == 4 : lai_one = round(Vage_All['B4'][day],1) * 10
@@ -366,11 +366,12 @@ def get_simu():
                 row.append(lai_one)
             day_arr.append(row)
         LAI_new.append(day_arr)
-    np.save('../Simulation/Simulation_Dataset/Test/LAI_Simu_Step1', LAI_new)
+    np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step1', LAI_new)
 
+# 逐像元平滑
 def pixel_SG():
     LC_part = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
-    Simu_Step1 = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step1.npy')
+    Simu_Step1 = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step1.npy')
     Simu_Step2 = deepcopy(Simu_Step1)
     for i in range(0, 500):
         print(i)
@@ -390,14 +391,14 @@ def pixel_SG():
                         Simu_Step2[order][i][j] = round(sg_line[order],0)
                     # print(Simu_Step2[order][i][j])
 
-    np.save('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2', Simu_Step2)
+    np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2', Simu_Step2)
    
 
 LAI_Ori = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
 LAI_Simu = np.load('../Simulation/Simulation_Dataset/LAI_Simu_noErr_10.npy')
 
-Simu_Step1 = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step1.npy')
-Simu_Step2 = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
+Simu_Step1 = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step1.npy')
+Simu_Step2 = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
 # QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 # print(Simu_Step1[23][10][10])
 # print(Simu_Step2[23][10][10])

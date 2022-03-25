@@ -23,14 +23,14 @@ def render_Img (data, title='Algo Path', issave=False, savepath=''):
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
 
-# LAI_Simu_Err = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_addErr(0-70).npy')
+# LAI_Simu_Err = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
 # for i in range(0, 46):
 #     render_LAI(LAI_Simu_Err[i], '2018_%d'% (1 + i*8),True, './Daily_cache/0316/Step2_LAI_AddErr/2018_%s' % (i+1))
 #     # render_LAI(LAI_Simu_Err[i], '2018_%d_Err'% (1 + i*8),True, './Daily_cache/0316/Step2_LAI_AddErr/2018_%s_addErr' % (i+1))
 
 
-# Err_value = np.load('../Simulation/Simulation_Dataset/Method_2/Err_value.npy')
-# Err_peren = np.load('../Simulation/Simulation_Dataset/Method_2/Err_peren.npy')
+# Err_value = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_value.npy')
+# Err_peren = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_peren.npy')
 # for i in range(3,4):
 #     render_Img(Err_value[i], '2018_%d'% (1 + i*8),True, './Daily_cache/0316/2018_%s_errValue' % (i+1))
 #     # render_Img(Err_peren[i], '2018_%d'% (1 + i*8),True, './Daily_cache/0316/2018_%s_errperen' % (i+1))
