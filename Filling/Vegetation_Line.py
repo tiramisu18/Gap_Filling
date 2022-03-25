@@ -214,15 +214,15 @@ def smooth_curve(points, factor=0.8):
             smoothed_points.append(point)
     return  smoothed_points
 
-fileLists = ReadDirFiles.readDir('../HDF/h11v04')
-# print('lists', len(fileLists))
+# fileLists = ReadDirFiles.readDir('../HDF/h11v04')
+# # print('lists', len(fileLists))
 
-fileDatas = []
-QCDatas = []
-for file in fileLists:
-    result = ReadFile(file)
-    fileDatas.append(result['LAI'])
-    QCDatas.append(result['QC'])
+# fileDatas = []
+# QCDatas = []
+# for file in fileLists:
+#     result = ReadFile(file)
+#     fileDatas.append(result['LAI'])
+#     QCDatas.append(result['QC'])
 
 
 # LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h11v04.006.2019199203448.hdf')
@@ -246,11 +246,11 @@ for file in fileLists:
 #         day_arr.append(row)
 #     LAI_data.append(day_arr)
 
-# np.save('../Validation/Simulation_Dataset/LAI_Ori', LAI_data)
+# np.save('../Simulation/Simulation_Dataset/LAI_Ori', LAI_data)
 
-# Vage_All = np.load('../Validation/Simulation_Dataset/Vege_data.npz', allow_pickle=True)
-# LC_part = np.load('../Validation/Simulation_Dataset/LandCover.npy')
-# LAI_Ori = np.load('../Validation/Simulation_Dataset/LAI_Ori.npy')
+# Vage_All = np.load('../Simulation/Simulation_Dataset/Vege_data.npz', allow_pickle=True)
+# LC_part = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
+# LAI_Ori = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
 
 
 # 生成模拟数据
@@ -277,7 +277,7 @@ for file in fileLists:
 #         day_arr.append(row)
 #     LAI_data.append(day_arr)
 
-# np.save('../Validation/Simulation_Dataset/LAI_Simu_noErr', LAI_data)
+# np.save('../Simulation/Simulation_Dataset/LAI_Simu_noErr', LAI_data)
 
 
 # # 得到多个植被年际变化 绘制所有植被类型 滤波平滑处理
@@ -290,7 +290,7 @@ for file in fileLists:
 #     all_vege_data.append((vege_line))
 
 # print(Vege_data)
-# np.savez('../Validation/Simulation_Dataset/Vege_data', 
+# np.savez('../Simulation/Simulation_Dataset/Vege_data', 
 #     B1=all_vege_data[0], B3=all_vege_data[1], B4=all_vege_data[2], B6=all_vege_data[3], B7=all_vege_data[4], B8=all_vege_data[5])
 
 
@@ -341,9 +341,9 @@ for file in fileLists:
 # 模拟数据集方法2
 # 保留所有主算法像元数据，其余用标准曲线值代替，对所有像元单独使用滤波算法平滑
 def get_simu():
-    Vage_All = np.load('../Validation/Simulation_Dataset/Vege_data.npz', allow_pickle=True)
-    LC_part = np.load('../Validation/Simulation_Dataset/LandCover.npy')
-    LAI_Ori = np.load('../Validation/Simulation_Dataset/LAI_Ori.npy')
+    Vage_All = np.load('../Simulation/Simulation_Dataset/Vege_data.npz', allow_pickle=True)
+    LC_part = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
+    LAI_Ori = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
     QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 
     LAI_new = []
@@ -366,11 +366,11 @@ def get_simu():
                 row.append(lai_one)
             day_arr.append(row)
         LAI_new.append(day_arr)
-    np.save('../Validation/Simulation_Dataset/Test/LAI_Simu_Step1', LAI_new)
+    np.save('../Simulation/Simulation_Dataset/Test/LAI_Simu_Step1', LAI_new)
 
 def pixel_SG():
-    LC_part = np.load('../Validation/Simulation_Dataset/LandCover.npy')
-    Simu_Step1 = np.load('../Validation/Simulation_Dataset/Test/LAI_Simu_Step1.npy')
+    LC_part = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
+    Simu_Step1 = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step1.npy')
     Simu_Step2 = deepcopy(Simu_Step1)
     for i in range(0, 500):
         print(i)
@@ -384,17 +384,20 @@ def pixel_SG():
                 sg_line = signal.savgol_filter(line, 25, 6, mode='mirror')
                 # print(sg_line[1])
                 for order in range(0, 46):
-                    Simu_Step2[order][i][j] = round(sg_line[order],0)
+                    if sg_line[order] < 0:
+                        Simu_Step2[order][i][j] = 0
+                    else:
+                        Simu_Step2[order][i][j] = round(sg_line[order],0)
                     # print(Simu_Step2[order][i][j])
 
-    np.save('../Validation/Simulation_Dataset/Test/LAI_Simu_Step2', Simu_Step2)
-    
+    np.save('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2', Simu_Step2)
+   
 
-LAI_Ori = np.load('../Validation/Simulation_Dataset/LAI_Ori.npy')
-LAI_Simu = np.load('../Validation/Simulation_Dataset/LAI_Simu_noErr_10.npy')
+LAI_Ori = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
+LAI_Simu = np.load('../Simulation/Simulation_Dataset/LAI_Simu_noErr_10.npy')
 
-Simu_Step1 = np.load('../Validation/Simulation_Dataset/Test/LAI_Simu_Step1.npy')
-Simu_Step2 = np.load('../Validation/Simulation_Dataset/Test/LAI_Simu_Step2.npy')
+Simu_Step1 = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step1.npy')
+Simu_Step2 = np.load('../Simulation/Simulation_Dataset/Method_2/LAI_Simu_Step2.npy')
 # QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 # print(Simu_Step1[23][10][10])
 # print(Simu_Step2[23][10][10])
@@ -402,23 +405,26 @@ aa = []
 bb = []
 cc = []
 dd = []
-x_v = 360
-y_v = 10
+x_v = 0
+y_v = 0
 # (0,3) (2,1) （2，2） (499, 499)
 for i in range(0, 46):   
-    aa.append(LAI_Ori[i][x_v][y_v] / 10)
-    bb.append(LAI_Simu[i][x_v][y_v] / 10)
-    cc.append(Simu_Step1[i][x_v][y_v] / 10)
-    dd.append(Simu_Step2[i][x_v][y_v] / 10)
+    aa.append(LAI_Ori[i][x_v][y_v] )
+    bb.append(LAI_Simu[i][x_v][y_v] )
+    cc.append(Simu_Step1[i][x_v][y_v])
+    dd.append(Simu_Step2[i][x_v][y_v] )
     # dd.append(QC_All[i][500+x_v][1000+y_v])
-
+# print(aa)
+# print(bb)
+# print(cc)
+# print(dd)
 Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
     'title': 'Vege_Line',
     'xlable': 'Day',
     'ylable': 'LAI',
-    'line': [aa, bb, cc],
+    'line': [aa, bb, cc, dd],
     'le_name': ['Ori', 'Mean', 'Step1', 'Step2', 'B7', 'B8'],
     'color': ['#bfdb39', '#958b8c', '#fd7400', '#ffe117','#7ba79c'],
     'marker': [',', ',', '^', '.' ],
     'lineStyle': ['dashed', 'dashed', '']
-    },'./Daily_cache/0316/ori_simu_step1', True, 2)
+    },'./Daily_cache/0315/ori_simu_step1', False, 2)

@@ -86,7 +86,7 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
                 tem_index += 1
     if valid_lc == 0 :
         tem_weight = 0 
-        print('eq zero', tem_winSize_unilateral, pos)
+        print('Tem eq zero', tem_winSize_unilateral, pos)
     else :
         tem_weight = (round(tem_wei_count/valid_lc, 2)) 
     # print('end_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
@@ -142,15 +142,15 @@ def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_w
                 # denominator[2] += euclideanDis * 0.1
                         
     # 当n*n范围内无相同lc时，使用原始值填充
-    if denominator[0] > 0:
+    if denominator[0] > 0 and denominator[1] > 0 and denominator[2] > 0: # 边界时会存在0 可改进
         spa_filling_value = round(numerator[1]/denominator[1])
         before_weight = abs((numerator[0]/denominator[0]) - or_before_value)
         after_weight = abs((numerator[2]/denominator[2]) - or_after_value)
         spa_weight = round((before_weight + after_weight) / 2, 2)
     else : 
         spa_filling_value = or_value
-        print('eq zero', spa_winSize_unilateral, pos)
-
+        spa_weight = 0
+        print('Spa eq zero', spa_winSize_unilateral, pos)
 
     # print('end_spa', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
    
@@ -185,7 +185,7 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
         Spa_W.append(spa_weight)
         Qc_W.append(QC_value)
         # total Calculation
-        final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight + or_value * QC_value) / (spa_weight + tem_weight + QC_value)) 
+        # final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight + or_value * QC_value) / (spa_weight + tem_weight + QC_value)) 
         # try: 
         #     if spa_weight != 0 and tem_weight != 0:
         #         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight)) 
@@ -194,7 +194,7 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
         if (QC_value >= 8):        
             final = round((or_value * QC_value + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (QC_value + spa_weight + tem_weight))  
         else :
-            if spa_weight != 0 and tem_weight != 0 : 
+            if spa_weight != 0 or tem_weight != 0 : 
                 final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
         
         Fil_value.append(final)
@@ -202,6 +202,43 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
     # print({'tem': Fil_tem, 'spa': Fil_spa, 'Fil': Fil_value})      
     # LAI_Result[pos[0]][pos[1]] = final
     return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'Or': Or_value, 'T_W': Tem_W, 'S_W': Spa_W, 'Qc_W': Qc_W}
+
+# 计算所有像元点 并存储为npy
+def Fill_Pixel_All (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral): 
+    LAI_Result = copy.deepcopy(fileDatas[index])
+    # interpolation
+    for pos in Filling_Pos: 
+        # print('time', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        tem_ob = Temporal_Cal(fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
+        spa_ob = Spatial_Cal(fileDatas, index, pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral) 
+        QC_value = QC_File[index][pos[0]][pos[1]]  
+        or_value = fileDatas[index][pos[0]][pos[1]] 
+        final = or_value
+        spa_filling_value = spa_ob['filling']
+        spa_weight = spa_ob['weight']
+        tem_filling_value = tem_ob['filling']
+        tem_weight = tem_ob['weight']
+
+        # total Calculation
+        # final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight + or_value * QC_value) / (spa_weight + tem_weight + QC_value)) 
+        # try: 
+        #     if spa_weight != 0 and tem_weight != 0:
+        #         final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight)) 
+        # except:
+        #     print(spa_filling_value, spa_weight, tem_filling_value, tem_weight)
+        if (QC_value >= 8):        
+            final = round((or_value * QC_value + spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (QC_value + spa_weight + tem_weight))  
+        else :
+            try: 
+                if spa_weight != 0 or tem_weight != 0 : 
+                    final = round((spa_filling_value * spa_weight + tem_filling_value * tem_weight) / (spa_weight + tem_weight))  
+            except:
+                print(spa_filling_value, spa_weight, tem_filling_value, tem_weight)         
+        LAI_Result[pos[0]][pos[1]] = final
+    np.savetxt('../Simulation/Filling/2018_%s' % (index+1), LAI_Result)
+    
+    
+   
 
 # 求时间或空间的填补值 method：1（时间）2（空间） 
 def Fill_Pixel_One (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
@@ -231,6 +268,7 @@ def Fill_Pixel_One (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLen
 
 
 
+# 所有计算过程中不使用权重
 def Temporal_Cal_noQC (fileDatas, index, Filling_Pos, LC_info, temporalLength, tem_winSize_unilateral, SES_pow):
     # print('begin_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
   # interpolation

@@ -1,5 +1,8 @@
 import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
+import numpy as np
+from scipy.stats import gaussian_kde
+from matplotlib.colors import LogNorm
 
 # color and marker  = False or ['xxx']; lineStyle = [] or ['xxx]
 def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
@@ -7,6 +10,7 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
     marker_arr = ['s', 'o', '.', '^', ',', 'v', '8', '*', 'H', '+', 'x', '_']
     if obj['color'] : color_arr = obj['color']
     if obj['marker'] : marker_arr = obj['marker']
+    if obj['size'] : plt.figure(figsize=(obj['size']['width'], obj['size']['height']))
     plt.title(obj['title'], family='Times New Roman', fontsize=18)   
     plt.xlabel(obj['xlable'], fontsize=15, family='Times New Roman') 
     plt.ylabel(obj['ylable'], fontsize=15, family='Times New Roman')
@@ -28,7 +32,7 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
         (obj['le_name']),
         loc = loc, prop={'size':15, 'family':'Times New Roman'},
         )
-        if issave :plt.savefig(savePath, dpi=300)
+        if issave :plt.savefig(savePath, dpi=300)       
         plt.show()
 
 
@@ -105,3 +109,20 @@ def draw_one_plot(x, y):
 
     # fig.savefig("test.png")
     plt.show() 
+
+
+# 散点图
+def density_scatter_plot(x, y):
+    # x = np.random.normal(size=500)
+    # y = x * 3 + np.random.normal(size=500)
+    # print(x, y)
+    # Calculate the point density
+    xy = np.vstack([x,y])
+    z = gaussian_kde(xy)(xy)
+    # Sort the points by density, so that the densest points are plotted last
+    idx = z.argsort()
+    x, y, z = x[idx], y[idx], z[idx] 
+    fig, ax = plt.subplots()
+    plt.scatter(x, y,c=z,  s=20,cmap='Spectral')
+    plt.colorbar()
+    plt.show()
