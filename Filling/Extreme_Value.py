@@ -34,8 +34,8 @@ def elements_sum():
 
 def F(x, y, z):
     # val = ((((2 * x + 3 * y + 2 * z) / (x + y + z) - 2) * ((2 * x + 3 * y + 2 * z) / (x + y + z) - 2)) + (((3 * x + 3 * y + 2 * z) / (x + y + z) - 2) * ((3 * x + 3 * y + 2 * z) / (x + y + z) - 2))) / 2
-    # val = x * x - x * y + z +y
-    val = x * x - x * y + y
+    val = (x-1)**3+(y-5)**2+(z-100)**2
+    # val = x * x - x * y + y
     # print(val.shape) #(100,) 100 <class 'numpy.ndarray'>
     return val
 
@@ -213,9 +213,9 @@ if __name__ == "__main__":
     # print(pop.size) #300  矩阵共有300个元素
     # print(pop.dtype) #float64 矩阵元素类型是float64
 # for i in range(100):#测试代码
-    pop1 = np.random.uniform(3.0, 5.0, size=(POP_SIZE, DNA_SIZE))  # matrix (POP_SIZE, DNA_SIZE)
+    pop1 = np.random.uniform(-5, 5.0, size=(POP_SIZE, DNA_SIZE))  # matrix (POP_SIZE, DNA_SIZE)
     pop2 = np.random.uniform(2.1, 6.7, size=(POP_SIZE, DNA_SIZE))
-    pop3 = np.random.uniform(1.2, 9.6, size=(POP_SIZE, DNA_SIZE))
+    pop3 = np.random.uniform(95, 105, size=(POP_SIZE, DNA_SIZE))
 
     # print(type(pop1))# (100,1) 维度是2(行列 矩阵) <class 'numpy.ndarray'>
     # pop={pop1,pop2,pop3}
