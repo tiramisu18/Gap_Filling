@@ -69,7 +69,7 @@ f1 = diff(Fxyz,x)
 f2 = diff(Fxyz,y)
 f3 = diff(Fxyz,z)
 
-# F = np.mat([f1,f2,f3]).reshape(3,1)
+# F = np.mat([f1,f2,f3]).reshape(3,1) # 列表转矩阵
 # print(F)
 F = Matrix([f1,f2,f3])
 # 海森矩阵
@@ -80,7 +80,7 @@ def hessian(*para):
         for o_i in para[1]:
             one.append(diff(f_i, o_i))
         all.append(one)
-        # sp.diff(f,o).evalf(subs ={'x2':6})
+        # sp.diff(f,o).evalf(subs ={'x2':6})  #对求导后的式子附值计算
     # return np.mat(all).reshape(3,3)
     return Matrix(all)
 
@@ -105,6 +105,7 @@ while n < 100 and E > 1e-4:
     x0 = x1
     n = n + 1
 
+# sympy.subs()方法，将数学表达式中的变量或表达式的所有实例替换为其他变量或表达式或值。
 
 print(x1, n)
 Fxyz.evalf(subs = {'x': x1[0,0], 'y': x1[1,0], 'z':x1[2,0]})
