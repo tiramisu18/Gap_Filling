@@ -106,35 +106,33 @@ def Simu_filling(x_v, y_v, idx):
     simu_val = []
 
     ses_pow = 0.8
-    for index in range(1, 45):
+    for index in range(20, 21):
         # if index < 10: ses_pow = 0.3
         # if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
         # elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
         # else: ses_pow = 0.3
         # elif 20 < index < 30: ses_pow = 0.3
-        re1 = Filling_Pixel.Fill_Pixel(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5)
+        re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 2, ses_pow, 2, 5, 1)
+        print(re1)
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Filling_Pos, LandCover, 6, 12, ses_pow, 2, 5)
-        Fil_val_1.append(re1['Tem'][0]/10)
-        Fil_val_2.append(re1['Spa'][0] /10)
-        Fil_val.append(re1['Fil'][0] /10)
-        ori_val.append(re1['Or'][0] /10)
-        simu_val.append(LAI_Simu_noErr[index][x_v][y_v] / 10)
+        # Fil_val_1.append(re1['Tem'][0]/10)
+        # Fil_val_2.append(re1['Spa'][0] /10)
+        # Fil_val.append(re1['Fil'][0] /10)
+        # ori_val.append(re1['Or'][0] /10)
+        # simu_val.append(LAI_Simu_noErr[index][x_v][y_v] / 10)
    
-    Draw_PoltLine.draw_polt_Line(np.arange(1, 45, 1),{
-        # 'title': 'pos_%s_%s' % (x_v, y_v),
-        'title': '',
-        'xlable': 'Day',
-        'ylable': 'LAI',
-        # 'line': [ori_val, Fil_val, Fil_val_1, Fil_val_2],
-        'line': [simu_val, ori_val, Fil_val],
-        'le_name': ['Real','Trial', 'Filling','Temporal', 'Spatial'],
-        'color': ['gray', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
-        'marker': False,
-        'lineStyle': ['dashed'],
-        },'./Daily_cache/0316/Filling_%s' % idx, True, 2)
+    # Draw_PoltLine.draw_polt_Line(np.arange(1, 45, 1),{
+    #     # 'title': 'pos_%s_%s' % (x_v, y_v),
+    #     'title': '',
+    #     'xlable': 'Day',
+    #     'ylable': 'LAI',
+    #     # 'line': [ori_val, Fil_val, Fil_val_1, Fil_val_2],
+    #     'line': [simu_val, ori_val, Fil_val],
+    #     'le_name': ['Real','Trial', 'Filling','Temporal', 'Spatial'],
+    #     'color': ['gray', '#ffe117', '#fd7400', '#1f8a6f', '#548bb7'],
+    #     'marker': False,
+    #     'lineStyle': ['dashed'],
+    #     },'./Daily_cache/0316/Filling_%s' % idx, True, 2)
 
-# Simu_filling_All() 
 
-# Simu_filling(200, 200, 1)
-
-# Simu_filling(362, 24, 2)
+Simu_filling(362, 324, 2)

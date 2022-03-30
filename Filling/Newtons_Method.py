@@ -52,65 +52,76 @@
 # plt.show()
 
 
-
 import numpy as np
 from sympy import *
-import numpy.matlib 
 
+a=np.array([1,3,5,9])
+b=np.array([0,1,2,3])
+print(a+b)
+print(a*b, sum(a*b))
 
-# syms x y z
-x, y, z = symbols('x y z')
-# Fxyz = (x-1)**3+(y-5)**2+(z-100)**2
-# Fxyz = (((25 * x + 37 * y + 30 * z) / (x + y + z) - 30)** 2 + ((30 * x + 27 * y + 20 * z) / (x + y + z) - 20)** 2) / 2
-# Fxyz = 4*(x + 1)**2 + 2*(y - 2)**2 + x + y + 10
-Fxyz = x**2+2*y**2+3*z**2+2*x+4*y-6*z 
+a = np.arange(24)  
+print (a)             # a 现只有一个维度
+# 现在调整其大小
+b = a.reshape(2,4,3)
+print(b)
 
-f1 = diff(Fxyz,x)
-f2 = diff(Fxyz,y)
-f3 = diff(Fxyz,z)
+ones(2)
 
-# F = np.mat([f1,f2,f3]).reshape(3,1) # 列表转矩阵
-# print(F)
-F = Matrix([f1,f2,f3])
-# 海森矩阵
-def hessian(*para):
-    all = []
-    for f_i in para[0]:
-        one = []
-        for o_i in para[1]:
-            one.append(diff(f_i, o_i))
-        all.append(one)
-        # sp.diff(f,o).evalf(subs ={'x2':6})  #对求导后的式子附值计算
-    # return np.mat(all).reshape(3,3)
-    return Matrix(all)
+# 牛顿迭代法求极值
+def Newtons_Iteration(Fxyz):
+    # syms x y z
+    x, y, z = symbols('x y z')
+    # Fxyz = (x-1)**3+(y-5)**2+(z-100)**2
+    # Fxyz = (((25 * x + 37 * y + 30 * z) / (x + y + z) - 30)** 2 + ((30 * x + 27 * y + 20 * z) / (x + y + z) - 20)** 2) / 2
+    # Fxyz = 4*(x + 1)**2 + 2*(y - 2)**2 + x + y + 10
+    # Fxyz = x**2+2*y**2+3*z**2+2*x+4*y-6*z 
 
-# J_be=[[sp.diff(f1,x), sp.diff(f1, y), sp.diff(f1,z)],
-#    [sp.diff(f2,x), sp.diff(f2, y), sp.diff(f2,z)],
-#    [sp.diff(f3,x), sp.diff(f3, y), sp.diff(f3,z)]]
+    f1 = diff(Fxyz,x)
+    f2 = diff(Fxyz,y)
+    f3 = diff(Fxyz,z)
 
-# print(J_be)
-# J = np.mat(J_be).reshape(3,3)
-J = hessian((f1, f2, f3), (x, y, z))
+    # F = np.mat([f1,f2,f3]).reshape(3,1) # 列表转矩阵
+    F = Matrix([f1,f2,f3])
+    # 海森矩阵
+    def hessian(*para):
+        all = []
+        for f_i in para[0]:
+            one = []
+            for o_i in para[1]:
+                one.append(diff(f_i, o_i))
+            all.append(one)
+            # sp.diff(f,o).evalf(subs ={'x2':6})  #对求导后的式子附值计算
+        # return np.mat(all).reshape(3,3)
+        return Matrix(all)
 
-n=1
-x0 = np.mat([1,1,1]).reshape(3,1)
-E=1
-while n < 100 and E > 1e-4:
-    dic = dict(x = x0[0,0], y = x0[1,0], z = x0[2,0])
-    x1 = x0 - J.subs(dic).inv() * F.subs(dic) #牛顿迭代公式
-    step1 = (diag(x1[0,0], x1[1, 0], x1[2, 0])).inv() * abs(x1-x0)
-    # print('step1' , step1)
-    # E=max(abs(x1-x0)/x1)
-    E = max(step1)
-    x0 = x1
-    n = n + 1
+    # J_be=[[sp.diff(f1,x), sp.diff(f1, y), sp.diff(f1,z)],
+    #    [sp.diff(f2,x), sp.diff(f2, y), sp.diff(f2,z)],
+    #    [sp.diff(f3,x), sp.diff(f3, y), sp.diff(f3,z)]]
 
-# sympy.subs()方法，将数学表达式中的变量或表达式的所有实例替换为其他变量或表达式或值。
+    # print(J_be)
+    # J = np.mat(J_be).reshape(3,3)
+    J = hessian((f1, f2, f3), (x, y, z))
 
-print(x1, n)
-Fxyz.evalf(subs = {'x': x1[0,0], 'y': x1[1,0], 'z':x1[2,0]})
-# Fxyz.evalf(subs = {'x': 1, 'y': 1, 'z':1})
+    n=1
+    x0 = np.mat([1,1,1]).reshape(3,1)
+    E=1
+    while n < 100 and E > 1e-4:
+        dic = dict(x = x0[0,0], y = x0[1,0], z = x0[2,0])
+        x1 = x0 - J.subs(dic).inv() * F.subs(dic) #牛顿迭代公式
+        step1 = (diag(x1[0,0], x1[1, 0], x1[2, 0])).inv() * abs(x1-x0)
+        # print('step1' , step1)
+        # E=max(abs(x1-x0)/x1)
+        E = max(step1)
+        x0 = x1
+        n = n + 1
 
+    # sympy.subs()方法，将数学表达式中的变量或表达式的所有实例替换为其他变量或表达式或值。
+
+    print(x1, n)
+    calValue = Fxyz.evalf(subs = {'x': x1[0,0], 'y': x1[1,0], 'z':x1[2,0]})
+    # Fxyz.evalf(subs = {'x': 1, 'y': 1, 'z':1})
+    return {'X_Valus': x1, 'Iteration_Count': n, 'Multinomial_Value': calValue}
 
 
 # 二元函数
