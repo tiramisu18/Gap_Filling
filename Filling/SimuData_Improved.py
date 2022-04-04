@@ -106,14 +106,14 @@ def Simu_filling(x_v, y_v, idx):
     simu_val = []
 
     ses_pow = 0.8
-    for index in range(20, 21):
+    for index in range(34, 35):
         # if index < 10: ses_pow = 0.3
         # if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
         # elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
         # else: ses_pow = 0.3
         # elif 20 < index < 30: ses_pow = 0.3
-        re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 2, ses_pow, 2, 5, 1)
-        print(re1)
+        re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, 1)
+        # print(re1)
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Filling_Pos, LandCover, 6, 12, ses_pow, 2, 5)
         # Fil_val_1.append(re1['Tem'][0]/10)
         # Fil_val_2.append(re1['Spa'][0] /10)
@@ -133,6 +133,7 @@ def Simu_filling(x_v, y_v, idx):
     #     'marker': False,
     #     'lineStyle': ['dashed'],
     #     },'./Daily_cache/0316/Filling_%s' % idx, True, 2)
+
 
 
 Simu_filling(362, 324, 2)

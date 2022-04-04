@@ -10,92 +10,85 @@ import copy
 import math
 import time
 
+from sympy import Float
+
 # 修改为矩阵计算 并且最终权重计算修改为牛顿迭代法求解参数
-def Temporal_Cal_Matrix (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):
-    # print('begin_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+def Temporal_Cal_Matrix (fileDatas, index, position, landCover, qualityControl, temporalLength, winSize, SES_pow):
+    print('begin_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     # interpolation
-    
+    # fileDatas = range(0, 46)
+    # temporalLength = 6
+    # SES_pow = 0.8
+    # index = 42
+    paraRightHalf = []
+    for i in range(0, temporalLength):
+        para = round(SES_pow * (1 - SES_pow) ** i, 4)
+        paraRightHalf.append(para)
 
+    back_count = len(fileDatas) - index - 1 if index + temporalLength > len(fileDatas) - 1  else 6
+    forward_count = index if index - temporalLength < 0  else 6
+    paraLeftHalf = paraRightHalf[:forward_count]
+    paraLeftHalf.reverse()
+    smoothingList = paraLeftHalf + paraRightHalf[:back_count]
+    smoothingArray = np.array(smoothingList)
 
-    cu_dataset = fileDatas[index]
-    # temporalLength =  6  
-    tem_filling_value = 0
-    tem_weight = 0
-    tem_back_index = index + temporalLength
-    tem_forward_index = index - temporalLength
-    if index + temporalLength > len(fileDatas) - 1 : tem_back_index = len(fileDatas) - 1
-    if index - temporalLength < 0 : tem_forward_index = -1
-    # tem_winSize_unilateral = 2  # n*2 + 1
-     
-    pos = Filling_Pos
+    targetLAI = fileDatas[index, position[0], position[1]]
+    targetLAIList = []
+    targetQCList = []
+    for i in range(index - forward_count, index + back_count + 1):
+        if i != index:
+            targetLAIList.append(fileDatas[i, position[0], position[1]])
+            targetQCList.append(qualityControl[i, position[0], position[1]])
+    targetLAIArray = np.array(targetLAIList)
+    targetQCArray = np.array(targetQCList)
+    numerator = targetLAIArray * smoothingArray * targetQCArray
+    denominator = smoothingArray * targetQCArray   
+    improvedValue = numerator.sum() / denominator.sum()
+    print('rawValue ', targetLAI, improvedValue)
 
-    lc_type = LC_info[pos[0]][pos[1]] 
-    or_value = cu_dataset[pos[0]][pos[1]]    
-    numerator = [] # 分子
-    denominator = []  # 分母
-    tem_index = 0
-    tem_wei_count = 0
-    tem_row_before = 0 
-    tem_row_after = len(LC_info[0])
-    tem_col_before = 0 
-    tem_col_after = len(LC_info)
-    valid_lc = 0
+    pos = position
+    row_before = pos[0]- winSize if pos[0]- winSize > 0 else 0
+    row_after = pos[0] + winSize + 1 if pos[0] + winSize < len(landCover[0]) else len(landCover[0])
+    col_before = pos[1]- winSize if pos[1]- winSize > 0 else 0 
+    col_after = pos[1] + winSize + 1 if pos[1] + winSize < len(landCover) else len(landCover)
 
-    if pos[0]- tem_winSize_unilateral > 0 : tem_row_before = pos[0]- tem_winSize_unilateral
-    if pos[0] + tem_winSize_unilateral < len(LC_info[0]) : tem_row_after = pos[0] + tem_winSize_unilateral + 1
-    if pos[1]- tem_winSize_unilateral > 0 : tem_col_before = pos[1]- tem_winSize_unilateral
-    if pos[1] + tem_winSize_unilateral < len(LC_info) : tem_col_after = pos[1] + tem_winSize_unilateral + 1
-    
-    for i in range(tem_row_before, tem_row_after):
-        for j in range(tem_col_before, tem_col_after):
-            if LC_info[i][j] == lc_type:
-                forward_index = index - 1
-                backward_index = index + 1
-                forward_i = 1
-                backward_i = 1
-                numerator.append(0)
-                denominator.append(0)
-                while (forward_index >= tem_forward_index):
-                    value = fileDatas[forward_index][i][j]
-                    tem_SES = SES_pow * (1 - SES_pow)**(forward_i - 1)                   
-                    if(value <= 70):
-                        QC_Score = QC_File[forward_index] 
-                        numerator[tem_index] += value * tem_SES * QC_Score[i][j] 
-                        denominator[tem_index] += tem_SES * QC_Score[i][j]                                
-                    forward_index -= 1
-                    forward_i += 1                    
-                while (backward_index <= tem_back_index):
-                    value = fileDatas[backward_index][i][j]
-                    tem_SES = SES_pow * math.pow((1 - SES_pow), backward_i - 1)                   
-                    if(value <= 70):
-                        QC_Score = QC_File[backward_index]
-                        numerator[tem_index] += value * tem_SES * QC_Score[i][j]
-                        denominator[tem_index] += tem_SES * QC_Score[i][j]  
-                    backward_index += 1
-                    backward_i += 1
-                if denominator[tem_index] != 0 : 
-                    valid_lc +=1       
-                    inter = numerator[tem_index] / denominator[tem_index]
-                    if(i == pos[0] and j == pos[1]): tem_filling_value = round(inter)
-                    else :
-                        dif_value = abs(inter - cu_dataset[i][j])
-                        tem_wei_count += dif_value
-                else: 
-                    tem_filling_value = or_value
-                    # print('eq 0 ', i, valid_lc, tem_filling_value)
-                tem_index += 1
-            print('winsiz', i, j, tem_row_before, tem_row_after, tem_col_before, tem_col_after)        
-    if valid_lc == 0 :
-        tem_weight = 0 
-        print('Tem eq zero', tem_winSize_unilateral, pos)
-    else :
-        tem_weight = (round(tem_wei_count/valid_lc, 2)) 
-    # print('end_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-   
-    return {'weight': tem_weight, 'filling': tem_filling_value, 'or_value': or_value}
+    posLC = landCover[pos[0]][pos[1]] 
+    LAIRange = fileDatas[index, row_before:row_after, col_before:col_after]      
+    lcRange = landCover[row_before:row_after, col_before:col_after]
+    intersect = (LAIRange <= 70) == (lcRange == posLC)
+    filter = np.nonzero(intersect == True) #get the indices of elements that satisfy the conditions, return array (row indices, column indices)
+    list_of_coordinates = list(zip(filter[0], filter[1])) #generate a list of coordinates
+    rawLAITemList = []
+    QCList = []
+    rawLAIList = []
+    list_of_coordinates.remove((position[0] - row_before, position[1] - col_before))
+    # print('length', len(list_of_coordinates))
+    for coord in list_of_coordinates:
+        rawCoordRow = coord[0] + row_before
+        rawCoordCol = coord[1] + col_before
+        rawValueOne = []
+        QCOne = []
+        rawLAIList.append(fileDatas[index, rawCoordRow, rawCoordCol])
+        for i in range(index - forward_count, index + back_count + 1):
+            if i != index:
+                rawValueOne.append(fileDatas[i, rawCoordRow, rawCoordCol])
+                QCOne.append(qualityControl[i, rawCoordRow, rawCoordCol])
+        rawLAITemList.append(rawValueOne)
+        QCList.append(QCOne)
+
+    # print(np.array(rawLAITemList).shape)
+    rawLAITemArray = np.array(rawLAITemList)
+    QCArray = np.array(QCList)
+    rawLAIArray = np.array(rawLAIList)
+    numerators = rawLAITemArray * QCArray * smoothingArray
+    denominators = QCArray * smoothingArray 
+    improvedValues = abs((numerators.sum(axis=1) / denominators.sum(axis=1)) - rawLAIArray)
+    weight = improvedValues.sum()/len(improvedValues)
+    print(weight)
+    return {'weight': weight, 'filling': improvedValue, 'or_value': targetLAI}
 
 def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):
-    # print('begin_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    print('begin_tem_previous', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
   # interpolation
     cu_dataset = fileDatas[index]
     # temporalLength =  6  
@@ -104,7 +97,7 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
     tem_back_index = index + temporalLength
     tem_forward_index = index - temporalLength
     if index + temporalLength > len(fileDatas) - 1 : tem_back_index = len(fileDatas) - 1
-    if index - temporalLength < 0 : tem_forward_index = -1
+    if index - temporalLength < 0 : tem_forward_index = 0
     # tem_winSize_unilateral = 2  # n*2 + 1
      
     pos = Filling_Pos
@@ -146,20 +139,19 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
                     forward_i += 1                    
                 while (backward_index <= tem_back_index):
                     value = fileDatas[backward_index][i][j]
-                    tem_SES = SES_pow * math.pow((1 - SES_pow), backward_i - 1)                   
+                    tem_SES = SES_pow * math.pow((1 - SES_pow), backward_i - 1)                 
                     if(value <= 70):
                         QC_Score = QC_File[backward_index]
                         numerator[tem_index] += value * tem_SES * QC_Score[i][j]
                         denominator[tem_index] += tem_SES * QC_Score[i][j]  
                     backward_index += 1
                     backward_i += 1
-                if denominator[tem_index] != 0 : 
-                    valid_lc +=1       
+                if denominator[tem_index] != 0 :                           
                     inter = numerator[tem_index] / denominator[tem_index]
-                    if(i == pos[0] and j == pos[1]): 
-                        print('target ', i, j, inter)                       
+                    if(i == pos[0] and j == pos[1]):                                              
                         tem_filling_value = round(inter, 2)
                     else :
+                        valid_lc +=1 
                         dif_value = abs(inter - cu_dataset[i][j])
                         tem_wei_count += dif_value
                 else: 
@@ -173,7 +165,7 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
     else :
         tem_weight = (round(tem_wei_count/valid_lc, 2)) 
     # print('end_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    print(valid_lc, tem_filling_value, tem_weight, or_value)
+    print('previous', valid_lc, tem_filling_value, tem_weight, or_value)
     return {'weight': tem_weight, 'filling': tem_filling_value, 'or_value': or_value}
 
 def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral):
@@ -328,6 +320,7 @@ def Fill_Pixel_One (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLen
     for pos in Filling_Pos:  
         if method == 1:   
             result_ob = Temporal_Cal (fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
+            Temporal_Cal_Matrix(fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
         else: 
             result_ob = Spatial_Cal (fileDatas, index, pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral) 
         QC_value = QC_File[index][pos[0]][pos[1]]  
