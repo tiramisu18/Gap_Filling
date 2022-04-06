@@ -113,6 +113,7 @@ def Simu_filling(x_v, y_v, idx):
         # else: ses_pow = 0.3
         # elif 20 < index < 30: ses_pow = 0.3
         re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, 1)
+        # improved = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow)
         # print(re1)
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Filling_Pos, LandCover, 6, 12, ses_pow, 2, 5)
         # Fil_val_1.append(re1['Tem'][0]/10)
@@ -135,5 +136,20 @@ def Simu_filling(x_v, y_v, idx):
     #     },'./Daily_cache/0316/Filling_%s' % idx, True, 2)
 
 
-
 Simu_filling(362, 324, 2)
+
+# aa = [(1,2,3), (1,2,3), (2,2,3), (2,2,3), (3,2,4), (1,2,13)]
+# bb = np.array(aa).reshape(3,2,3)
+# # mm = np.delete(bb, 1, 0)
+# print(bb)
+# print(bb.sum(axis=0))
+# print(bb.sum(axis=1))
+# print(bb.sum(axis=2))
+
+# cc = np.array([1,2,3]).reshape(3,1,1)
+# dd = bb*cc
+# print(dd)
+# cc = np.array([(2,2,3), (2,3,3), (1,2,3), (1,2,3), (1,2,3), (3,2,3)]).reshape(3,2,3)
+# print(bb, cc)
+# dd = bb + cc
+# print(dd)

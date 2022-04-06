@@ -35,7 +35,6 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
         if issave :plt.savefig(savePath, dpi=300)       
         plt.show()
 
-
 def polt_Line_twoScale (x, obj, savePath = '', issave = False, loc = 0):
     color_arr = ['#548bb7', '#958b8c', '#bfdb39', '#ffe117', '#fd7400', '#7ba79c', '#016382', '#dd8146', '#a4ac80', '#d9b15c', '#1f8a6f', '#987b2d']
     marker_arr = ['o', '.', '^', 's', ',', 'v', '8', '*', 'H', '+', 'x', '_']
@@ -97,8 +96,6 @@ def draw_Line (x, y1, y2, y3, y4, savePath, issave, title = 'title'):
     if issave :plt.savefig(savePath, dpi=300)
     plt.show()
 
-
-
 def draw_one_plot(x, y):
     fig, ax = plt.subplots()
     ax.plot(x, y, '#fd7400')
@@ -109,7 +106,6 @@ def draw_one_plot(x, y):
 
     # fig.savefig("test.png")
     plt.show() 
-
 
 # 散点图
 def density_scatter_plot(x, y):
