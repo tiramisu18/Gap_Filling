@@ -1,20 +1,12 @@
 import os
-from typing import MappingView
 import numpy as np
+import numpy.ma as ma
 from numpy.core.fromnumeric import mean
 from numpy.ma.core import array
 from numpy.random.mtrand import sample
-from osgeo import gdal
-import matplotlib.pyplot as plt
-import matplotlib.colors as pltcolor
-import matplotlib.patches as patches
-from matplotlib import animation 
-import copy
 import ReadDirFiles
 import math
 import h5py
-import time
-import random
 import Filling_Pixel
 import Draw_PoltLine
 
@@ -107,6 +99,17 @@ def Simu_filling(x_v, y_v, idx):
 
     ses_pow = 0.8
     for index in range(34, 35):
+        # one = Err_weight[index , ...]
+        # print(one == 0)
+        # one_change = np.nonzero(one == 0)
+        # print(one_change)
+        # one[one_change] = 1
+        # print(one)
+        # u, count = np.unique(Err_weight[index , ...], return_counts=True)
+        # print(u, count)
+        # u2, count2 = np.unique(LAI_Simu_addErr[index , ...], return_counts=True)
+        # print(u2, count2)
+
         # if index < 10: ses_pow = 0.3
         # if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
         # elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
@@ -136,12 +139,29 @@ def Simu_filling(x_v, y_v, idx):
     #     },'./Daily_cache/0316/Filling_%s' % idx, True, 2)
 
 
-Simu_filling(362, 324, 2)
+# a = ma.masked_array([1,2,3,5], mask=[0,0,1,0])
+# print(a)
+# b = np.array([5])
+# z = ma.masked_values([1, 2, 3, 4, 2], 2)
+# print(z)
+# d = ma.masked_values(z, 3)
+# c = ma.filled(d, fill_value=10)
+# print(d, c)
+# print(a*b+z)
+Simu_filling(360, 324, 2)
 
+# a = np.arange(12).reshape(3, 4)
+# b1 = np.array([False, True, True])         # first dim selection
+# b2 = np.array([True, False, True, False])
+# c = a[b1, b2]
+# print(c)
 # aa = [(1,2,3), (1,2,3), (2,2,3), (2,2,3), (3,2,4), (1,2,13)]
 # bb = np.array(aa).reshape(3,2,3)
+# cc = ma.masked_values(bb, 1)
+# print(cc)
 # # mm = np.delete(bb, 1, 0)
-# print(bb)
+# # print(mm)
+# print(cc.sum(axis=0))
 # print(bb.sum(axis=0))
 # print(bb.sum(axis=1))
 # print(bb.sum(axis=2))

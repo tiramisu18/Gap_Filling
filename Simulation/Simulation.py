@@ -121,6 +121,9 @@ def get_ErrDataSet():
                     LAI_Simu[idx][i][j] = LAI_Simu[idx][i][j] * 10
     np.save('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70)', LAI_Simu)
 
+def add_ErrDataSet():
+    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
+
 
 # LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
 LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')

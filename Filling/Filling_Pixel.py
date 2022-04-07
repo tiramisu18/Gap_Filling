@@ -2,6 +2,7 @@ import os
 from typing import MappingView
 from warnings import catch_warnings
 import numpy as np
+import numpy.ma as ma
 from numpy.random.mtrand import sample
 from osgeo import gdal
 import matplotlib.pyplot as plt
@@ -16,11 +17,6 @@ import Public_Motheds
 # 单像元计算
 def Temporal_Cal_Matrix_Pixel (fileDatas, index, position, landCover, qualityControl, temporalLength, winSize, SES_pow):
     # print('begin_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    # interpolation
-    # fileDatas = range(0, 46)
-    # temporalLength = 6
-    # SES_pow = 0.8
-    # index = 42
     paraRightHalf = []
     for i in range(0, temporalLength):
         para = round(SES_pow * (1 - SES_pow) ** i, 4)
@@ -44,8 +40,7 @@ def Temporal_Cal_Matrix_Pixel (fileDatas, index, position, landCover, qualityCon
     targetQCArray = np.array(targetQCList)
     numerator = targetLAIArray * smoothingArray * targetQCArray
     denominator = smoothingArray * targetQCArray   
-    improvedValue = numerator.sum() / denominator.sum()
-    print('rawValue ', targetLAI, improvedValue)
+    improvedValue = numerator.sum() / denominator.sum()   
 
     pos = position
     row_before = pos[0]- winSize if pos[0]- winSize > 0 else 0
@@ -85,7 +80,7 @@ def Temporal_Cal_Matrix_Pixel (fileDatas, index, position, landCover, qualityCon
     denominators = QCArray * smoothingArray 
     improvedValues = abs((numerators.sum(axis=1) / denominators.sum(axis=1)) - rawLAIArray)
     weight = improvedValues.sum()/len(improvedValues)
-    # print(weight)
+    print('m1', improvedValue, weight, targetLAI)
     return {'weight': weight, 'filling': improvedValue, 'or_value': targetLAI}
 
 # 整个tile计算
@@ -107,23 +102,29 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, position, landCover, qualityCont
     smoothingList = paraLeftHalf + paraRightHalf[:back_count]
     smoothingArray = np.array(smoothingList)
 
-    LAIDatas = np.delete(fileDatas[index - forward_count:index + back_count + 1, ...], forward_count, 0)
+    LAIDatas = ma.filled(ma.masked_greater(np.delete(fileDatas[index - forward_count:index + back_count + 1, ...], forward_count, 0), 70), fill_value=0)
+    # print(LAIDatas)
     QCDatas = np.delete(qualityControl[index - forward_count:index + back_count + 1, ...],forward_count, 0)
+    # QCDatas = ma.filled(ma.masked_equal(QCDatas_st1, 0), fill_value=1)
+
     SPara = smoothingArray.reshape(len(smoothingList),1,1)
     numerators = (LAIDatas * QCDatas * SPara).sum(axis=0)
     denominators = (QCDatas * SPara).sum(axis=0)
     LAIImprovedDatas = np.round(numerators / denominators, 0)
+    # LAIImprovedDatas = numerators / denominators
     print('Tile', LAIImprovedDatas[position[0], position[1]])
     # print(LAIImprovedDatas)
     # return
-    Public_Motheds.render_Img(qualityControl[index , ...], title='QC')
-    Public_Motheds.render_Img(denominators, title='denomi')
-    Public_Motheds.render_LAI(fileDatas[index , ...], title='Raw', issave=False)
-    Public_Motheds.render_LAI(LAIImprovedDatas, title='Tem', issave=False)
+    # Public_Motheds.render_Img(qualityControl[index , ...], title='QC')
+    # Public_Motheds.render_Img(denominators, title='denomi')
+    Public_Motheds.render_LAI(fileDatas[index , ...], title='Raw', issave=True, savepath='./Daily_cache/0407/Raw')
+    Public_Motheds.render_LAI(LAIImprovedDatas, title='Tem', issave=True, savepath='./Daily_cache/0407/Tem')
     # u, count = np.unique(fileDatas[index , ...], return_counts=True)
     # print(u, count)
     # u2, count2 = np.unique(LAIImprovedDatas, return_counts=True)
     # print(u2, count2)
+
+
     pos = position
     row_before = pos[0]- winSize if pos[0]- winSize > 0 else 0
     row_after = pos[0] + winSize + 1 if pos[0] + winSize < len(landCover[0]) else len(landCover[0])
@@ -183,7 +184,6 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
     if pos[0] + tem_winSize_unilateral < len(LC_info[0]) : tem_row_after = pos[0] + tem_winSize_unilateral + 1
     if pos[1]- tem_winSize_unilateral > 0 : tem_col_before = pos[1]- tem_winSize_unilateral
     if pos[1] + tem_winSize_unilateral < len(LC_info) : tem_col_after = pos[1] + tem_winSize_unilateral + 1
-    
     for i in range(tem_row_before, tem_row_after):
         for j in range(tem_col_before, tem_col_after):
             if LC_info[i][j] == lc_type:
@@ -194,8 +194,8 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
                 numerator.append(0)
                 denominator.append(0)
                 while (forward_index >= tem_forward_index):
-                    value = fileDatas[forward_index][i][j]
-                    tem_SES = SES_pow * (1 - SES_pow)**(forward_i - 1)                   
+                    value = fileDatas[forward_index][i][j]                    
+                    tem_SES = SES_pow * (1 - SES_pow)**(forward_i - 1)              
                     if(value <= 70):
                         QC_Score = QC_File[forward_index] 
                         numerator[tem_index] += value * tem_SES * QC_Score[i][j] 
@@ -204,7 +204,7 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
                     forward_i += 1                    
                 while (backward_index <= tem_back_index):
                     value = fileDatas[backward_index][i][j]
-                    tem_SES = SES_pow * math.pow((1 - SES_pow), backward_i - 1)                 
+                    tem_SES = SES_pow * math.pow((1 - SES_pow), backward_i - 1)                                    
                     if(value <= 70):
                         QC_Score = QC_File[backward_index]
                         numerator[tem_index] += value * tem_SES * QC_Score[i][j]
@@ -219,9 +219,9 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
                         valid_lc +=1 
                         dif_value = abs(inter - cu_dataset[i][j])
                         tem_wei_count += dif_value
-                else: 
-                    tem_filling_value = or_value
-                    # print('eq 0 ', i, valid_lc, tem_filling_value)
+                # else: 
+                #     tem_filling_value = or_value
+                #     print('eq 0 ', i, valid_lc, tem_filling_value)
                 tem_index += 1
             # print('winsiz', i, j, tem_row_before, tem_row_after, tem_col_before, tem_col_after)        
     if valid_lc == 0 :
