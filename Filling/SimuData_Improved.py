@@ -148,15 +148,37 @@ def Simu_filling(x_v, y_v, idx):
 # c = ma.filled(d, fill_value=10)
 # print(d, c)
 # print(a*b+z)
-Simu_filling(360, 324, 2)
+# Simu_filling(360, 324, 2)
 
 # a = np.arange(12).reshape(3, 4)
 # b1 = np.array([False, True, True])         # first dim selection
 # b2 = np.array([True, False, True, False])
 # c = a[b1, b2]
 # print(c)
-# aa = [(1,2,3), (1,2,3), (2,2,3), (2,2,3), (3,2,4), (1,2,13)]
-# bb = np.array(aa).reshape(3,2,3)
+aa = [(1,2,3), (1,2,3), (2,2,3), (2,2,3), (3,2,4), (1,2,13)]
+bb = np.array(aa).reshape(3,2,3)
+cc = np.array(np.arange(18)).reshape(3,2,3)
+dd = np.ones(18).reshape(3,2,3)
+dd[0,0,2] = 10
+# print(bb*cc*dd)
+nn = np.array(np.arange(25)).reshape(5,-1)
+mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
+print(nn)
+print(mm)
+mm[2: , 2:] = nn[:3, :3]
+
+print(mm)
+mm[2: , 1:] = nn[:3, :4]
+print(mm)
+mm[2: , 0:] = nn[:3, :5]
+print(mm)
+mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
+mm[2: , 0:4] = nn[:3, 1:5]
+print(mm)
+mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
+mm[2: , 0:3] = nn[:3, 2:5]
+print(mm)
+print(nn)
 # cc = ma.masked_values(bb, 1)
 # print(cc)
 # # mm = np.delete(bb, 1, 0)
