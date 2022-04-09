@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
 
-def render_LAI (data, title='Image', issave=False, savepath=''):
-    colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#ffffff']
+def render_LAI (data, title='LAI', issave=False, savepath=''):
+    colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
     bounds = [0,10,20,30,40,50,60,70,250]
     cmap = pltcolor.ListedColormap(colors)
     norm = pltcolor.BoundaryNorm(bounds, cmap.N)
@@ -15,7 +15,7 @@ def render_LAI (data, title='Image', issave=False, savepath=''):
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
 
-def render_Img (data, title='Algo Path', issave=False, savepath=''):
+def render_Img (data, title='Title', issave=False, savepath=''):
     plt.imshow(data, cmap = plt.cm.jet)  # cmap= plt.cm.jet
     plt.title(title, family='Times New Roman', fontsize=18)
     colbar = plt.colorbar()

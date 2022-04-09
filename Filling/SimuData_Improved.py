@@ -1,3 +1,4 @@
+from enum import Flag
 import os
 import numpy as np
 import numpy.ma as ma
@@ -9,6 +10,7 @@ import math
 import h5py
 import Filling_Pixel
 import Draw_PoltLine
+import Public_Motheds
 
 
 # calculate RMSE
@@ -83,7 +85,7 @@ def Simu_filling_All():
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Filling_Pos, LandCover, 6, 12, ses_pow, 2, 5)
 
 # 模拟数据的时空填补(单像元)
-def Simu_filling(x_v, y_v, idx):
+def Simu_filling(x_v, y_v):
     LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     # LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
     LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
@@ -98,26 +100,15 @@ def Simu_filling(x_v, y_v, idx):
     simu_val = []
 
     ses_pow = 0.8
-    for index in range(34, 35):
-        # one = Err_weight[index , ...]
-        # print(one == 0)
-        # one_change = np.nonzero(one == 0)
-        # print(one_change)
-        # one[one_change] = 1
-        # print(one)
-        # u, count = np.unique(Err_weight[index , ...], return_counts=True)
-        # print(u, count)
-        # u2, count2 = np.unique(LAI_Simu_addErr[index , ...], return_counts=True)
-        # print(u2, count2)
-
+    for index in range(34, 35): 
         # if index < 10: ses_pow = 0.3
         # if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
         # elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
         # else: ses_pow = 0.3
         # elif 20 < index < 30: ses_pow = 0.3
-        re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, 1)
+        re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, 2)
         # improved = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow)
-        # print(re1)
+        print(re1)
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Filling_Pos, LandCover, 6, 12, ses_pow, 2, 5)
         # Fil_val_1.append(re1['Tem'][0]/10)
         # Fil_val_2.append(re1['Spa'][0] /10)
@@ -139,46 +130,58 @@ def Simu_filling(x_v, y_v, idx):
     #     },'./Daily_cache/0316/Filling_%s' % idx, True, 2)
 
 
-# a = ma.masked_array([1,2,3,5], mask=[0,0,1,0])
-# print(a)
-# b = np.array([5])
-# z = ma.masked_values([1, 2, 3, 4, 2], 2)
-# print(z)
-# d = ma.masked_values(z, 3)
-# c = ma.filled(d, fill_value=10)
-# print(d, c)
-# print(a*b+z)
-# Simu_filling(360, 324, 2)
+# Simu_filling(360, 324)
 
 # a = np.arange(12).reshape(3, 4)
 # b1 = np.array([False, True, True])         # first dim selection
 # b2 = np.array([True, False, True, False])
 # c = a[b1, b2]
 # print(c)
-aa = [(1,2,3), (1,2,3), (2,2,3), (2,2,3), (3,2,4), (1,2,13)]
-bb = np.array(aa).reshape(3,2,3)
-cc = np.array(np.arange(18)).reshape(3,2,3)
-dd = np.ones(18).reshape(3,2,3)
-dd[0,0,2] = 10
-# print(bb*cc*dd)
-nn = np.array(np.arange(25)).reshape(5,-1)
-mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
-print(nn)
-print(mm)
-mm[2: , 2:] = nn[:3, :3]
+# aa = [(1,250,3), (1,2,3), (2,250,3), (2,2,3), (3,255,4), (1,2,13)]
+# lai = np.array(aa).reshape(3,2,3)
+# eu = np.array(np.arange(2,5)).reshape(3,1,1)
+# qc = np.array(np.arange(18)).reshape(3,2,3)
+# lc = np.array([(1,2,3), (1,3,1)])
 
-print(mm)
-mm[2: , 1:] = nn[:3, :4]
-print(mm)
-mm[2: , 0:] = nn[:3, :5]
-print(mm)
-mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
-mm[2: , 0:4] = nn[:3, 1:5]
-print(mm)
-mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
-mm[2: , 0:3] = nn[:3, 2:5]
-print(mm)
-print(nn)
+# lcma = ma.masked_not_equal(lc, 1)   
+# print(lcma.mask)  
+# lai_1 = ma.array(lai, mask=np.repeat([lcma.mask], lai.shape[0], axis=0))
+# lai_1 = ma.array(lai, mask=np.tile(lcma.mask, (lai.shape[0], 1, 1)))
+
+# o1 = lai_1 * qc * eu
+# print(o1)
+# lcma2 = ma.masked_not_equal(lc, 3)     
+# lai_2 = ma.array(lai, mask=[lcma2.mask,lcma2.mask, lcma2.mask])
+# o2 = lai_2 * qc * eu
+# print(o2, o2.sum(axis=0))
+# osum = ma.filled(o1,0)+ma.filled(o2, 0)
+# print(osum)
+# pos = lai.__gt__(70)
+# osum[pos] = lai[pos]
+# print(osum)
+
+# dd = np.ones(18).reshape(3,2,3)
+# dd[0,0,2] = 10
+# print(bb*cc*dd)
+# nn = np.array(np.arange(25)).reshape(5,-1)
+# mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
+# print(nn)
+# print(mm)
+# mm[2: , 2:] = nn[:3, :3]
+
+# print(mm)
+# mm[2: , 1:] = nn[:3, :4]
+# print(mm)
+# mm[2: , 0:] = nn[:3, :5]
+# print(mm)
+# mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
+# mm[2: , 0:4] = nn[:3, 1:5]
+# print(mm)
+# mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
+# mm[2: , 0:3] = nn[:3, 2:5]
+# print(mm)
+# print(nn)
+
 # cc = ma.masked_values(bb, 1)
 # print(cc)
 # # mm = np.delete(bb, 1, 0)
