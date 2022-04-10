@@ -130,7 +130,7 @@ def Simu_filling(x_v, y_v):
     #     },'./Daily_cache/0316/Filling_%s' % idx, True, 2)
 
 
-# Simu_filling(360, 324)
+Simu_filling(364, 324)
 
 # a = np.arange(12).reshape(3, 4)
 # b1 = np.array([False, True, True])         # first dim selection
@@ -142,12 +142,19 @@ def Simu_filling(x_v, y_v):
 # eu = np.array(np.arange(2,5)).reshape(3,1,1)
 # qc = np.array(np.arange(18)).reshape(3,2,3)
 # lc = np.array([(1,2,3), (1,3,1)])
-
+# t0 = np.array()
+# t1 = np.array(np.arange(12)).reshape(3,4)
+# t2 = np.array(np.arange(10, 22)).reshape(3,4)
+# cc = np.stack((t1, t2), axis=0)
+# print(cc, cc.shape)
 # lcma = ma.masked_not_equal(lc, 1)   
-# print(lcma.mask)  
-# lai_1 = ma.array(lai, mask=np.repeat([lcma.mask], lai.shape[0], axis=0))
+# # print(lcma.mask)  
+# # lai_1 = ma.array(lai, mask=np.repeat([lcma.mask], lai.shape[0], axis=0))
 # lai_1 = ma.array(lai, mask=np.tile(lcma.mask, (lai.shape[0], 1, 1)))
-
+# print(lai_1)
+# bb = np.zeros(6).reshape(2,3)
+# bb[ : , 0:1] = lai_1[1, : , 0:1]
+# print(bb)
 # o1 = lai_1 * qc * eu
 # print(o1)
 # lcma2 = ma.masked_not_equal(lc, 3)     

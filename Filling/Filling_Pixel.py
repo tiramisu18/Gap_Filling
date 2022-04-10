@@ -235,23 +235,30 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
     return {'weight': tem_weight, 'filling': tem_filling_value, 'or_value': or_value}
 
 def Spatial_Cal_Matrix_Tile(fileDatas, index, position, landCover, qualityControl, EUC_pow, winSize):
-    rawLAI = fileDatas[index, ...]
+    rawLAI = ma.masked_greater(fileDatas[index, ...], 70)
     rawQC = qualityControl[index, ...]
     rowSize = rawLAI.shape[0]
     colSize = rawLAI.shape[1]
     LAIImprovedList = []
-    for lcType in range(4, 5):
+    Public_Motheds.render_LAI(rawLAI, title='Raw')
+    for lcType in range(1, 9):
         lcma = ma.masked_not_equal(landCover, lcType) 
-        Public_Motheds.render_Img(lcma)
+        # Public_Motheds.render_Img(lcma, title='LC_B%s' %lcType, issave=True, savepath='./Daily_cache/0410/LC_B%s' %lcType)
         rawLAIMasked = ma.array(rawLAI, mask=lcma.mask)
-        Public_Motheds.render_LAI(rawLAIMasked)
+        # print(rawLAIMasked)
+        # Public_Motheds.render_LAI(rawLAIMasked)
+        # Public_Motheds.render_LAI(rawLAIMasked[:250, :250])
 
+        # EdLAIArray = np.zeros(rawLAI.size, dtype=np.int16).reshape(rawLAI.shape)
         EdLAIList = []
         EdQCList = []
         EdList = []
         for i in range(-winSize, winSize+1):
             for j in range(-winSize, winSize+1):
-                mm = np.zeros(rawLAI.size, dtype=np.int16).reshape(rawLAI.shape)
+                m1 = np.zeros(rawLAI.size, dtype=np.int16).reshape(rawLAI.shape)
+                # m1 = np.zeros(25, dtype=np.int16).reshape(5,5)
+                mm = ma.array(m1, mask=True)
+                # print(mm)
                 nn = np.zeros(rawLAI.size, dtype=np.int16).reshape(rawLAI.shape)
                 if i == 0 and j == 0: continue
                 if i <= 0 :
@@ -269,28 +276,42 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, position, landCover, qualityContro
                         mm[0:rowSize-i, 0:colSize-j] = rawLAIMasked[i:, j:]
                         nn[0:rowSize-i, 0:colSize-j] = rawQC[i:, j:]
                 EdLAIList.append(mm)
+                # ma.append(EdLAIArray, mm, axis=0)
+                # print(EdLAIArray, EdLAIArray.shape)
+
+                # Public_Motheds.render_LAI(mm, title='%s-%s' % (i, j))
                 EdQCList.append(nn)
                 EdList.append((math.sqrt(abs(i) ** 2 + abs(j) ** 2) ** -EUC_pow))
-        EdLAIArray = np.array(EdLAIList)
-        print(EdLAIArray)
+        # EdLAIArray = ma.masked_values(np.array(EdLAIList), 0)
+        # Public_Motheds.render_LAI(EdLAIList[10])
+        EdLAIArray = ma.array(EdLAIList)
+        # EdLAIArray = ma.stack(tuple(EdLAIList), axis=0)
+        # print(EdLAIArray, EdLAIArray.shape)
+        # Public_Motheds.render_LAI(EdLAIArray[10])
         EdQCArray = np.array(EdQCList)
         EdArray = np.array(EdList).reshape(-1, 1, 1)
         # print(EdLAIArray.shape, EdArray.shape)
-        numerators = (EdLAIArray * EdArray * EdQCArray).sum(axis=0)
+        numerators = (EdLAIArray * EdQCArray * EdArray).sum(axis=0)
+        # Public_Motheds.render_Img(numerators, title='numerators')
+        # print(numerators)
         denominators = (EdArray * EdQCArray).sum(axis=0)
-        LAIImprovedData = np.round(numerators / denominators, 0)
+       
+        LAIImprovedData = ma.round(numerators / denominators, 0)
         LAIImprovedList.append(LAIImprovedData)
-          
+        # Public_Motheds.render_LAI(LAIImprovedData)
+
+    # print(LAIImprovedList)      
     # LAIImprovedArray = ma.filled(np.array(LAIImprovedList), 0)
-    LAIImprovedArray = np.array(LAIImprovedList)
-    print(LAIImprovedArray.shape)  
+    LAIImprovedArray = ma.array(LAIImprovedList)
+    # print(LAIImprovedArray.shape)  
     result = LAIImprovedArray.sum(axis = 0)
     # print(LAIImprovedArray.shape, result.shape) 
     # print(result)
-    # pos = rawLAI.__gt__(70)
-    # result[pos] = rawLAI[pos]
+    pos = fileDatas[index, ...].__gt__(70)
+    result[pos] = fileDatas[index, ...][pos]
     print('Tile', result[position[0], position[1]])
-    Public_Motheds.render_LAI(result, title='Spatial', issave=False, savepath='./Daily_cache/0407/Tem_nomask')
+    Public_Motheds.render_LAI(result, title='Spatial', issave=True, savepath='./Daily_cache/0410/Spatial')
+    Public_Motheds.render_LAI(fileDatas[index, ...], title='Raw', issave=True, savepath='./Daily_cache/0410/Raw')
 
 
 def Spatial_Cal_Matrix_Pixel(fileDatas, index, position, landCover, qualityControl, EUC_pow, winSize):
