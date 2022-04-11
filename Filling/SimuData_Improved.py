@@ -101,14 +101,20 @@ def Simu_filling(x_v, y_v):
 
     ses_pow = 0.8
     for index in range(34, 35): 
+        # lcma = ma.masked_not_equal(LandCover, 1) 
+        # print(lcma.data)
+        # Public_Motheds.render_Img(lcma)
+        # u, count = np.unique(LAI_Simu_addErr[index], return_counts=True)
+        # print(u, count)
         # if index < 10: ses_pow = 0.3
         # if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
         # elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
         # else: ses_pow = 0.3
         # elif 20 < index < 30: ses_pow = 0.3
-        re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, 2)
-        # improved = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow)
-        print(re1)
+
+        # re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, 2)
+        # print(re1)
+        Filling_Pixel.Fill_Pixel_Matrix(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5)
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Filling_Pos, LandCover, 6, 12, ses_pow, 2, 5)
         # Fil_val_1.append(re1['Tem'][0]/10)
         # Fil_val_2.append(re1['Spa'][0] /10)
@@ -130,78 +136,18 @@ def Simu_filling(x_v, y_v):
     #     },'./Daily_cache/0316/Filling_%s' % idx, True, 2)
 
 
-Simu_filling(364, 324)
+Simu_filling(360, 324)
+# Simu_filling(100, 100)
 
 # a = np.arange(12).reshape(3, 4)
-# b1 = np.array([False, True, True])         # first dim selection
-# b2 = np.array([True, False, True, False])
-# c = a[b1, b2]
-# print(c)
-# aa = [(1,250,3), (1,2,3), (2,250,3), (2,2,3), (3,255,4), (1,2,13)]
-# lai = np.array(aa).reshape(3,2,3)
-# eu = np.array(np.arange(2,5)).reshape(3,1,1)
-# qc = np.array(np.arange(18)).reshape(3,2,3)
-# lc = np.array([(1,2,3), (1,3,1)])
-# t0 = np.array()
-# t1 = np.array(np.arange(12)).reshape(3,4)
-# t2 = np.array(np.arange(10, 22)).reshape(3,4)
-# cc = np.stack((t1, t2), axis=0)
-# print(cc, cc.shape)
-# lcma = ma.masked_not_equal(lc, 1)   
-# # print(lcma.mask)  
-# # lai_1 = ma.array(lai, mask=np.repeat([lcma.mask], lai.shape[0], axis=0))
-# lai_1 = ma.array(lai, mask=np.tile(lcma.mask, (lai.shape[0], 1, 1)))
-# print(lai_1)
-# bb = np.zeros(6).reshape(2,3)
-# bb[ : , 0:1] = lai_1[1, : , 0:1]
+# b = ma.masked_greater(a, 7)   
+# c = np.array([0,2,4,2,3,5,2,5,4,2,6,3]).reshape(3,4)   
+# d = ma.masked_not_equal(c,2)
+# # c = a[b1, b2]
+# print(b)
+# print(d, d.mask)
+# bb = ma.array(b, mask=d.mask)
 # print(bb)
-# o1 = lai_1 * qc * eu
-# print(o1)
-# lcma2 = ma.masked_not_equal(lc, 3)     
-# lai_2 = ma.array(lai, mask=[lcma2.mask,lcma2.mask, lcma2.mask])
-# o2 = lai_2 * qc * eu
-# print(o2, o2.sum(axis=0))
-# osum = ma.filled(o1,0)+ma.filled(o2, 0)
-# print(osum)
-# pos = lai.__gt__(70)
-# osum[pos] = lai[pos]
-# print(osum)
 
-# dd = np.ones(18).reshape(3,2,3)
-# dd[0,0,2] = 10
-# print(bb*cc*dd)
-# nn = np.array(np.arange(25)).reshape(5,-1)
-# mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
-# print(nn)
-# print(mm)
-# mm[2: , 2:] = nn[:3, :3]
 
-# print(mm)
-# mm[2: , 1:] = nn[:3, :4]
-# print(mm)
-# mm[2: , 0:] = nn[:3, :5]
-# print(mm)
-# mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
-# mm[2: , 0:4] = nn[:3, 1:5]
-# print(mm)
-# mm = np.zeros(nn.size, dtype=np.int16).reshape(nn.shape)
-# mm[2: , 0:3] = nn[:3, 2:5]
-# print(mm)
-# print(nn)
 
-# cc = ma.masked_values(bb, 1)
-# print(cc)
-# # mm = np.delete(bb, 1, 0)
-# # print(mm)
-# print(cc.sum(axis=0))
-# print(bb.sum(axis=0))
-# print(bb.sum(axis=1))
-# print(bb.sum(axis=2))
-
-# cc = np.array([1,2,3]).reshape(3,1,1)
-# dd = bb*cc
-# print(dd)
-# cc = np.array([(2,2,3), (2,3,3), (1,2,3), (1,2,3), (1,2,3), (3,2,3)]).reshape(3,2,3)
-# print(bb, cc)
-# dd = bb + cc
-# print(dd)
