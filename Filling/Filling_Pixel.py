@@ -11,77 +11,9 @@ import copy
 import math
 import time
 import Public_Motheds
+import Newtons_Method
 
 # 修改为矩阵计算 并且最终权重计算修改为牛顿迭代法求解参数
-
-# 单像元计算
-def Temporal_Cal_Matrix_Pixel (fileDatas, index, position, landCover, qualityControl, temporalLength, winSize, SES_pow):
-    # print('begin_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    paraRightHalf = []
-    for i in range(0, temporalLength):
-        para = round(SES_pow * (1 - SES_pow) ** i, 4)
-        paraRightHalf.append(para)
-
-    back_count = len(fileDatas) - index - 1 if index + temporalLength > len(fileDatas) - 1  else 6
-    forward_count = index if index - temporalLength < 0  else 6
-    paraLeftHalf = paraRightHalf[:forward_count]
-    paraLeftHalf.reverse()
-    smoothingList = paraLeftHalf + paraRightHalf[:back_count]
-    smoothingArray = np.array(smoothingList)
-
-    targetLAI = fileDatas[index, position[0], position[1]]
-    targetLAIList = []
-    targetQCList = []
-    for i in range(index - forward_count, index + back_count + 1):
-        if i != index:
-            targetLAIList.append(fileDatas[i, position[0], position[1]])
-            targetQCList.append(qualityControl[i, position[0], position[1]])
-    targetLAIArray = np.array(targetLAIList)
-    targetQCArray = np.array(targetQCList)
-    numerator = targetLAIArray * smoothingArray * targetQCArray
-    denominator = smoothingArray * targetQCArray   
-    improvedValue = numerator.sum() / denominator.sum()   
-
-    pos = position
-    row_before = pos[0]- winSize if pos[0]- winSize > 0 else 0
-    row_after = pos[0] + winSize + 1 if pos[0] + winSize < len(landCover[0]) else len(landCover[0])
-    col_before = pos[1]- winSize if pos[1]- winSize > 0 else 0 
-    col_after = pos[1] + winSize + 1 if pos[1] + winSize < len(landCover) else len(landCover)
-
-    posLC = landCover[pos[0]][pos[1]] 
-    LAIRange = fileDatas[index, row_before:row_after, col_before:col_after]      
-    lcRange = landCover[row_before:row_after, col_before:col_after]
-    intersect = (LAIRange <= 70) == (lcRange == posLC)
-    filter = np.nonzero(intersect == True) #get the indices of elements that satisfy the conditions, return array (row indices, column indices)
-    list_of_coordinates = list(zip(filter[0], filter[1])) #generate a list of coordinates
-    rawLAITemList = []
-    QCList = []
-    rawLAIList = []
-    list_of_coordinates.remove((position[0] - row_before, position[1] - col_before))
-    # print('length', len(list_of_coordinates))
-    for coord in list_of_coordinates:
-        rawCoordRow = coord[0] + row_before
-        rawCoordCol = coord[1] + col_before
-        rawValueOne = []
-        QCOne = []
-        rawLAIList.append(fileDatas[index, rawCoordRow, rawCoordCol])
-        for i in range(index - forward_count, index + back_count + 1):
-            if i != index:
-                rawValueOne.append(fileDatas[i, rawCoordRow, rawCoordCol])
-                QCOne.append(qualityControl[i, rawCoordRow, rawCoordCol])
-        rawLAITemList.append(rawValueOne)
-        QCList.append(QCOne)
-
-    # print(np.array(rawLAITemList).shape)
-    rawLAITemArray = np.array(rawLAITemList)
-    QCArray = np.array(QCList)
-    rawLAIArray = np.array(rawLAIList)
-    numerators = rawLAITemArray * QCArray * smoothingArray
-    denominators = QCArray * smoothingArray 
-    improvedValues = abs((numerators.sum(axis=1) / denominators.sum(axis=1)) - rawLAIArray)
-    weight = improvedValues.sum()/len(improvedValues)
-    print('m1', improvedValue, weight, targetLAI)
-    return {'weight': weight, 'filling': improvedValue, 'or_value': targetLAI}
 
 # 整个tile计算
 def Temporal_Cal_Matrix_Tile (fileDatas, index, position, landCover, qualityControl, temporalLength, winSize, SES_pow):
@@ -101,21 +33,21 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, position, landCover, qualityCont
     # 将lai值大于70的位置mask，但mask后影响此处的计算，因此暂时将其填充为0
     LAIDatas = ma.filled(ma.masked_greater(np.delete(fileDatas[index - forward_count:index + back_count + 1, ...], forward_count, 0), 70), fill_value=0)
     # LAIDatas = np.delete(fileDatas[index - forward_count:index + back_count + 1, ...], forward_count, 0) 
-    # QCDatas = np.delete(qualityControl[index - forward_count:index + back_count + 1, ...],forward_count, 0)
-    QCDatas_st1 = np.delete(qualityControl[index - forward_count:index + back_count + 1, ...],forward_count, 0)
-    QCDatas = ma.filled(ma.masked_equal(QCDatas_st1, 0), fill_value=1)
+    QCDatas = np.delete(qualityControl[index - forward_count:index + back_count + 1, ...],forward_count, 0)
+    # QCDatas_st1 = np.delete(qualityControl[index - forward_count:index + back_count + 1, ...],forward_count, 0)
+    # QCDatas = ma.filled(ma.masked_equal(QCDatas_st1, 0), fill_value=1)
 
     SPara = smoothingArray.reshape(len(smoothingList),1,1)
     numerators = (LAIDatas * QCDatas * SPara).sum(axis=0)
     denominators = (QCDatas * SPara).sum(axis=0)
-    # LAIImprovedDatas = np.round(numerators / denominators, 0)
-    LAIImprovedDatas = numerators / denominators
+    LAIImprovedDatas = np.round(numerators / denominators)
+    # LAIImprovedDatas = numerators / denominators
     # 目前，255填充值通过计算修补了部分数据，下面两步会将原来的填充值255还原
-    # pos = fileDatas[index, ...].__gt__(70)
-    # LAIImprovedDatas[pos] = fileDatas[index, ...][pos]
-    print('Tile_Tem', LAIImprovedDatas[position[0], position[1]])
+    pos = fileDatas[index, ...].__gt__(70)
+    LAIImprovedDatas[pos] = fileDatas[index, ...][pos]
+    print('Tile_Tem', LAIImprovedDatas[position])
     # Public_Motheds.render_LAI(fileDatas[index , ...], title='Raw', issave=False, savepath='./Daily_cache/0407/Raw')
-    Public_Motheds.render_LAI(LAIImprovedDatas, title='Tem', issave=False, savepath='./Daily_cache/0407/Tem_nomask')
+    # Public_Motheds.render_LAI(LAIImprovedDatas, title='Tem', issave=False, savepath='./Daily_cache/0407/Tem_nomask')
     # u, count = np.unique(fileDatas[index , ...], return_counts=True)
     # print(u, count)
 
@@ -146,7 +78,7 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, position, landCover, qualityCont
     # improvedLAIArray = np.array(improvedLAIList)
     # weight = abs(improvedLAIArray - rawLAIArray).sum() / len(list_of_coordinates)
     # print(weight)
-    return 
+    return LAIImprovedDatas
 
 # 整个tile计算
 def Spatial_Cal_Matrix_Tile(fileDatas, index, position, landCover, qualityControl, EUC_pow, winSize):
@@ -156,11 +88,13 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, position, landCover, qualityContro
     rawQC = ma.array(qualityControl[index, ...], mask=rawLAI.mask) 
     rowSize = rawLAI.shape[0]
     colSize = rawLAI.shape[1]
-    Public_Motheds.render_LAI(fileDatas[index, ...], title='Raw')
+    # Public_Motheds.render_LAI(fileDatas[index, ...], title='Raw')
     for lcType in range(1, 9):
-        lcma = ma.masked_not_equal(landCover, lcType) 
-        rawLAIMasked = ma.array(rawLAI, mask=lcma.mask) # 再按照不同的lc类型进行mask
-        rawQCMasked = ma.array(rawQC, mask=lcma.mask)
+        # lcma = ma.masked_not_equal(landCover, lcType) 
+        # rawLAIMasked = ma.array(rawLAI, mask=lcma.mask) # 再按照不同的lc类型进行mask
+        # rawQCMasked = ma.array(rawQC, mask=lcma.mask) 
+        rawLAIMasked = ma.array(rawLAI, mask=landCover.__ne__(lcType)) # 再按照不同的lc类型进行mask
+        rawQCMasked = ma.array(rawQC, mask=landCover.__ne__(lcType))
         EdLAIList = []
         EdQCList = []
         EdList = []
@@ -194,19 +128,51 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, position, landCover, qualityContro
         EdArray = np.array(EdList).reshape(-1, 1, 1)
         numerators = (EdLAIArray * EdQCArray * EdArray).sum(axis=0)
         denominators = (EdArray * EdQCArray).sum(axis=0)
-        LAIImprovedData = ma.round(numerators / denominators, 0)
+        LAIImprovedData = ma.round(numerators / denominators)
         # LAIImprovedData = numerators / denominators
         pos = landCover.__eq__(lcType)
         LAIImprovedDatas[pos] = LAIImprovedData[pos]
 
-
+    print('Tile_Spa', LAIImprovedDatas[position])
     # 目前，255填充值通过计算修补了部分数据，下面两步会将原来的填充值255还原
     pos1 = fileDatas[index, ...].__gt__(70)
     LAIImprovedDatas[pos1] = fileDatas[index, ...][pos1]
-    Public_Motheds.render_LAI(LAIImprovedDatas, title='Spatial', issave=False, savepath='./Daily_cache/0410/Spatial_v3')
-    print('Tile', LAIImprovedDatas[position[0], position[1]])
+    # Public_Motheds.render_LAI(LAIImprovedDatas, title='Spatial', issave=False, savepath='./Daily_cache/0410/Spatial_v3')
+    return LAIImprovedDatas
 
-# 整个tile计算（与上面区别：此方法将lc也设置成多个数据层，随目标周围窗口像元变化）    
+def Calculate_Weight(TemLAI, SpaLAI, RawLAI, LandCover, qualityControl, pos):  
+    size = 2  
+    lcType = LandCover[pos]
+    temMask1 = ma.array(TemLAI, mask=LandCover.__ne__(lcType))
+    spaMask1 = ma.array(SpaLAI, mask=LandCover.__ne__(lcType))
+    rawMask1 = ma.array(RawLAI, mask=LandCover.__ne__(lcType))
+    temMask = ma.array(temMask1, mask=qualityControl.__ne__(10))
+    spaMask = ma.array(spaMask1, mask=qualityControl.__ne__(10))
+    rawMask = ma.array(rawMask1, mask=qualityControl.__ne__(10))
+
+    partTemMask = temMask[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1]
+    partSpaMask = spaMask[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1]
+    partRawMask = rawMask[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1]
+    # print(partTemMask)
+    # print(qualityControl[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1])
+    # print(partSpaMask)
+    partTem = partTemMask[~partTemMask.mask]
+    partSpa = partSpaMask[~partSpaMask.mask]
+    partRaw = partRawMask[~partRawMask.mask]
+    print(partTem.tolist())
+    print(partSpa.tolist())
+    print(partRaw.tolist())
+    # partTem = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 27.0, 23.0, 28.0, 26.0, 27.0, 32.0, 27.0, 28.0, 28.0, 25.0, 26.0, 30.0]
+    # partSpa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0, 20.0, 23.0, 23.0, 21.0, 22.0, 24.0, 25.0, 24.0, 23.0, 24.0, 26.0, 25.0, 23.0]
+    # partRaw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0, 18.0, 40.0, 22.0, 16.0, 22.0, 30.0, 29.0, 27.0, 29.0, 39.0, 25.0, 35.0, 30.0]
+    # Newtons_Method.Newtons_Simulated_Dataset(partTem, partSpa, partRaw)
+    # partLC = LandCover[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1]
+    # print(partLC)
+    # # pos = LandCover[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1].__ne__(lcType)
+    # pos = LandCover[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1].__eq__(lcType)
+    # print(partLC[pos], len(partLC[pos]))
+
+# 整个tile计算（与Spatial_Cal_Matrix_Tile()区别：此方法将lc也设置成多个数据层，随目标周围窗口像元变化）    
 def Spatial_Cal_Matrix_Tile_v2(fileDatas, index, position, landCover, qualityControl, EUC_pow, winSize):
     print('begin_tem_v2', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     LAIImprovedDatas = np.array(fileDatas[index, ...]).copy()
@@ -289,6 +255,75 @@ def Spatial_Cal_Matrix_Tile_v2(fileDatas, index, position, landCover, qualityCon
     print('Tile', LAIImprovedDatas[position[0], position[1]])
     print('end_tem_v2', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 
+# 单像元矩阵计算
+def Temporal_Cal_Matrix_Pixel (fileDatas, index, position, landCover, qualityControl, temporalLength, winSize, SES_pow):
+    # print('begin_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    paraRightHalf = []
+    for i in range(0, temporalLength):
+        para = round(SES_pow * (1 - SES_pow) ** i, 4)
+        paraRightHalf.append(para)
+
+    back_count = len(fileDatas) - index - 1 if index + temporalLength > len(fileDatas) - 1  else 6
+    forward_count = index if index - temporalLength < 0  else 6
+    paraLeftHalf = paraRightHalf[:forward_count]
+    paraLeftHalf.reverse()
+    smoothingList = paraLeftHalf + paraRightHalf[:back_count]
+    smoothingArray = np.array(smoothingList)
+
+    targetLAI = fileDatas[index, position]
+    targetLAIList = []
+    targetQCList = []
+    for i in range(index - forward_count, index + back_count + 1):
+        if i != index:
+            targetLAIList.append(fileDatas[i, position])
+            targetQCList.append(qualityControl[i, position])
+    targetLAIArray = np.array(targetLAIList)
+    targetQCArray = np.array(targetQCList)
+    numerator = targetLAIArray * smoothingArray * targetQCArray
+    denominator = smoothingArray * targetQCArray   
+    improvedValue = numerator.sum() / denominator.sum()   
+
+    pos = position
+    row_before = pos[0]- winSize if pos[0]- winSize > 0 else 0
+    row_after = pos[0] + winSize + 1 if pos[0] + winSize < len(landCover[0]) else len(landCover[0])
+    col_before = pos[1]- winSize if pos[1]- winSize > 0 else 0 
+    col_after = pos[1] + winSize + 1 if pos[1] + winSize < len(landCover) else len(landCover)
+
+    posLC = landCover[pos[0]][pos[1]] 
+    LAIRange = fileDatas[index, row_before:row_after, col_before:col_after]      
+    lcRange = landCover[row_before:row_after, col_before:col_after]
+    intersect = (LAIRange <= 70) == (lcRange == posLC)
+    filter = np.nonzero(intersect == True) #get the indices of elements that satisfy the conditions, return array (row indices, column indices)
+    list_of_coordinates = list(zip(filter[0], filter[1])) #generate a list of coordinates
+    rawLAITemList = []
+    QCList = []
+    rawLAIList = []
+    list_of_coordinates.remove((pos[0] - row_before, pos[1] - col_before))
+    # print('length', len(list_of_coordinates))
+    for coord in list_of_coordinates:
+        rawCoordRow = coord[0] + row_before
+        rawCoordCol = coord[1] + col_before
+        rawValueOne = []
+        QCOne = []
+        rawLAIList.append(fileDatas[index, rawCoordRow, rawCoordCol])
+        for i in range(index - forward_count, index + back_count + 1):
+            if i != index:
+                rawValueOne.append(fileDatas[i, rawCoordRow, rawCoordCol])
+                QCOne.append(qualityControl[i, rawCoordRow, rawCoordCol])
+        rawLAITemList.append(rawValueOne)
+        QCList.append(QCOne)
+
+    # print(np.array(rawLAITemList).shape)
+    rawLAITemArray = np.array(rawLAITemList)
+    QCArray = np.array(QCList)
+    rawLAIArray = np.array(rawLAIList)
+    numerators = rawLAITemArray * QCArray * smoothingArray
+    denominators = QCArray * smoothingArray 
+    improvedValues = abs((numerators.sum(axis=1) / denominators.sum(axis=1)) - rawLAIArray)
+    weight = improvedValues.sum()/len(improvedValues)
+    print('m1', improvedValue, weight, targetLAI)
+    return {'weight': weight, 'filling': improvedValue, 'or_value': targetLAI}
+
 
 def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral): 
     # LAI_Result = copy.deepcopy(fileDatas[index])
@@ -337,38 +372,38 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
     # LAI_Result[pos[0]][pos[1]] = final
     return {'Tem': Fil_tem, 'Spa': Fil_spa, 'Fil': Fil_value, 'Or': Or_value, 'T_W': Tem_W, 'S_W': Spa_W, 'Qc_W': Qc_W}
 
-# 计算所有像元点 并存储为npy
-def Fill_Pixel_Matrix (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral): 
-    for pos in Filling_Pos:
-        Temporal_Cal_Matrix_Tile(fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-        # Spatial_Cal_Matrix_Tile(fileDatas, index, pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral) 
-    
+# 计算时空 使用tile矩阵
+def Fill_Pixel_Matrix (fileDatas, index, position, LC_info,  qualityControl, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral): 
+    tem = Temporal_Cal_Matrix_Tile(fileDatas, index, position, LC_info,  qualityControl, temporalLength, tem_winSize_unilateral, SES_pow)
+    spa = Spatial_Cal_Matrix_Tile(fileDatas, index, position, LC_info,  qualityControl, EUC_pow, spa_winSize_unilateral) 
+    return {'Tem': tem, 'Spa': spa}
     
 # 求时间或空间的填补值 method：1（时间）2（空间） 
-def Fill_Pixel_One (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
+def Fill_Pixel_One (fileDatas, index, Filling_Pos, LC_info,  qualityControl, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral, method):
     # LAI_Result = copy.deepcopy(fileDatas[index])
     # interpolation
     Or_value = []
     Fil_value = []
     Weight_value = []
     result_ob = {}
-    for pos in Filling_Pos:  
-        if method == 1:   
-            result_ob = Temporal_Cal(fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-            Temporal_Cal_Matrix_Pixel(fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-            Temporal_Cal_Matrix_Tile(fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-        else: 
-            result_ob = Spatial_Cal(fileDatas, index, pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral) 
-            Spatial_Cal_Matrix_Tile(fileDatas, index, pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral) 
+    # for pos in Filling_Pos:
+    pos = Filling_Pos
+    if method == 1:   
+        result_ob = Temporal_Cal(fileDatas, index, pos, LC_info, qualityControl, temporalLength, tem_winSize_unilateral, SES_pow)
+        # Temporal_Cal_Matrix_Pixel(fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
+        Temporal_Cal_Matrix_Tile(fileDatas, index, tuple(pos), LC_info, qualityControl, temporalLength, tem_winSize_unilateral, SES_pow)
+    else: 
+        result_ob = Spatial_Cal(fileDatas, index, pos, LC_info, qualityControl, EUC_pow, spa_winSize_unilateral) 
+        Spatial_Cal_Matrix_Tile(fileDatas, index, tuple(pos), LC_info, qualityControl, EUC_pow, spa_winSize_unilateral) 
             
-        QC_value = QC_File[index][pos[0]][pos[1]]  
-        or_val = fileDatas[index][pos[0]][pos[1]] 
-        filling_value = result_ob['filling']
-        weight = result_ob['weight']
+    QC_value = qualityControl[index][pos[0]][pos[1]]  
+    or_val = fileDatas[index][pos[0]][pos[1]] 
+    filling_value = result_ob['filling']
+    weight = result_ob['weight']
 
-        Or_value.append(or_val)
-        Fil_value.append(filling_value)
-        Weight_value.append(weight)
+    Or_value.append(or_val)
+    Fil_value.append(filling_value)
+    Weight_value.append(weight)
 
     # print({'tem': Fil_tem, 'spa': Fil_spa, 'Fil': Fil_value})      
     # LAI_Result[pos[0]][pos[1]] = final
@@ -436,7 +471,7 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
                 if denominator[tem_index] != 0 :                           
                     inter = numerator[tem_index] / denominator[tem_index]
                     if(i == pos[0] and j == pos[1]):                                              
-                        tem_filling_value = round(inter, 2)
+                        tem_filling_value = round(inter)
                     else :
                         valid_lc +=1 
                         dif_value = abs(inter - cu_dataset[i][j])
@@ -452,7 +487,7 @@ def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLengt
     else :
         tem_weight = (round(tem_wei_count/valid_lc, 2)) 
     # print('end_tem', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    print('previous', valid_lc, tem_filling_value, tem_weight, or_value)
+    print('previous', tem_filling_value, tem_weight, or_value)
     return {'weight': tem_weight, 'filling': tem_filling_value, 'or_value': or_value}
 
 def Spatial_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral):

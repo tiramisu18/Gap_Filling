@@ -1,78 +1,109 @@
-# import numpy as np
-# import matplotlib.pyplot as plt
-
-# print(np.array([[2,-1],[-1,2]]))
-# #牛顿法求解f = 60-10*x1-4*x2+x1**2+2*x2**2-x1*x2的极值
-# #原函数
-# #建立点的列表并关联起来
-# X1=np.arange(-50,50,0.1)
-# X2=np.arange(-50,50,0.1)
-# [x1,x2]=np.meshgrid(X1,X2)
-# # f = 60-10*x1-4*x2+x1**2+2*x2**2-x1*x2
-# f = (x1 - 10)**2 + (x2 - 20)**2
-# plt.contour(x1,x2,f,20) # 画出函数的20条轮廓线
-
-# #求梯度
-# def jacobian(x):
-#     return np.array([-10+2*x[0]-x[1],-4+2*x[1]-x[0]])
-
-# #求海森矩阵
-# def hessian(x):
-#     return np.array([[2,-1],[-1,2]])
-
-# #牛顿法程序
-# def newton(x0):
-#     W=np.zeros((2,10**2))
-#     i = 1
-#     imax = 100
-#     W[:,0] = x0 
-#     x = x0
-#     delta = 1
-#     alpha = 1
-    
-#     #迭代条件，当迭代次数少于100次并且精度大于0.1时进行循环
-#     while i<imax and delta>0.1:
-#         #将海森矩阵的逆与梯度相乘
-#         p = -np.dot(np.linalg.inv(hessian(x)),jacobian(x))
-#         x0 = x
-#         x = x + alpha*p
-#         W[:,i] = x
-#         delta = sum((x-x0))
-#         print('第',i,'次迭代结果:')
-#         print(x,'\n')
-#         i=i+1
-#     W=W[:,0:i]  # 记录迭代点
-#     return W
-
-# #初始点
-# x0 = np.array([-40,40])
-# W = newton(x0)
-    
-# plt.plot(W[0,:],W[1,:],'g*',W[0,:],W[1,:]) # 画出迭代点收敛的轨迹
-# plt.show()
-
-
 import numpy as np
 from sympy import *
+import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D 
+import random
 
-a=np.array([1,3,5,9])
-b=np.array([0,1,2,3])
-print(a+b)
-print(a*b, sum(a*b))
+def draw_function_dimensionTwo(): 
+    x = np.arange(-100, 100, 0.001)
+    y = x ** 3 / (3 * x + 1)
+    
+    plt.figure()
+    plt.plot(x, y, linestyle='--', color='red')
+    plt.xlim((-0.6, 0.6))
+    plt.ylim((-0.6, 0.6))
+    plt.xlabel('x')
+    plt.ylabel('y')
+    ax = plt.gca()
+    ax.spines['right'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    ax.spines['bottom'].set_position(('data', 0))
+    ax.spines['left'].set_position(('data', 0))
+    plt.show()
 
-a = np.arange(24)  
-print (a)             # a 现只有一个维度
-# 现在调整其大小
-b = a.reshape(2,4,3)
-print(b)
 
-ones(2)
+def draw_function_dimensionThree(z): 
+
+    fig = plt.figure(figsize=(8, 6))
+    ax = Axes3D(fig)
+    # x=np.arange(-0.1,1.2,0.01)
+    # y=np.arange(10,100,10)
+    x=np.arange(-10,10,1.5)
+    y=np.arange(-10,12,3)
+    x, y = np.meshgrid(x, y) # 网格的创建，生成二维数组，这个是关键
+    # z=x**2+y**2
+    # z = (x-1)**2+(y-5)**2
+    z = 8.0*(-1 + 0.0833333333333333*(19.0*x + 14.0*y)/(x + y))**2 + 12.5*(-1 + 0.0666666666666667*(19.0*x + 15.0*y)/(x + y))**2 + 32.0*(-1 + 0.0416666666666667*(19.0*x + 28.0*y)/(x + y))**2 + 18.0*(-1 + 0.0555555555555556*(20.0*x + 17.0*y)/(x + y))**2 + 16.0555555555556*(-1 + 0.0588235294117647*(20.0*x + 18.0*y)/(x + y))**2 + 29.3888888888889*(-1 + 0.0434782608695652*(20.0*x + 24.0*y)/(x + y))**2 + 9.38888888888889*(-1 + 0.0769230769230769*(21.0*x + 15.0*y)/(x + y))**2 + 20.0555555555556*(-1 + 0.0526315789473684*(21.0*x + 19.0*y)/(x + y))**2 + 22.2222222222222*(-1 + 0.05*(21.0*x + 21.0*y)/(x + y))**2 + 29.3888888888889*(-1 + 0.0434782608695652*(21.0*x + 23.0*y)/(x + y))**2 + 37.5555555555556*(-1 + 0.0384615384615385*(22.0*x + 26.0*y)/(x + y))**2 + 26.8888888888889*(-1 + 0.0454545454545455*(23.0*x + 23.0*y)/(x + y))**2 + 46.7222222222222*(-1 + 0.0344827586206897*(23.0*x + 28.0*y)/(x + y))**2 + 50.0*(-1 + 0.0333333333333333*(23.0*x + 30.0*y)/(x + y))**2 + 50.0*(-1 + 0.0333333333333333*(24.0*x + 27.0*y)/(x + y))**2 + 40.5*(-1 + 0.037037037037037*(24.0*x + 27.0*y)/(x + y))**2 + 46.7222222222222*(-1 + 0.0344827586206897*(25.0*x + 32.0*y)/(x + y))**2 + 34.7222222222222*(-1 + 0.04*(26.0*x + 25.0*y)/(x + y))**2
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    
+    ax.plot_surface(x, y, z, cmap='rainbow')
+    # plt.savefig('./Daily_cache/0413/Weight_graph_3', dpi=300)
+    plt.show()
+
+
+def Newtons_Simulated_Dataset(Tem, Spa, Raw):
+    Tem = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 23.0, 27.0, 32.0, 27.0, 28.0, 25.0, 30.0]
+    Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0, 20.0, 23.0, 24.0, 25.0, 24.0, 23.0, 26.0, 23.0]
+    Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0, 18.0, 22.0, 30.0, 29.0, 27.0, 29.0, 25.0, 30.0]
+    x, y= symbols('x y')
+    dataSum = 0
+    for i in range(0, len(Tem)):
+        final = (Spa[i] * x + Tem[i] * y) / (x + y)
+        dataSum = dataSum + ((final - Raw[i])**2)
+    Fxy = dataSum / len(Tem)
+    print(Fxy)
+    # draw_function_dimensionThree(Fxy)
+    print(Fxy.evalf(subs = {'x': 0.0490005, 'y': 1}))
+    # return
+    f1 = diff(Fxy,x)
+    f2 = diff(Fxy,y)
+
+    F = Matrix([f1,f2])
+    def hessian(*para):
+        all = []
+        for f_i in para[0]:
+            one = []
+            for o_i in para[1]:
+                one.append(diff(f_i, o_i))
+            all.append(one)
+            # sp.diff(f,o).evalf(subs ={'x2':6})
+        # return np.mat(all).reshape(3,3)
+        return Matrix(all)
+
+    J = hessian((f1, f2), (x, y))
+
+    n=1
+    x0=np.mat([0.1,0.1]).reshape(2,1)
+    # mar = J.subs(dict(x=x0[0,0], y=x0[1,0], z=x0[2,0]))
+    # print(mar, mar.inv())
+
+    E=1
+    while n < 10 and E > 1e-4:
+        dic = dict(x=x0[0,0], y=x0[1,0])
+        x1=x0-J.subs(dic).inv()*F.subs(dic)
+        step1 = (diag(x1[0,0], x1[1, 0])).inv() * abs(x1-x0)
+        # print('step1' , step1)
+        # E=max(abs(x1-x0)/x1)
+        E=max(step1)
+        x0=x1
+        n=n+1
+
+    # print(x1, n)
+
+    calValue = Fxy.evalf(subs = {'x': x1[0,0], 'y': x1[1,0]})
+    print({'X_Valus': x1, 'Iteration_Count': n, 'Multinomial_Value': round(calValue, 6)})
+
 
 # 牛顿迭代法求极值
-def Newtons_Iteration(Fxyz):
+def Newtons_Iteration_xyz():
     # syms x y z
     x, y, z = symbols('x y z')
-    # Fxyz = (x-1)**3+(y-5)**2+(z-100)**2
+    Fxyz = (x-1)**2+(y-5)**2+(z-100)**2
     # Fxyz = (((25 * x + 37 * y + 30 * z) / (x + y + z) - 30)** 2 + ((30 * x + 27 * y + 20 * z) / (x + y + z) - 20)** 2) / 2
     # Fxyz = 4*(x + 1)**2 + 2*(y - 2)**2 + x + y + 10
     # Fxyz = x**2+2*y**2+3*z**2+2*x+4*y-6*z 
@@ -104,7 +135,7 @@ def Newtons_Iteration(Fxyz):
     J = hessian((f1, f2, f3), (x, y, z))
 
     n=1
-    x0 = np.mat([1,1,1]).reshape(3,1)
+    x0 = np.mat([0,0,0]).reshape(3,1)
     E=1
     while n < 100 and E > 1e-4:
         dic = dict(x = x0[0,0], y = x0[1,0], z = x0[2,0])
@@ -121,54 +152,47 @@ def Newtons_Iteration(Fxyz):
     print(x1, n)
     calValue = Fxyz.evalf(subs = {'x': x1[0,0], 'y': x1[1,0], 'z':x1[2,0]})
     # Fxyz.evalf(subs = {'x': 1, 'y': 1, 'z':1})
-    return {'X_Valus': x1, 'Iteration_Count': n, 'Multinomial_Value': calValue}
+    return {'X_Valus': x1, 'Iteration_Count': n, 'Multinomial_Value': round(calValue, 2)}
 
 
 # 二元函数
-# f1 = diff(Fxyz,x)
-# f2 = diff(Fxyz,y)
+def Newtons_Iteration_xy():
+    x, y= symbols('x y')
+    Fxy = (x-5)**2+(y-2)**2
+    f1 = diff(Fxy,x)
+    f2 = diff(Fxy,y)
 
-# F = Matrix([f1,f2])
-# def hessian(*para):
-#     all = []
-#     for f_i in para[0]:
-#         one = []
-#         for o_i in para[1]:
-#             one.append(diff(f_i, o_i))
-#         all.append(one)
-#         # sp.diff(f,o).evalf(subs ={'x2':6})
-#     # return np.mat(all).reshape(3,3)
-#     return Matrix(all)
+    F = Matrix([f1,f2])
+    def hessian(*para):
+        all = []
+        for f_i in para[0]:
+            one = []
+            for o_i in para[1]:
+                one.append(diff(f_i, o_i))
+            all.append(one)
+            # sp.diff(f,o).evalf(subs ={'x2':6})
+        # return np.mat(all).reshape(3,3)
+        return Matrix(all)
 
-# # J_be=[[sp.diff(f1,x), sp.diff(f1, y), sp.diff(f1,z)],
-# #    [sp.diff(f2,x), sp.diff(f2, y), sp.diff(f2,z)],
-# #    [sp.diff(f3,x), sp.diff(f3, y), sp.diff(f3,z)]]
+    J = hessian((f1, f2), (x, y))
 
-# # print(J_be)
-# # J = np.mat(J_be).reshape(3,3)
-# J = hessian((f1, f2), (x, y))
+    n=1
+    x0=np.mat([1,1]).reshape(2,1)
+    # mar = J.subs(dict(x=x0[0,0], y=x0[1,0], z=x0[2,0]))
+    # print(mar, mar.inv())
 
-# n=1
-# x0=np.mat([1,1]).reshape(2,1)
-# # mar = J.subs(dict(x=x0[0,0], y=x0[1,0], z=x0[2,0]))
-# # print(mar, mar.inv())
+    E=1
+    while n < 50 and E > 1e-4:
+        dic = dict(x=x0[0,0], y=x0[1,0])
+        x1=x0-J.subs(dic).inv()*F.subs(dic)
+        step1 = (diag(x1[0,0], x1[1, 0])).inv() * abs(x1-x0)
+        # print('step1' , step1)
+        # E=max(abs(x1-x0)/x1)
+        E=max(step1)
+        x0=x1
+        n=n+1
 
-# E=1
-# while n < 50 and E > 1e-4:
-#     dic = dict(x=x0[0,0], y=x0[1,0])
-#     x1=x0-J.subs(dic).inv()*F.subs(dic)
-#     step1 = (diag(x1[0,0], x1[1, 0])).inv() * abs(x1-x0)
-#     # print('step1' , step1)
-#     # E=max(abs(x1-x0)/x1)
-#     E=max(step1)
-#     x0=x1
-#     n=n+1
+    # print(x1, n)
 
-
-# print(x1, n)
-# # x=x1(1)
-# # y=x1(2)
-# # z=x1(3)
-# # eval(F)
-# Fxyz.evalf(subs = {'x': x1[0,0], 'y': x1[1,0]})
-# # Fxyz.evalf(subs = {'x': 0, 'y': 0})
+    calValue = Fxy.evalf(subs = {'x': x1[0,0], 'y': x1[1,0]})
+    print({'X_Valus': x1, 'Iteration_Count': n, 'Multinomial_Value': round(calValue, 2)})
