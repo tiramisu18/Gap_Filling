@@ -30,9 +30,9 @@ def draw_function_dimensionThree(z):
     fig = plt.figure(figsize=(8, 6))
     ax = Axes3D(fig)
     # x=np.arange(-0.1,1.2,0.01)
-    # y=np.arange(10,100,10)
-    x=np.arange(-10,10,1.5)
-    y=np.arange(-10,12,3)
+    # y=np.arange(10,50,5)
+    x=np.arange(0.0001,5,0.015)
+    y=np.arange(0,5,0.03)
     x, y = np.meshgrid(x, y) # 网格的创建，生成二维数组，这个是关键
     # z=x**2+y**2
     # z = (x-1)**2+(y-5)**2
@@ -56,9 +56,11 @@ def Newtons_Simulated_Dataset(Tem, Spa, Raw):
         final = (Spa[i] * x + Tem[i] * y) / (x + y)
         dataSum = dataSum + ((final - Raw[i])**2)
     Fxy = dataSum / len(Tem)
-    print(Fxy)
-    # draw_function_dimensionThree(Fxy)
+    # print(Fxy)
+    draw_function_dimensionThree(Fxy)
     print(Fxy.evalf(subs = {'x': 0.0490005, 'y': 1}))
+    print(Fxy.evalf(subs = {'x': 1.15, 'y': 12.5141}))
+    print(Fxy.evalf(subs = {'x': 0.074, 'y': 0.926}))
     # return
     f1 = diff(Fxy,x)
     f2 = diff(Fxy,y)
@@ -196,3 +198,75 @@ def Newtons_Iteration_xy():
 
     calValue = Fxy.evalf(subs = {'x': x1[0,0], 'y': x1[1,0]})
     print({'X_Valus': x1, 'Iteration_Count': n, 'Multinomial_Value': round(calValue, 2)})
+
+
+def Lagrange_simulated():
+    Tem = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 23.0, 27.0, 32.0, 27.0, 28.0, 25.0, 30.0]
+    Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0, 20.0, 23.0, 24.0, 25.0, 24.0, 23.0, 26.0, 23.0]
+    Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0, 18.0, 22.0, 30.0, 29.0, 27.0, 29.0, 25.0, 30.0]
+    x, y, k= symbols('x y k')
+    dataSum = 0
+    for i in range(0, len(Tem)):
+        final = (Spa[i] * x + Tem[i] * y) / (x + y)
+        dataSum = dataSum + ((final - Raw[i])**2)
+    Fxy = dataSum / len(Tem)
+    g = x + y - 1
+
+    #构造拉格朗日函数
+    L=Fxy+k*g
+    #求导
+    dx = diff(L, x)   # 对x求偏导
+    # print("dx=",dx)
+    dy = diff(L,y)   #对y求偏导
+    # print("dy=",dy)
+    dk = diff(L,k)   #对k求偏导
+    # print("dk=",dk)
+    # dx= 8*y*z + 2*k*x/a**2
+    # dy= 8*x*z + 2*k*y/b**2
+    # dz= 8*x*y + 2*k*z/c**2
+    # dk= -1 + z**2/c**2 + y**2/b**2 + x**2/a**2
+    #求出个变量解
+    m= solve([dx,dy,dk],[x,y,k])   
+    print(m)
+    #变量赋值
+    # x=sqrt(3)*a/3
+    # y=sqrt(3)*b/3
+    # z=sqrt(3)*c/3
+    # k=-4*sqrt(3)*a*b*c/3
+    # #计算方程的值
+    # f = 8*x*y*z
+    # print("方程的最大值为：",f)
+
+# 拉格朗日求条件极值
+def Lagrange():
+    x,y,z,k = symbols('x,y,z,k')
+    a,b,c=symbols('a,b,c')
+    f = 8*x*y*z
+    g = x**2/a**2+y**2/b**2+z**2/c**2-1
+    #构造拉格朗日函数
+    L=f+k*g
+    #求导
+    dx = diff(L, x)   # 对x求偏导
+    print("dx=",dx)
+    dy = diff(L,y)   #对y求偏导
+    print("dy=",dy)
+    dz = diff(L,z)   #对z求偏导
+    print("dz=",dz)
+    dk = diff(L,k)   #对k求偏导
+    print("dk=",dk)
+    dx= 8*y*z + 2*k*x/a**2
+    dy= 8*x*z + 2*k*y/b**2
+    dz= 8*x*y + 2*k*z/c**2
+    dk= -1 + z**2/c**2 + y**2/b**2 + x**2/a**2
+    #求出个变量解
+    m= solve([dx,dy,dz,dk],[x,y,z,k])   
+    print(m)
+    #变量赋值
+    x=sqrt(3)*a/3
+    y=sqrt(3)*b/3
+    z=sqrt(3)*c/3
+    k=-4*sqrt(3)*a*b*c/3
+    #计算方程的值
+    f = 8*x*y*z
+    print("方程的最大值为：",f)
+
