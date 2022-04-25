@@ -4,6 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D 
 import random
+import time
+
 
 def draw_function_dimensionTwo(): 
     x = np.arange(-100, 100, 0.001)
@@ -200,7 +202,7 @@ def Newtons_Iteration_xy():
     print({'X_Valus': x1, 'Iteration_Count': n, 'Multinomial_Value': round(calValue, 2)})
 
 
-def Lagrange_simulated():
+def Lagrange_simulated(Fxy, g, x, y, k):
     Tem = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 23.0, 27.0, 32.0, 27.0, 28.0, 25.0, 30.0]
     Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0, 20.0, 23.0, 24.0, 25.0, 24.0, 23.0, 26.0, 23.0]
     Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0, 18.0, 22.0, 30.0, 29.0, 27.0, 29.0, 25.0, 30.0]
@@ -211,9 +213,9 @@ def Lagrange_simulated():
         dataSum = dataSum + ((final - Raw[i])**2)
     Fxy = dataSum / len(Tem)
     g = x + y - 1
-
     #构造拉格朗日函数
     L=Fxy+k*g
+    
     #求导
     dx = diff(L, x)   # 对x求偏导
     # print("dx=",dx)
@@ -221,22 +223,70 @@ def Lagrange_simulated():
     # print("dy=",dy)
     dk = diff(L,k)   #对k求偏导
     # print("dk=",dk)
-    # dx= 8*y*z + 2*k*x/a**2
-    # dy= 8*x*z + 2*k*y/b**2
-    # dz= 8*x*y + 2*k*z/c**2
-    # dk= -1 + z**2/c**2 + y**2/b**2 + x**2/a**2
     #求出个变量解
     m= solve([dx,dy,dk],[x,y,k])   
     print(m)
     #变量赋值
-    # x=sqrt(3)*a/3
-    # y=sqrt(3)*b/3
-    # z=sqrt(3)*c/3
-    # k=-4*sqrt(3)*a*b*c/3
-    # #计算方程的值
-    # f = 8*x*y*z
-    # print("方程的最大值为：",f)
+    print(Fxy.evalf(subs = {'x': 0.074, 'y': 0.926}))
+    print('begin', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    for i in range(0, 10):  
+        m= solve([dx,dy,dk],[x,y,k])   
+        print(i)
+    print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    
 
+def Lagrange_simulated_martix(Fxy, g, x, y, k):
+    # Tem = [15.0, 18.0]
+    # Spa = [19.0, 20.0]
+    # Raw = [15.0, 17.0]
+    x, y, z, k= symbols('x y z k')
+    a,b,c=symbols('a,b,c')
+    # dataSum = 0
+    # for i in range(0, len(Tem)):
+    #     final = (Spa[i] * x + Tem[i] * y) / (x + y)
+    #     dataSum = dataSum + ((final - Raw[i])**2)
+    # Fxy1 = dataSum / len(Tem)
+    # g1 = x + y - 1
+    # Fxy = Matrix([Fxy1, x**2 + 8*y])
+    # g = Matrix([g1, x+7*y])
+   
+    Fxy = np.array([8*x*y*z, x**2 + 8*y])
+    g = x**2/a**2+y**2/b**2+z**2/c**2-1
+  
+    #构造拉格朗日函数
+    L= Matrix(Fxy+k*g)
+    # print(L)
+    #求导
+    dx = L.diff(x)   # 对x求偏导
+    # print("dx=",dx)
+    dy = L.diff(y)   #对y求偏导
+    # print("dy=",dy)
+    dz = L.diff(z)   #对y求偏导
+    dk = L.diff(k)   #对k求偏导
+    # print("dk=",dk)
+    #求出个变量解
+    
+    # aa = np.array([dx,dy,dz,dk]).reshape(4,2).T
+    # print(aa)
+    aa = (dx,dy,dz,dk)
+    print(aa)
+    m= solve((dx,dy,dz,dk),(x,y,z,k),dict=True)
+    # print(res)
+    # bb = Matrix(aa)
+    # m= bb.solve([x,y,z,k])   
+    print(m)
+
+Tem = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 23.0, 27.0, 32.0, 27.0, 28.0, 25.0, 30.0]
+Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0, 20.0, 23.0, 24.0, 25.0, 24.0, 23.0, 26.0, 23.0]
+Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0, 18.0, 22.0, 30.0, 29.0, 27.0, 29.0, 25.0, 30.0]
+x, y, k= symbols('x y k')
+dataSum = 0
+for i in range(0, len(Tem)):
+    final = (Spa[i] * x + Tem[i] * y) / (x + y)
+    dataSum = dataSum + ((final - Raw[i])**2)
+Fxy = dataSum / len(Tem)
+g = x + y - 1
+Lagrange_simulated(Fxy, g, x, y, k)
 # 拉格朗日求条件极值
 def Lagrange():
     x,y,z,k = symbols('x,y,z,k')
@@ -254,19 +304,20 @@ def Lagrange():
     print("dz=",dz)
     dk = diff(L,k)   #对k求偏导
     print("dk=",dk)
-    dx= 8*y*z + 2*k*x/a**2
-    dy= 8*x*z + 2*k*y/b**2
-    dz= 8*x*y + 2*k*z/c**2
-    dk= -1 + z**2/c**2 + y**2/b**2 + x**2/a**2
+    # dx= 8*y*z + 2*k*x/a**2
+    # dy= 8*x*z + 2*k*y/b**2
+    # dz= 8*x*y + 2*k*z/c**2
+    # dk= -1 + z**2/c**2 + y**2/b**2 + x**2/a**2
     #求出个变量解
-    m= solve([dx,dy,dz,dk],[x,y,z,k])   
+    # m = solve([dx,dy,dz,dk],[x,y,z,k])   
+    m = solve([dx,dy,dz,dk],x,y,z,k, dict=True)   
     print(m)
     #变量赋值
-    x=sqrt(3)*a/3
-    y=sqrt(3)*b/3
-    z=sqrt(3)*c/3
-    k=-4*sqrt(3)*a*b*c/3
-    #计算方程的值
-    f = 8*x*y*z
-    print("方程的最大值为：",f)
+    # x=sqrt(3)*a/3
+    # y=sqrt(3)*b/3
+    # z=sqrt(3)*c/3
+    # k=-4*sqrt(3)*a*b*c/3
+    # #计算方程的值
+    # f = 8*x*y*z
+    # print("方程的最大值为：",f)
 
