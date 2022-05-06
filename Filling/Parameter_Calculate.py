@@ -38,7 +38,7 @@ def random_pos(QC, ran_len, length):
             if len(fill_pos) == length: return fill_pos
 
 
-# 求权重的最佳值 
+# 求权重的最佳值 （求46期的均值，若单独取某一期的数据会存在季节性变化的差异）
 def get_wight_better_para(QC_All, fileIndex, fileDatas, LC_info, type):
     # Spatial
     if type == 1:

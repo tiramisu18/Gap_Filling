@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
 import random
 import scipy.io as scio
+import numpy.ma as ma
 
 def render_LAI (data, title='Image', issave=False, savepath=''):
     colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
@@ -80,7 +81,7 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
         plt.show()
 
 # 随机增加误差后生成的误差数据集、误差百分比数据集、误差值数据集
-def get_ErrDataSet():
+def add_ErrDataSet():
     # LAI_Err_Peren = [[[0.0] * 500] * 500] * 46 # 生成浮点型的矩阵
     # np.save('./Simulation_Dataset/Err_zero(double)', LAI_Err_Peren)
     LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
@@ -101,7 +102,7 @@ def get_ErrDataSet():
                     err = 7 - L_ori
                 elif LAI_addErr < 0:
                     LAI_Simu[day][x[i]][y[i]] = 0
-                    err = L_ori
+                    err = -L_ori
                 else:
                     LAI_Simu[day][x[i]][y[i]] = round(LAI_addErr,2)
                 try :
@@ -121,42 +122,72 @@ def get_ErrDataSet():
                     LAI_Simu[idx][i][j] = LAI_Simu[idx][i][j] * 10
     np.save('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70)', LAI_Simu)
 
-def add_ErrDataSet():
-    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
-
+def add_ErrDataSet_matrix():
+    LAI_Simu = np.array(np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy'))
+    Err_value = np.random.uniform(-1.5,1.5,(46,500,500))
+    # rd = np.random.uniform(-1.5,1.5,(2,2,3))
+    np.set_printoptions(precision = 1)
+    LAI_ma = ma.masked_values(ma.masked_greater(LAI_Simu, 7),0)
+    LAI_addErr = np.around(LAI_ma + Err_value,1)
+    # 处理小于0的部分
+    pos1 = LAI_addErr.__lt__(0)
+    Err_value[pos1] = LAI_Simu[pos1] * -1
+    LAI_addErr[pos1] = 0
+    # 处理大于7的部分
+    zero = np.zeros(46*500*500, dtype=int).reshape(46, 500, 500)
+    pos2 = np.logical_and(LAI_addErr > 7, LAI_addErr < 250)
+    zero[pos2] = 7
+    dif = np.around(zero - LAI_Simu,1)
+    Err_value[pos2] = dif[pos2]
+    LAI_addErr[pos2] = 7
+    # 检验是否有不符合的数值
+    # aa = np.nonzero(LAI_addErr > 7)
+    # bb = np.nonzero(LAI_addErr < 0)
+    # print(aa,bb)
+    # 放大数值至0-70
+    LAI_addErr = LAI_addErr * 10   
+    # 求误差百分比
+    Err_Peren = np.around(np.abs(Err_value) / LAI_ma * 100, 0)
+    # 将原始掩膜的位置再补回、原始掩膜位置的误差值设为0
+    pos3 = np.logical_or(LAI_Simu > 7, LAI_Simu == 0)
+    Err_value[pos3] = 0
+    Err_Peren[pos3] = 0
+    LAI_addErr[pos3] = LAI_Simu[pos3]
+    # 找出所有为-0的位置，设置为0
+    pos5 = LAI_addErr.__eq__(-0)
+    LAI_addErr[pos5] = 0
+    # 将掩膜数组转为非掩膜类型，否则存储会报错
+    LAI_addErr = np.array(LAI_addErr)
+    Err_Peren = np.array(Err_Peren)
+    np.save('./Simulation_Dataset/LAI/Simu_Method_3/Err_peren', Err_Peren)       
+    np.save('./Simulation_Dataset/LAI/Simu_Method_3/Err_value', Err_value)
+    np.save('./Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70)', LAI_addErr)
 
 # LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
 LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
-LAI_addErr = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
+LAI_addErr = np.load('./Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
 
 # err_value = np.load('./Simulation_Dataset/LAI/Simu_Method_2/Err_value.npy')
 
-aa = []
-bb = []
+
 x_v = 0
 y_v = 0
 # (0,3) (2,1) （2，2） (499, 499)
-for i in range(0, 46):
-    # render_Img(Err_new[i], 'new_%s'%i)
-    # render_Img(Err_per[i], 'old_%s'%i)
-    # render_Img(err_value[i], 'value_%s'%i)
-    # render_LAI_Simu(LAI_Simu[i], 'Simu_%s'%i)
-    # render_LAI_Simu(LAI_addErr[i], 'AddErr_%s'%i)   
-    aa.append(LAI_Simu[i][x_v][y_v]/10)
-    bb.append(LAI_addErr[i][x_v][y_v]/10)
+aa = LAI_Simu[:, x_v, y_v] / 10
+bb = LAI_addErr[:, x_v, y_v] / 10
 
-# print(aa)
+# print(aa,bb)
 
 draw_polt_Line(np.arange(1, 47, 1),{
     'title': 'LAI_addErr',
     'xlable': 'Day',
     'ylable': 'LAI',
-    'line': [aa, bb],
-    'le_name': ['Simu', 'addErr', 'Spa', 'Fil'],
-    'color': ['#bfdb39', '#fd7400', '#1f8a6f', '#548bb7','gray', '#bfdb39',],
-    'marker': [',','^'],
-    'lineStyle': ['dashed', '']
-    },'../Filling/Daily_cache/0316/lai_addErr',True, 2)
+    'line': [aa, bb, bb],
+    'le_name': ['Simu', 'addErr', '','Fil'],
+    'color': ['#bfdb39', 'gray','#fd7400', '#1f8a6f', '#548bb7','gray', '#bfdb39',],
+    'marker': [',', ',','^',],
+    'lineStyle': ['dashed', 'dashed','']
+    },'../Filling/Daily_cache/0506/lai_addErr',True, 2)
 
 
 

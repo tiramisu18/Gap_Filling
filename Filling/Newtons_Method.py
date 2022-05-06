@@ -236,20 +236,30 @@ def Lagrange_simulated(Fxy, g, x, y, k):
     print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     
 
-def Lagrange_simulated_martix(Fxy, g, x, y, k):
-    Tem = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 23.0, 27.0, 32.0, 27.0, 28.0, 25.0, 30.0]
-    Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0, 20.0, 23.0, 24.0, 25.0, 24.0, 23.0, 26.0, 23.0]
-    Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0, 18.0, 22.0, 30.0, 29.0, 27.0, 29.0, 25.0, 30.0]
-    x, y, z, k= symbols('x y z k')
-    a,b,c=symbols('a,b,c')
-    dataSum = 0
-    for i in range(0, len(Tem)):
-        final = (Spa[i] * x + Tem[i] * y) / (x + y)
-        dataSum = dataSum + ((final - Raw[i])**2)
-    Fxy1 = dataSum / len(Tem)
+def Lagrange_simulated_martix(): # Fxy, g, x, y, k
+    Tem1 = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0]
+    Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0]
+    Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0]
+    x, y, z, k= symbols('x y z k', real=True)
+    # x, y, z, k= symbols('x y z k')
+    dataSum1 = 0
+    for i in range(0, len(Tem1)):
+        final = (Spa[i] * x + Tem1[i] * y) / (x + y)
+        dataSum1 = dataSum1 + ((final - Raw[i])**2)
+        # dataSum1 = dataSum1 + abs(final - Raw[i])
+    Fxy1 = dataSum1 / len(Tem1)
+
+    Tem2 = [15.0, 18.0, 24.0, 19.0, 25.0, 14.0, 21.0, 26.0, 23.0, 15.0]
+    dataSum2 = 0
+    for i in range(0, len(Tem2)):
+        final = (Spa[i] * x + Tem2[i] * y) / (x + y)
+        dataSum2 = dataSum2 + ((final - Raw[i])**2)
+        # dataSum2 = dataSum2 + abs(final - Raw[i])
+    Fxy2 = dataSum2 / len(Tem2)
+    
     g = x + y - 1
     # Lall = Fxy1+k*g
-    Fxy = np.array([Fxy1, Fxy1])
+    Fxy = np.array([Fxy1, Fxy2])
     # Fxy = Matrix([Fxy1, x**2 + 8*y])
     # g = Matrix([g1, x+7*y])
    
@@ -261,7 +271,7 @@ def Lagrange_simulated_martix(Fxy, g, x, y, k):
     # print(L)
     #求导
     dx = L.diff(x)   # 对x求偏导
-    # print("dx=",dx)
+    # print("dx=",dx.shape)
     dy = L.diff(y)   #对y求偏导
     # print("dy=",dy)
     # dz = L.diff(z)   #对y求偏导
@@ -269,32 +279,27 @@ def Lagrange_simulated_martix(Fxy, g, x, y, k):
     # print("dk=",dk)
     #求出个变量解
     
-    aa = np.array([dx,dy,dk]).reshape(3,2).T
+    # aa = np.array([dx,dy,dk]).reshape(3,2).T
     # print(aa)
-    m= solve(aa[0],(x,y,k),dict=True)
+    print('begin', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    def myfun(dx,dy,dk):
+        # print(1)
+        res = solve([dx,dy,dk],(x,y,k),dict=True)
+        return res
+    stp1 = np.vectorize(myfun)
+    # stp1 = np.frompyfunc(myfun,3,1)
+    m = stp1(dx,dy,dk)
     print(m)
-    def f(value):
-        # print('value', value)
-        x,y,k = value[:3]
-        # one = L.subs(dict(x=x, y=y, k=k)).reshape(1,2).tolist()
-        # print('f',one[0])
-        a = [dx.subs(dict(x=x, y=y, k=k)),dy.subs(dict(x=x, y=y, k=k)),dk.subs(dict(x=x, y=y, k=k))]
-        print('a', a)
-        return a
-    def jac(value):
-        x,y,k = value[:3]
-        print('jac',np.array([]))
-        return np.array([dx.subs(dict(x=x, y=y, k=k)),dy.subs(dict(x=x, y=y, k=k)),dk.subs(dict(x=x, y=y, k=k))])
-    # jac = Matrix([dx,dy,dk])
-    sol = optimize.root(f, [0, 0, 0], jac=jac, method='hybr')
-    print(sol)
+    print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    # m= solve([dx,dy,dk],(x,y,k),dict=True)
+    # print(m)
     # m= solve((dx,dy,dz,dk),(x,y,z,k),dict=True)
     # # print(res)
     # # bb = Matrix(aa)
     # # m= bb.solve([x,y,z,k])   
     # print(m)
-
-# Tem = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 23.0, 27.0, 32.0, 27.0, 28.0, 25.0, 30.0]
+# Lagrange_simulated_martix()
+# Tem = [15.0, 18.0, 24.0, 19.0, 25.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 26.0, 27.0, 25.0, 27.0, 28.0, 25.0, 30.0]
 # Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0, 20.0, 23.0, 24.0, 25.0, 24.0, 23.0, 26.0, 23.0]
 # Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0, 18.0, 22.0, 30.0, 29.0, 27.0, 29.0, 25.0, 30.0]
 # x, y, k= symbols('x y k')
@@ -304,39 +309,30 @@ def Lagrange_simulated_martix(Fxy, g, x, y, k):
 #     dataSum = dataSum + ((final - Raw[i])**2)
 # Fxy = dataSum / len(Tem)
 # g = x + y - 1
-# Lagrange_simulated(Fxy, g, x, y, k)
+
 # 拉格朗日求条件极值
-def Lagrange():
-    x,y,z,k = symbols('x,y,z,k')
-    a,b,c=symbols('a,b,c')
-    f = 8*x*y*z
-    g = x**2/a**2+y**2/b**2+z**2/c**2-1
+def Lagrange(f, g, x, y, k):
+    # x,y,z,k = symbols('x,y,z,k')
+    # a,b,c=symbols('a,b,c')
+    # f = 8*x*y*z
+    # g = x**2/a**2+y**2/b**2+z**2/c**2-1
     #构造拉格朗日函数
     L=f+k*g
     #求导
     dx = diff(L, x)   # 对x求偏导
-    print("dx=",dx)
+    # print("dx=",dx)
     dy = diff(L,y)   #对y求偏导
-    print("dy=",dy)
-    dz = diff(L,z)   #对z求偏导
-    print("dz=",dz)
+    # print("dy=",dy)
+    # dz = diff(L,z)   #对z求偏导
+    # print("dz=",dz)
     dk = diff(L,k)   #对k求偏导
-    print("dk=",dk)
-    # dx= 8*y*z + 2*k*x/a**2
-    # dy= 8*x*z + 2*k*y/b**2
-    # dz= 8*x*y + 2*k*z/c**2
-    # dk= -1 + z**2/c**2 + y**2/b**2 + x**2/a**2
+    # print("dk=",dk)
     #求出个变量解
     # m = solve([dx,dy,dz,dk],[x,y,z,k])   
     # m = solve([dx,dy,dz,dk],x,y,z,k, dict=True)   
-    m = nonlinsolve([dx,dy,dz,dk],[x,y,z,k])   
+    m = solve([dx,dy,dk],x,y,k, dict=True)   
+    # m = nonlinsolve([dx,dy,dz,dk],[x,y,z,k])    
     print(m)
-    #变量赋值
-    # x=sqrt(3)*a/3
-    # y=sqrt(3)*b/3
-    # z=sqrt(3)*c/3
-    # k=-4*sqrt(3)*a*b*c/3
-    # #计算方程的值
-    # f = 8*x*y*z
-    # print("方程的最大值为：",f)
+   
 
+# Lagrange(Fxy, g, x, y, k)
