@@ -88,9 +88,9 @@ def Simu_filling_All():
 def Simu_filling(x_v, y_v):
     LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     # LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
+    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
     LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
-    Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_weight.npy')
+    Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
     
     Position = [x_v, y_v]
     Fil_val_1 = []
@@ -100,7 +100,7 @@ def Simu_filling(x_v, y_v):
     simu_val = []
 
     ses_pow = 0.8
-    for index in range(32, 33): 
+    for index in range(0,1): 
         # lcma = ma.masked_not_equal(LandCover, 1) 
         # print(lcma.data)
         # Public_Motheds.render_Img(lcma)
@@ -114,9 +114,11 @@ def Simu_filling(x_v, y_v):
 
         # re1 = Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, Position, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, 2)
         # print(re1)
-        
-        result = Filling_Pixel.Fill_Pixel_Matrix(LAI_Simu_addErr, index, tuple(Position), LandCover, Err_weight, 6, 12, ses_pow, 2, 5)
-        Filling_Pixel.Calculate_Weight(result['Tem'], result['Spa'], LAI_Simu_addErr[index], LandCover, Err_weight[index], tuple(Position))
+        result = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 6, 12, 0.8, position=(0,0))
+        # result = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 2, 5, position=(0,0))
+        Public_Motheds.render_LAI(result)
+        # result = Filling_Pixel.Fill_Pixel_Matrix(LAI_Simu_addErr, index, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, position=tuple(Position))
+        # Filling_Pixel.Calculate_Weight(result['Tem'], result['Spa'], LAI_Simu_addErr[index], LandCover, Err_weight[index], tuple(Position))
         # Filling_Pixel.Calculate_Weight([], [], LAI_Simu_addErr[index], LandCover, Err_weight, tuple(Position))
         
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Position, LandCover, 6, 12, ses_pow, 2, 5)

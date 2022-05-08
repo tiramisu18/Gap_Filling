@@ -124,11 +124,13 @@ def add_ErrDataSet():
 
 def add_ErrDataSet_matrix():
     LAI_Simu = np.array(np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy'))
-    Err_value = np.random.uniform(-1.5,1.5,(46,500,500))
-    # rd = np.random.uniform(-1.5,1.5,(2,2,3))
-    np.set_printoptions(precision = 1)
+    relativeErr_value = np.random.uniform(-80,80,(46,500,500)) # 相对误差比例   
+    print(relativeErr_value)
+    Err_value = np.around(LAI_Simu * relativeErr_value * 0.01, 2)
+    # np.set_printoptions(precision = 1)
+    print(Err_value)
     LAI_ma = ma.masked_values(ma.masked_greater(LAI_Simu, 7),0)
-    LAI_addErr = np.around(LAI_ma + Err_value,1)
+    LAI_addErr = np.around(LAI_ma + Err_value,2)
     # 处理小于0的部分
     pos1 = LAI_addErr.__lt__(0)
     Err_value[pos1] = LAI_Simu[pos1] * -1
@@ -137,7 +139,7 @@ def add_ErrDataSet_matrix():
     zero = np.zeros(46*500*500, dtype=int).reshape(46, 500, 500)
     pos2 = np.logical_and(LAI_addErr > 7, LAI_addErr < 250)
     zero[pos2] = 7
-    dif = np.around(zero - LAI_Simu,1)
+    dif = np.around(zero - LAI_Simu,2)
     Err_value[pos2] = dif[pos2]
     LAI_addErr[pos2] = 7
     # 检验是否有不符合的数值
@@ -170,8 +172,8 @@ LAI_addErr = np.load('./Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-7
 # err_value = np.load('./Simulation_Dataset/LAI/Simu_Method_2/Err_value.npy')
 
 
-x_v = 0
-y_v = 0
+x_v = 50
+y_v = 50
 # (0,3) (2,1) （2，2） (499, 499)
 aa = LAI_Simu[:, x_v, y_v] / 10
 bb = LAI_addErr[:, x_v, y_v] / 10
@@ -187,7 +189,7 @@ draw_polt_Line(np.arange(1, 47, 1),{
     'color': ['#bfdb39', 'gray','#fd7400', '#1f8a6f', '#548bb7','gray', '#bfdb39',],
     'marker': [',', ',','^',],
     'lineStyle': ['dashed', 'dashed','']
-    },'../Filling/Daily_cache/0506/lai_addErr',True, 2)
+    },'../Filling/Daily_cache/0506/lai_addErr', False, 2)
 
 
 

@@ -16,7 +16,7 @@ import Newtons_Method
 # 修改为矩阵计算 并且最终权重计算修改为牛顿迭代法求解参数
 
 # 整个tile计算
-def Temporal_Cal_Matrix_Tile (fileDatas, index, position, landCover, qualityControl, temporalLength, winSize, SES_pow):
+def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, temporalLength, winSize, SES_pow, position=(0,0)):
     # calculate smoothing parameter (half temLength)
     paraRightHalf = []
     for i in range(0, temporalLength):
@@ -25,6 +25,7 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, position, landCover, qualityCont
 
     back_count = len(fileDatas) - index - 1 if index + temporalLength > len(fileDatas) - 1  else 6
     forward_count = index if index - temporalLength < 0  else 6
+    print(back_count, forward_count)
     paraLeftHalf = paraRightHalf[:forward_count]
     paraLeftHalf.reverse()
     smoothingList = paraLeftHalf + paraRightHalf[:back_count]
@@ -40,12 +41,17 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, position, landCover, qualityCont
     SPara = smoothingArray.reshape(len(smoothingList),1,1)
     numerators = (LAIDatas * QCDatas * SPara).sum(axis=0)
     denominators = (QCDatas * SPara).sum(axis=0)
+    print(np.nonzero(denominators == 0))
     LAIImprovedDatas = np.round(numerators / denominators)
+    print(LAIImprovedDatas[499,447])
     # LAIImprovedDatas = numerators / denominators
     # 目前，255填充值通过计算修补了部分数据，下面两步会将原来的填充值255还原
     pos = fileDatas[index, ...].__gt__(70)
     LAIImprovedDatas[pos] = fileDatas[index, ...][pos]
     print('Tile_Tem', LAIImprovedDatas[position])
+    print(LAIImprovedDatas[499,447])
+    # print(LAIImprovedDatas[:100, :100])
+    # np.savetxt('./Daily_cache/0506/Temp', LAIImprovedDatas[:100, :100])
     # Public_Motheds.render_LAI(fileDatas[index , ...], title='Raw', issave=False, savepath='./Daily_cache/0407/Raw')
     # Public_Motheds.render_LAI(LAIImprovedDatas, title='Tem', issave=False, savepath='./Daily_cache/0407/Tem_nomask')
     # u, count = np.unique(fileDatas[index , ...], return_counts=True)
@@ -81,7 +87,7 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, position, landCover, qualityCont
     return LAIImprovedDatas
 
 # 整个tile计算
-def Spatial_Cal_Matrix_Tile(fileDatas, index, position, landCover, qualityControl, EUC_pow, winSize):
+def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, EUC_pow, winSize, position=(0,0)):
     # print('begin_tem_v1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     LAIImprovedDatas = np.array(fileDatas[index, ...]).copy()
     rawLAI = ma.masked_greater(fileDatas[index, ...], 70) # 因为存在lc分类错误的情况（植被类型下的lai值为254【水域】）所以先将lai值大于70的位置mask
