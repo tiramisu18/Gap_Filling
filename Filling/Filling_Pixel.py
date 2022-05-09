@@ -16,7 +16,7 @@ import Newtons_Method
 # 修改为矩阵计算 并且最终权重计算修改为牛顿迭代法求解参数
 
 # 整个tile计算
-def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, temporalLength, winSize, SES_pow, position=(0,0)):
+def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, temporalLength, SES_pow, position=(0,0)):
     # calculate smoothing parameter (half temLength)
     paraRightHalf = []
     for i in range(0, temporalLength):
@@ -377,7 +377,7 @@ def Fill_Pixel (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength,
 
 # 计算时空 使用tile矩阵
 def Fill_Pixel_Matrix (fileDatas, index, position, LC_info,  qualityControl, temporalLength, tem_winSize_unilateral, SES_pow, EUC_pow, spa_winSize_unilateral): 
-    tem = Temporal_Cal_Matrix_Tile(fileDatas, index, position, LC_info,  qualityControl, temporalLength, tem_winSize_unilateral, SES_pow)
+    tem = Temporal_Cal_Matrix_Tile(fileDatas, index, position, LC_info,  qualityControl, temporalLength, SES_pow)
     spa = Spatial_Cal_Matrix_Tile(fileDatas, index, position, LC_info,  qualityControl, EUC_pow, spa_winSize_unilateral) 
     return {'Tem': tem, 'Spa': spa}
     
@@ -394,7 +394,7 @@ def Fill_Pixel_One (fileDatas, index, Filling_Pos, LC_info,  qualityControl, tem
     if method == 1:   
         result_ob = Temporal_Cal(fileDatas, index, pos, LC_info, qualityControl, temporalLength, tem_winSize_unilateral, SES_pow)
         # Temporal_Cal_Matrix_Pixel(fileDatas, index, pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow)
-        Temporal_Cal_Matrix_Tile(fileDatas, index, tuple(pos), LC_info, qualityControl, temporalLength, tem_winSize_unilateral, SES_pow)
+        Temporal_Cal_Matrix_Tile(fileDatas, index, tuple(pos), LC_info, qualityControl, temporalLength, SES_pow)
     else: 
         result_ob = Spatial_Cal(fileDatas, index, pos, LC_info, qualityControl, EUC_pow, spa_winSize_unilateral) 
         Spatial_Cal_Matrix_Tile(fileDatas, index, tuple(pos), LC_info, qualityControl, EUC_pow, spa_winSize_unilateral) 

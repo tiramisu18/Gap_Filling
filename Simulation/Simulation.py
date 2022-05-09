@@ -180,7 +180,7 @@ bb = LAI_addErr[:, x_v, y_v] / 10
 
 # print(aa,bb)
 
-draw_polt_Line(np.arange(1, 47, 1),{
+draw_polt_Line(np.arange(0, 361, 8),{
     'title': 'LAI_addErr',
     'xlable': 'Day',
     'ylable': 'LAI',
@@ -189,7 +189,7 @@ draw_polt_Line(np.arange(1, 47, 1),{
     'color': ['#bfdb39', 'gray','#fd7400', '#1f8a6f', '#548bb7','gray', '#bfdb39',],
     'marker': [',', ',','^',],
     'lineStyle': ['dashed', 'dashed','']
-    },'../Filling/Daily_cache/0506/lai_addErr', False, 2)
+    },'../Filling/Daily_cache/0506/lai_addErr', True, 2)
 
 
 
