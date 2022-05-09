@@ -100,7 +100,7 @@ def Simu_filling(x_v, y_v):
     simu_val = []
 
     ses_pow = 0.8
-    for index in range(0,1): 
+    for index in range(0,2): 
         # lcma = ma.masked_not_equal(LandCover, 1) 
         # print(lcma.data)
         # Public_Motheds.render_Img(lcma)
@@ -143,14 +143,8 @@ def Simu_filling(x_v, y_v):
 
 
 Simu_filling(360, 324)
-# Simu_filling(100, 100)
 
-# a = np.arange(12).reshape(3, 4)
-# b = ma.masked_greater(a, 7)   
-# c = np.array([0,2,4,2,3,5,2,5,4,2,6,3]).reshape(3,4)   
-# d = ma.masked_not_equal(c,2)
-# # c = a[b1, b2]
-# print(b)
-# print(d, d.mask)
-# bb = ma.array(b, mask=d.mask)
-# print(bb)
+# Err_peren= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_peren.npy')
+# Err_peren= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
+# for i in range(0, 10):
+#     Public_Motheds.render_Img(Err_peren[i])

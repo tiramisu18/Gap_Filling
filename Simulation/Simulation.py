@@ -125,10 +125,10 @@ def add_ErrDataSet():
 def add_ErrDataSet_matrix():
     LAI_Simu = np.array(np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy'))
     relativeErr_value = np.random.uniform(-80,80,(46,500,500)) # 相对误差比例   
-    print(relativeErr_value)
+    # print(relativeErr_value)
     Err_value = np.around(LAI_Simu * relativeErr_value * 0.01, 2)
     # np.set_printoptions(precision = 1)
-    print(Err_value)
+    # print(Err_value)
     LAI_ma = ma.masked_values(ma.masked_greater(LAI_Simu, 7),0)
     LAI_addErr = np.around(LAI_ma + Err_value,2)
     # 处理小于0的部分

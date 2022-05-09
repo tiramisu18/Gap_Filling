@@ -23,9 +23,8 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, tempo
         para = round(SES_pow * (1 - SES_pow) ** i, 4)
         paraRightHalf.append(para)
 
-    back_count = len(fileDatas) - index - 1 if index + temporalLength > len(fileDatas) - 1  else 6
-    forward_count = index if index - temporalLength < 0  else 6
-    print(back_count, forward_count)
+    back_count = len(fileDatas) - index - 1 if index + temporalLength > len(fileDatas) - 1  else temporalLength
+    forward_count = index if index - temporalLength < 0  else temporalLength
     paraLeftHalf = paraRightHalf[:forward_count]
     paraLeftHalf.reverse()
     smoothingList = paraLeftHalf + paraRightHalf[:back_count]
@@ -41,15 +40,13 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, tempo
     SPara = smoothingArray.reshape(len(smoothingList),1,1)
     numerators = (LAIDatas * QCDatas * SPara).sum(axis=0)
     denominators = (QCDatas * SPara).sum(axis=0)
-    print(np.nonzero(denominators == 0))
+    # print(np.nonzero(denominators == 0))
     LAIImprovedDatas = np.round(numerators / denominators)
-    print(LAIImprovedDatas[499,447])
     # LAIImprovedDatas = numerators / denominators
     # 目前，255填充值通过计算修补了部分数据，下面两步会将原来的填充值255还原
     pos = fileDatas[index, ...].__gt__(70)
     LAIImprovedDatas[pos] = fileDatas[index, ...][pos]
-    print('Tile_Tem', LAIImprovedDatas[position])
-    print(LAIImprovedDatas[499,447])
+    # print('Tile_Tem', LAIImprovedDatas[position])
     # print(LAIImprovedDatas[:100, :100])
     # np.savetxt('./Daily_cache/0506/Temp', LAIImprovedDatas[:100, :100])
     # Public_Motheds.render_LAI(fileDatas[index , ...], title='Raw', issave=False, savepath='./Daily_cache/0407/Raw')
@@ -139,7 +136,7 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, EUC_pow
         pos = landCover.__eq__(lcType)
         LAIImprovedDatas[pos] = LAIImprovedData[pos]
 
-    print('Tile_Spa', LAIImprovedDatas[position])
+    # print('Tile_Spa', LAIImprovedDatas[position])
     # 目前，255填充值通过计算修补了部分数据，下面两步会将原来的填充值255还原
     pos1 = fileDatas[index, ...].__gt__(70)
     LAIImprovedDatas[pos1] = fileDatas[index, ...][pos1]

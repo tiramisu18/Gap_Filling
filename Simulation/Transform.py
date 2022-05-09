@@ -19,19 +19,17 @@ def LAI_multiples():
 def set_err_weight():
     LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')   
     Err = np.load('./Simulation_Dataset/LAI/Simu_Method_3/Err_peren.npy')
+
     zero = np.zeros(46*500*500, dtype=int).reshape(46, 500, 500)
-    bound = [0, 50, 150, 300, 500]
-    weight = [10, 8, 6, 4, 2, 0]
-    for i in range(0,len(bound)+1):
+    bound = [0, 15, 40, 65, 80]
+    weight = [10, 8, 6, 4, 2]
+    for i in range(0,len(bound)):
         if i == 0: 
             pos = Err.__eq__(0)
             zero[pos] = 10
-        elif i > 0 and i < len(bound):
+        else:
             pos = np.logical_and(Err > bound[i-1], Err <= bound[i])
             zero[pos] = weight[i]
-        else:
-            pos = Err.__gt__(bound[i-1])
-            zero[pos] = 0
     
     pos = LAI_Simu.__gt__(70)
     zero[pos] = 0
