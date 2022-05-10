@@ -237,9 +237,9 @@ def Lagrange_simulated(Fxy, g, x, y, k):
     
 
 def Lagrange_simulated_martix(): # Fxy, g, x, y, k
-    Tem1 = [15.0, 18.0, 24.0, 19.0, 28.0, 14.0, 21.0, 26.0, 23.0, 15.0]
-    Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0]
-    Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0]
+    Tem1 = [15.0, 10.0, 7.0, 7.0, 11.0]
+    Spa = [9.0, 11.0, 10.0, 8.0, 10.0]
+    Raw = [16.0, 10.0, 8.0, 6.0, 16.0]
     x, y, z, k= symbols('x y z k', real=True)
     # x, y, z, k= symbols('x y z k')
     dataSum1 = 0
@@ -249,7 +249,7 @@ def Lagrange_simulated_martix(): # Fxy, g, x, y, k
         # dataSum1 = dataSum1 + abs(final - Raw[i])
     Fxy1 = dataSum1 / len(Tem1)
 
-    Tem2 = [15.0, 18.0, 24.0, 19.0, 25.0, 14.0, 21.0, 26.0, 23.0, 15.0]
+    Tem2 = [15.0, 10.0, 7.0, 7.0, 12.0]
     dataSum2 = 0
     for i in range(0, len(Tem2)):
         final = (Spa[i] * x + Tem2[i] * y) / (x + y)
@@ -291,24 +291,41 @@ def Lagrange_simulated_martix(): # Fxy, g, x, y, k
     m = stp1(dx,dy,dk)
     print(m)
     print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-    # m= solve([dx,dy,dk],(x,y,k),dict=True)
+
+
+def simulated_martix(Fxy, x, y): # Fxy, g, x, y, k
+    k= symbols('k')
+   
+    g = x + y - 1
+    Fxy = np.array(Fxy)
+  
+    #构造拉格朗日函数
+    L= Matrix(Fxy+k*g)
+    #求导
+    dx = L.diff(x)   # 对x求偏导
+    # print("dx=",dx.shape)
+    dy = L.diff(y)   #对y求偏导
+    # print("dy=",dy)
+    # dz = L.diff(z)   #对y求偏导
+    dk = L.diff(k)   #对k求偏导
+    # print("dk=",dk)
+    #求出n个变量解
+    
+    print('begin', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    def myfun(dx,dy,dk):
+        # print(1)
+        res = solve([dx,dy,dk],(x,y,k),dict=True)
+        # res = solve([dx,dy,dk],(x,y,k))
+        return res
+    stp1 = np.vectorize(myfun)
+    # stp1 = np.frompyfunc(myfun,3,1)
+    m = stp1(dx,dy,dk)
     # print(m)
-    # m= solve((dx,dy,dz,dk),(x,y,z,k),dict=True)
-    # # print(res)
-    # # bb = Matrix(aa)
-    # # m= bb.solve([x,y,z,k])   
-    # print(m)
-# Lagrange_simulated_martix()
-# Tem = [15.0, 18.0, 24.0, 19.0, 25.0, 14.0, 21.0, 26.0, 23.0, 15.0, 17.0, 26.0, 27.0, 25.0, 27.0, 28.0, 25.0, 30.0]
-# Spa = [19.0, 20.0, 20.0, 21.0, 19.0, 19.0, 21.0, 22.0, 21.0, 21.0, 20.0, 23.0, 24.0, 25.0, 24.0, 23.0, 26.0, 23.0]
-# Raw = [15.0, 17.0, 23.0, 19.0, 24.0, 12.0, 20.0, 26.0, 23.0, 13.0, 18.0, 22.0, 30.0, 29.0, 27.0, 29.0, 25.0, 30.0]
-# x, y, k= symbols('x y k')
-# dataSum = 0
-# for i in range(0, len(Tem)):
-#     final = (Spa[i] * x + Tem[i] * y) / (x + y)
-#     dataSum = dataSum + ((final - Raw[i])**2)
-# Fxy = dataSum / len(Tem)
-# g = x + y - 1
+    print(m[5,5])
+    # print(m[20,20])
+    print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    return m
+
 
 # 拉格朗日求条件极值
 def Lagrange(f, g, x, y, k):
