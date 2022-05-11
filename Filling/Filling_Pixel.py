@@ -88,6 +88,7 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, tempo
 # 整个tile计算
 def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, EUC_pow, winSize, position=(0,0)):
     # print('begin_tem_v1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    print(landCover[62,494])
     LAIImprovedDatas = np.array(fileDatas[index, ...]).copy()
     rawLAI = ma.masked_greater(fileDatas[index, ...], 70) # 因为存在lc分类错误的情况（植被类型下的lai值为254【水域】）所以先将lai值大于70的位置mask
     rawQC = ma.array(qualityControl[index, ...], mask=rawLAI.mask) 
@@ -220,8 +221,9 @@ def Calculate_Weight(TemLAI, SpaLAI, RawLAI, LandCover, qualityControl, pos):
         # LAIImprovedData = ma.round(numerators / denominators)
         # pos = landCover.__eq__(lcType)
         # LAIImprovedDatas[pos] = LAIImprovedData[pos]   
-         
-    lcType = LandCover[pos]
+        
+    # 单个点    
+    # lcType = LandCover[pos]
     # print(lcType)
     # temMask = ma.array(ma.array(TemLAI, mask=LandCover != lcType), mask=qualityControl < 8)
     # spaMask = ma.array(ma.array(SpaLAI, mask=LandCover != lcType), mask=qualityControl < 8)
@@ -243,6 +245,7 @@ def Calculate_Weight(TemLAI, SpaLAI, RawLAI, LandCover, qualityControl, pos):
     #     final = (partSpa[i] * x + partTem[i] * y) / (x + y)
     #     dataSum1 = dataSum1 + ((final - partRaw[i])**2)
     # # print(dataSum1)
+    return 
 
 # 构造函数
 def Structure_Lagrange(Tem, Spa, Raw):

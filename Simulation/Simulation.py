@@ -32,6 +32,7 @@ def render_LAI_Simu (data, title='Image', issave=False, savepath=''):
     plt.show()
 
 def render_Img (data, title='Img', issave=False, savepath=''):
+    # plt.imshow(data, cmap = plt.cm.Blues)  # cmap= plt.cm.jet
     plt.imshow(data, cmap = plt.cm.jet)  # cmap= plt.cm.jet
     plt.title(title, family='Times New Roman', fontsize=18)
     colbar = plt.colorbar()
@@ -170,25 +171,28 @@ LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
 LAI_addErr = np.load('./Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
 
 # err_value = np.load('./Simulation_Dataset/LAI/Simu_Method_2/Err_value.npy')
-
+# Err_percent= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_peren.npy')
+# Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
+# for i in range(20, 21):
+    # render_LAI(LAI_Simu[i], title='LAI', issave=True, savepath='../Filling/Daily_cache/0506/Simu/Standard')
+    # render_LAI(LAI_addErr[i], title='LAI', issave=True, savepath='../Filling/Daily_cache/0506/Simu/Inaccurate')
+    # render_Img(Err_weight[i], title='Weight', issave=True, savepath='../Filling/Daily_cache/0506/Simu/Weight')
+    # render_Img(Err_percent[i], title='Percentage', issave=True, savepath='../Filling/Daily_cache/0506/Simu/Percentage')
 
 x_v = 50
 y_v = 50
-# (0,3) (2,1) （2，2） (499, 499)
 aa = LAI_Simu[:, x_v, y_v] / 10
 bb = LAI_addErr[:, x_v, y_v] / 10
-
-# print(aa,bb)
 
 draw_polt_Line(np.arange(0, 361, 8),{
     'title': 'LAI_addErr',
     'xlable': 'Day',
     'ylable': 'LAI',
     'line': [aa, bb, bb],
-    'le_name': ['Simu', 'addErr', '','Fil'],
+    'le_name': ['Standard', 'Inaccurate', 'AddError'],
     'color': ['#bfdb39', 'gray','#fd7400', '#1f8a6f', '#548bb7','gray', '#bfdb39',],
-    'marker': [',', ',','^',],
-    'lineStyle': ['dashed', 'dashed','']
+    'marker': ['o',  ',','^',],
+    'lineStyle': ['solid', 'dashed', '',]
     },'../Filling/Daily_cache/0506/lai_addErr', True, 2)
 
 

@@ -94,20 +94,19 @@ def Simu_improved():
     Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
     
 
-    for index in range(0,46): 
-        print(index)
+    for index in range(0,1): 
+        # print(index)
         # result = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  0.35)
         # np.savetxt('./Daily_cache/0506/Tem_LAI/LAI_%s'% (index + 1), result)
-        # result = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  8)
+        result = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  8)
         # np.savetxt('./Daily_cache/0506/Spa_LAI/LAI_%s'% (index + 1), result)
 
         # result = Filling_Pixel.Fill_Pixel_Matrix(LAI_Simu_addErr, index, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, position=tuple(Position))
         # Filling_Pixel.Calculate_Weight(result['Tem'], result['Spa'], LAI_Simu_addErr[index], LandCover, Err_weight[index], tuple(Position))
-        Filling_Pixel.Calculate_Weight(np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % (index+1))[0:15, 0:15], np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % (index+1))[0:15, 0:15], LAI_Simu_addErr[index, 0:15, 0:15], LandCover[0:15, 0:15], Err_weight[index, 0:15, 0:15], (5,5))
+        # Filling_Pixel.Calculate_Weight(np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % (index+1))[0:15, 0:15], np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % (index+1))[0:15, 0:15], LAI_Simu_addErr[index, 0:15, 0:15], LandCover[0:15, 0:15], Err_weight[index, 0:15, 0:15], (5,5))
         
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Position, LandCover, 6, 12, ses_pow, 2, 5)
         # Fil_val_1.append(re1['Tem'][0]/10)
-        # Fil_val_2.append(re1['Spa'][0] /10)
    
     # Draw_PoltLine.draw_polt_Line(np.arange(0, 361, 8),{
     #     # 'title': 'pos_%s_%s' % (x_v, y_v),
@@ -124,15 +123,11 @@ def Simu_improved():
     #     },'./Daily_cache/0506/Improved_(5,5)', True, 2)
 
 
-# Simu_improved()
+Simu_improved()
 # stru_fun= np.load('./Daily_cache/0506/Structure_Lagrange.npy', allow_pickle=True)
 # print(stru_fun[20,20])
 # Newtons_Method.simulated_martix(stru_fun[20,20])
 
-# Err_peren= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_peren.npy')
-# Err_peren= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
-# for i in range(0, 10):
-#     Public_Motheds.render_Img(Err_peren[i])
 
 # aa = ma.masked_values(np.array(np.arange(0,12)).reshape(2,3,-1), 2)
 # bb = np.ones(12).reshape(2,3,-1)
@@ -165,7 +160,13 @@ def Improved_position():
     x = np.array(Spa_Weight)
     y = np.array(Tem_Weight)
     improved_5_5 = (Spa_5_5 * x + Tem_5_5 * y) / (x + y)
-    print(improved_5_5)
+    # print(improved_5_5)
+
+    inaccurate = np.sqrt((1/46)* np.sum(np.square(LAI_Simu_noErr[:, 5, 5] - LAI_Simu_addErr[:, 5, 5]))) / 10
+    spa = np.sqrt((1/46)* np.sum(np.square(LAI_Simu_noErr[:, 5, 5] - Spa_improvedLAI[:, 5, 5]))) / 10
+    tem = np.sqrt((1/46)* np.sum(np.square(LAI_Simu_noErr[:, 5, 5] - Tem_improvedLAI[:, 5, 5]))) / 10
+    improved = np.sqrt((1/46)* np.sum(np.square(LAI_Simu_noErr[:, 5, 5] / 10 - improved_5_5)))
+    print(inaccurate, spa, tem, improved)
     # print(Spa_5_5)
     Draw_PoltLine.draw_polt_Line(np.arange(0, 361, 8),{
         # 'title': 'pos_%s_%s' % (x_v, y_v),
@@ -173,7 +174,7 @@ def Improved_position():
         'xlable': 'Day',
         'ylable': 'LAI',
         # 'line': [ori_val, Fil_val, Fil_val_1, Fil_val_2],
-        'line': [LAI_Simu_noErr[:, 5, 5]/10, LAI_Simu_addErr[:, 5, 5]/10, Spa_5_5, Tem_5_5,improved_5_5,  ],
+        'line': [LAI_Simu_noErr[:, 5, 5]/10, LAI_Simu_addErr[:, 5, 5]/10, Spa_5_5, Tem_5_5, improved_5_5],
         'le_name': ['Standard','Inaccurate', 'Temporal', 'Spatial', 'Improved',],
         'color': ['#958b8c', '#a4ac80', '#bfdb39', '#ffe117', '#fd7400', '#7ba79c'],
         'marker': False,
@@ -205,6 +206,13 @@ def previous_method():
     x = np.array(Spa_Weight)
     y = np.array(Tem_Weight)
     improved_5_5 = (Spa_5_5 * x + Tem_5_5 * y) / (x + y)
+
+    inaccurate = np.sqrt((1/44)* np.sum(np.square(LAI_Simu_noErr[1:45, 5, 5] - LAI_Simu_addErr[1:45, 5, 5]))) / 10
+    spa = np.sqrt((1/44)* np.sum(np.square(LAI_Simu_noErr[1:45, 5, 5] / 10 - Spa_5_5))) 
+    tem = np.sqrt((1/44)* np.sum(np.square(LAI_Simu_noErr[1:45, 5, 5] / 10 - Spa_5_5))) 
+    improved = np.sqrt((1/44)* np.sum(np.square(LAI_Simu_noErr[1:45, 5, 5] / 10 - improved_5_5)))
+    print(inaccurate, spa, tem, improved)
+
     Draw_PoltLine.draw_polt_Line(np.arange(8, 353, 8),{
         # 'title': 'pos_%s_%s' % (x_v, y_v),
         'title': '',

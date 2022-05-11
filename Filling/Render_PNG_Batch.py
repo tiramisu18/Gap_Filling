@@ -18,8 +18,8 @@ def render_LAI (data, title='Image', issave=False, savepath=''):
     plt.show()
 
 def render_Img (data, title='Algo Path', issave=False, savepath=''):
-    # plt.imshow(data, cmap = plt.cm.jet)  # cmap= plt.cm.jet
-    plt.imshow(data, cmap = plt.cm.coolwarm) 
+    plt.imshow(data, cmap = plt.cm.seismic)  # cmap= plt.cm.jet
+    # plt.imshow(data, cmap = plt.cm.coolwarm) 
     plt.title(title, family='Times New Roman', fontsize=18)
     colbar = plt.colorbar()
     plt.axis('off')
@@ -143,3 +143,46 @@ def landCover_Improved_Tem():
         'size': False,
         'lineStyle': ['solid', 'dashed']
         },'./Daily_cache/0506/Tem_LC/lc_type_%s'% lc_type, True, 2)
+
+def Average_LAI():
+    standLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
+    Tem_improvedArray = []
+    Spa_improvedArray = []
+    for i in range(1, 47):
+        tem_data = np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % i)
+        spa_data = np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % i)
+        Tem_improvedArray.append(tem_data)
+        Spa_improvedArray.append(spa_data)
+    Tem_improvedLAI = np.array(Tem_improvedArray)
+    Spa_improvedLAI = np.array(Spa_improvedArray)
+
+    mean_standard = np.mean(standLAI, axis=0)
+    mean_inaccurate = np.mean(LAI_Simu_addErr, axis=0)
+    mean_tem = np.mean(Tem_improvedLAI, axis=0)
+    mean_spa = np.mean(Spa_improvedLAI, axis=0)
+    # 46期均值
+    # render_LAI(mean_standard, title='LAI', issave=True, savepath='./Daily_cache/0506/Mean_Standard_LAI')
+    # render_LAI(mean_inaccurate, title='LAI', issave=True, savepath='./Daily_cache/0506/Mean_Inaccurate_LAI')
+    # render_LAI(mean_tem, title='LAI', issave=True, savepath='./Daily_cache/0506/Mean_Impro_Tem_LAI')
+    # render_LAI(mean_spa, title='LAI', issave=True, savepath='./Daily_cache/0506/Mean_Impro_Spa_LAI')
+
+    # 46期均值相对标准数据的绝对差
+    render_Img((mean_standard-mean_inaccurate)/10,title='', issave=True, savepath='./Daily_cache/0506/Mean_diff_Inaccurate')
+    render_Img((mean_standard-mean_tem)/10,title='', issave=True, savepath='./Daily_cache/0506/Mean_diff_Tem')
+    render_Img((mean_standard-mean_spa)/10,title='', issave=True, savepath='./Daily_cache/0506/Mean_diff_Spa')
+    
+    print(np.mean(np.abs(mean_standard-mean_inaccurate)/10), np.mean(np.abs(mean_standard-mean_tem)/10), np.mean(np.abs(mean_standard-mean_spa)/10))
+    
+    # 当空间范围内无相同LC时，空间计算值为0
+    # LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
+    # Mean_diff_Spa = mean_standard - mean_spa
+    # print(np.nonzero(Mean_diff_Spa > 10))
+    # pos = (62,494)
+    # print(mean_standard[pos], mean_spa[pos])
+    # print(standLAI[:, pos[0], pos[1]])
+    # print(LAI_Simu_addErr[:, pos[0], pos[1]])
+    # print(Tem_improvedLAI[:, pos[0], pos[1]])
+    # print(Spa_improvedLAI[:, pos[0], pos[1]])
+    # print(LandCover[pos])
+    
