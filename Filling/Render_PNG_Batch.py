@@ -109,7 +109,7 @@ def landCover_Improved_Spa():
         'lineStyle': ['solid', 'dashed']
         },'./Daily_cache/0506/Spa_LC/lc_type_%s'% lc_type, True, 2)
 
-
+# 绘制不同植被类型的LAI曲线（标准、添加误差的、提升后的）
 def landCover_Improved_Tem():    
     improvedArray = []
     for i in range(1, 47):
@@ -144,6 +144,7 @@ def landCover_Improved_Tem():
         'lineStyle': ['solid', 'dashed']
         },'./Daily_cache/0506/Tem_LC/lc_type_%s'% lc_type, True, 2)
 
+# 计算整个tile的LAI均值
 def Average_LAI():
     standLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')

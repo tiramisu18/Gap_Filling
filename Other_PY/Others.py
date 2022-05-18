@@ -1,11 +1,21 @@
-#  语法格式：条件成立时要返回的值if条件eLse条件不成立时要返回的值
-#  三元表达式的写法
-# x = 1
-# y = 2
-# print(x if x > y else y)
-
+import matplotlib.pyplot as plt
 import numpy as np
-# np.linspace(0, 10, num=7)
 
-aa = np.ones((2,1))
-print(aa)
+# plt.style.use('_mpl-gallery')
+
+# make data
+np.random.seed(1)
+x = np.linspace(0, 8, 16)
+y1 = 3 + 4*x/8 + np.random.uniform(0.0, 0.5, len(x))
+y2 = 1 + 2*x/8 + np.random.uniform(0.0, 0.5, len(x))
+
+# plot
+fig, ax = plt.subplots()
+
+ax.fill_between(x, y1, y2, alpha=.5, linewidth=0)
+# ax.plot(x, (y1 + y2)/2, linewidth=2)
+
+ax.set(xlim=(0, 8), xticks=np.arange(1, 8),
+       ylim=(0, 8), yticks=np.arange(1, 8))
+
+plt.show()
