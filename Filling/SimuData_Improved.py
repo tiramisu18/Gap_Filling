@@ -2,88 +2,11 @@ from enum import Flag
 import os
 import numpy as np
 import numpy.ma as ma
-from numpy.core.fromnumeric import mean
-from numpy.ma.core import array
-from numpy.random.mtrand import sample
 import ReadDirFiles
 import math
-import h5py
 import Filling_Pixel
 import Draw_PoltLine
 import Public_Motheds
-import Newtons_Method
-
-
-# calculate RMSE
-def cal_RMSE():
-    pos_arr= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos.npy', allow_pickle=True)
-    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')   
-    index = 1
-    data_array = np.loadtxt('../Simulation/Filling/2018_%s' % (index+1))
-    numera_rmse = 0
-    for ele in pos_arr[index]:
-        v_rmse = math.pow((LAI_Simu_noErr[index][ele[0]][ele[1]] - LAI_Simu_addErr[index][ele[0]][ele[1]]), 2)
-        # v_rmse = math.pow((LAI_Simu_noErr[index][ele[0]][ele[1]] - data_array[ele[0]][ele[1]]), 2)
-        numera_rmse += v_rmse
-    RMSE = round(math.sqrt(numera_rmse / len(pos_arr[index])), 2)
-    print(RMSE)
-
-
-# calculate R平方
-def cal_R_R():
-    pos_arr= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos.npy', allow_pickle=True)
-    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')   
-    index = 5
-    data_array = np.loadtxt('../Simulation/Filling/2018_%s' % (index+1))
-    val_t = 0
-    val_b = 0
-    for ele in pos_arr[index]:
-        # v_rmse = math.pow((LAI_Simu_noErr[index][ele[0]][ele[1]] - LAI_Simu_addErr[index][ele[0]][ele[1]]), 2)
-        # t_one = math.pow((data_array[ele[0]][ele[1]] - 2.1), 2)
-        t_one = math.pow((LAI_Simu_addErr[index][ele[0]][ele[1]] - 2.1), 2)
-        b_one = math.pow((LAI_Simu_noErr[index][ele[0]][ele[1]] - 2.1), 2)
-        val_t += t_one
-        val_b += b_one
-    R_R = round(val_t / val_b, 2)
-    print(R_R)
-
-# 找出所有需填补的像元位置
-def get_position_filling():
-    Err= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_peren.npy')
-    pos_arr = []
-    for day in range(0, 46):
-        print(day)
-        one = []
-        for i in range(0, 500):
-            for j in range(0, 500):
-                val = Err[day][i][j]
-                if val > 0 : one.append([i,j])
-        pos_arr.append(one)
-    np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos', pos_arr)
-
-# 模拟数据的时空填补(所有像元)
-def Simu_filling_All():
-    LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
-    # LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
-    LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
-    Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_weight.npy')
-    
-    pos_arr= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Filling_Pos.npy', allow_pickle=True)
-    ses_pow = 0.8
-    for index in range(6, 45):
-        print(index)
-        Filling_Pos = pos_arr[index]
-        # Filling_Pos = [[0, 20]]
-        # if index < 10: ses_pow = 0.3
-        # if 10 < index < 14 or 36 < index < 40: ses_pow = 0.5
-        # elif 14 < index < 20 or 30 < index < 36: ses_pow = 0.8
-        # else: ses_pow = 0.3
-        # elif 20 < index < 30: ses_pow = 0.3
-        re1 = Filling_Pixel.Fill_Pixel_All(LAI_Simu_addErr, index, Filling_Pos, LandCover, Err_weight, 6, 12, ses_pow, 2, 5)
-        # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Filling_Pos, LandCover, 6, 12, ses_pow, 2, 5)
 
 # 模拟数据的时空提升
 def Simu_improved():
@@ -94,13 +17,15 @@ def Simu_improved():
     Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
     
 
-    for index in range(0,1): 
-        # print(index)
+    for index in range(0,46): 
+        print(index)
         # result = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  0.35)
         # np.savetxt('./Daily_cache/0506/Tem_LAI/LAI_%s'% (index + 1), result)
         result = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  8)
-        # np.savetxt('./Daily_cache/0506/Spa_LAI/LAI_%s'% (index + 1), result)
+        # np.savetxt('./Daily_cache/0518/Spa_LAI/LAI_%s'% (index + 1), result)
 
+
+        # Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, [15,15], LandCover,  Err_weight, 3, 12, 0.35, 3, 8, 2)
         # result = Filling_Pixel.Fill_Pixel_Matrix(LAI_Simu_addErr, index, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, position=tuple(Position))
         # Filling_Pixel.Calculate_Weight(result['Tem'], result['Spa'], LAI_Simu_addErr[index], LandCover, Err_weight[index], tuple(Position))
         # Filling_Pixel.Calculate_Weight(np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % (index+1))[0:15, 0:15], np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % (index+1))[0:15, 0:15], LAI_Simu_addErr[index, 0:15, 0:15], LandCover[0:15, 0:15], Err_weight[index, 0:15, 0:15], (5,5))
@@ -124,20 +49,9 @@ def Simu_improved():
 
 
 Simu_improved()
-# stru_fun= np.load('./Daily_cache/0506/Structure_Lagrange.npy', allow_pickle=True)
-# print(stru_fun[20,20])
-# Newtons_Method.simulated_martix(stru_fun[20,20])
 
 
-# aa = ma.masked_values(np.array(np.arange(0,12)).reshape(2,3,-1), 2)
-# bb = np.ones(12).reshape(2,3,-1)
-# aa = [{'x': -0.187500000000000, 'y': 1.18750000000000, 'k': 0.0}],[{'x': -0.235294117647059, 'y': 1.23529411764706, 'k': 0.0}]
-# aa = [[(-3/16, 19/16, 0), (-1/10, 11/10, 0)],[(-17/22, 39/22, 0), (-5/2, 7/2, 0)]]
-# bb = np.array(aa)
-# print(bb.shape)
-# cc = bb[:,0]
-# print(cc)
-
+# 计算一个点提升后的LAI值
 def Improved_position():
     LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
@@ -182,6 +96,7 @@ def Improved_position():
         'lineStyle': ['solid','solid','dashed','dashed','solid',],
         },'./Daily_cache/0506/Improved_(5,5)', True, 2)
 
+#计算一个点提升后的LAI值（之间的权重计算方法）
 def previous_method():
     LAI_Simu_noErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')

@@ -26,23 +26,6 @@ def render_Img (data, title='Algo Path', issave=False, savepath=''):
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
 
-# LAI_Simu_Err = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
-# for i in range(0, 46):
-#     render_LAI(LAI_Simu_Err[i], '2018_%d'% (1 + i*8),True, './Daily_cache/0316/Step2_LAI_AddErr/2018_%s' % (i+1))
-#     # render_LAI(LAI_Simu_Err[i], '2018_%d_Err'% (1 + i*8),True, './Daily_cache/0316/Step2_LAI_AddErr/2018_%s_addErr' % (i+1))
-
-
-# Err_value = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_value.npy')
-# Err_peren = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/Err_peren.npy')
-# for i in range(3,4):
-#     render_Img(Err_value[i], '2018_%d'% (1 + i*8),True, './Daily_cache/0316/2018_%s_errValue' % (i+1))
-#     # render_Img(Err_peren[i], '2018_%d'% (1 + i*8),True, './Daily_cache/0316/2018_%s_errperen' % (i+1))
-#     # render_LAI(LAI_Simu_Err[i], '2018_%d_Err'% (1 + i*8),True, './Daily_cache/0316/Step2_LAI_AddErr/2018_%s_addErr' % (i+1))
-
-# 填补后的数据
-# for i in range(2,3):
-#     data_array = np.loadtxt('../Simulation/Filling/2018_%s' % i)
-#     render_LAI(data_array, '2018_%d_Filling'% (1 + (i-1)*8),True, './Daily_cache/0316/Step2_LAI_Filling/2018_%s' % (i))
 
 # 计算数据提升之后整个tile的46期与原始含有误差数据的RMSE
 def calRMSE_Spa():
@@ -144,45 +127,45 @@ def landCover_Improved_Tem():
         'lineStyle': ['solid', 'dashed']
         },'./Daily_cache/0506/Tem_LC/lc_type_%s'% lc_type, True, 2)
 
-# 计算整个tile的LAI均值
+# 计算整个tile的LAI差
 def Average_LAI():
-    standLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
+    StandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+    InaccurateLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
     Tem_improvedArray = []
     Spa_improvedArray = []
-    for i in range(1, 47):
-        tem_data = np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % i)
-        spa_data = np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % i)
-        Tem_improvedArray.append(tem_data)
-        Spa_improvedArray.append(spa_data)
-    Tem_improvedLAI = np.array(Tem_improvedArray)
-    Spa_improvedLAI = np.array(Spa_improvedArray)
+    # for i in range(3, 4):
+    #     tem_data = np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % i)
+    #     spa_data = np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % i)
+    #     Tem_improvedArray.append(tem_data)
+    #     Spa_improvedArray.append(spa_data)
+    i = 33
+    tem_data = np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % i)
+    spa_data = np.loadtxt('./Daily_cache/0518/Spa_LAI/LAI_%s' % i)
+    Tem_improvedLAI = np.array(tem_data)
+    Spa_improvedLAI = np.array(spa_data)
 
-    mean_standard = np.mean(standLAI, axis=0)
-    mean_inaccurate = np.mean(LAI_Simu_addErr, axis=0)
-    mean_tem = np.mean(Tem_improvedLAI, axis=0)
-    mean_spa = np.mean(Spa_improvedLAI, axis=0)
-    # 46期均值
-    # render_LAI(mean_standard, title='LAI', issave=True, savepath='./Daily_cache/0506/Mean_Standard_LAI')
-    # render_LAI(mean_inaccurate, title='LAI', issave=True, savepath='./Daily_cache/0506/Mean_Inaccurate_LAI')
-    # render_LAI(mean_tem, title='LAI', issave=True, savepath='./Daily_cache/0506/Mean_Impro_Tem_LAI')
-    # render_LAI(mean_spa, title='LAI', issave=True, savepath='./Daily_cache/0506/Mean_Impro_Spa_LAI')
+
+    render_LAI(StandLAI[i], title='LAI', issave=True, savepath='./Daily_cache/0518/Standard_LAI')
+    render_LAI(InaccurateLAI[i], title='LAI', issave=True, savepath='./Daily_cache/0518/Inaccurate_LAI')
+    render_LAI(Tem_improvedLAI, title='LAI', issave=True, savepath='./Daily_cache/0518/Impro_Tem_LAI')
+    render_LAI(Spa_improvedLAI, title='LAI', issave=True, savepath='./Daily_cache/0518/Impro_Spa_LAI')
 
     # 46期均值相对标准数据的绝对差
-    render_Img((mean_standard-mean_inaccurate)/10,title='', issave=True, savepath='./Daily_cache/0506/Mean_diff_Inaccurate')
-    render_Img((mean_standard-mean_tem)/10,title='', issave=True, savepath='./Daily_cache/0506/Mean_diff_Tem')
-    render_Img((mean_standard-mean_spa)/10,title='', issave=True, savepath='./Daily_cache/0506/Mean_diff_Spa')
+    render_Img((StandLAI[i]-InaccurateLAI[i])/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Inaccurate')
+    render_Img((StandLAI[i]-Tem_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Tem')
+    render_Img((StandLAI[i]-Spa_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Spa')
     
-    print(np.mean(np.abs(mean_standard-mean_inaccurate)/10), np.mean(np.abs(mean_standard-mean_tem)/10), np.mean(np.abs(mean_standard-mean_spa)/10))
+    print(np.mean(np.abs(StandLAI[i]-InaccurateLAI[i])/10), np.mean(np.abs(StandLAI[i]-Tem_improvedLAI)/10), np.mean(np.abs(StandLAI[i]-Spa_improvedLAI)/10))
     
     # 当空间范围内无相同LC时，空间计算值为0
     # LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
     # Mean_diff_Spa = mean_standard - mean_spa
     # print(np.nonzero(Mean_diff_Spa > 10))
     # pos = (62,494)
-    # print(mean_standard[pos], mean_spa[pos])
-    # print(standLAI[:, pos[0], pos[1]])
-    # print(LAI_Simu_addErr[:, pos[0], pos[1]])
+    # print(StandLAI[i, pos[0], pos[1]])
+    # print(InaccurateLAI[i, pos[0], pos[1]])
+    # print(Tem_improvedLAI[pos[0], pos[1]])
+    # print(Spa_improvedLAI[pos[0], pos[1]])
     # print(Tem_improvedLAI[:, pos[0], pos[1]])
     # print(Spa_improvedLAI[:, pos[0], pos[1]])
     # print(LandCover[pos])
