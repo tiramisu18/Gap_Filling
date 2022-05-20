@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
 import matplotlib.patches as patches
 from matplotlib import animation 
+# from matplotlib import colors
 import copy
 import ReadDirFiles
 import math
@@ -37,16 +38,24 @@ def random_pos(QC, ran_len, length):
             fill_pos.append([rand_pos_1[ele], rand_pos_2[ele]])
             if len(fill_pos) == length: return fill_pos
 
+def render_Img (data, title='Algo Path', issave=False, savepath=''):
+    plt.imshow(data, cmap = plt.cm.coolwarm)  # cmap= plt.cm.jet
+    # plt.imshow(data, cmap = plt.cm.coolwarm) 
+    plt.title(title, family='Times New Roman', fontsize=18)
+    colbar = plt.colorbar()
+    plt.axis('off')
+    if issave :plt.savefig(savepath, dpi=300)
+    plt.show()
 
-# 求参数的最佳值 （求46期的均值，若单独取某一期的数据会存在季节性变化的差异）
-def get_wight_better_para(simuStandLAI, fileDatas, landCover, qualityControl, type):
+# 求参数的最佳值_绘制折线图 （求46期的均值，若单独取某一期的数据会存在季节性变化的差异）
+def get_better_para_1(simuStandLAI, fileDatas, landCover, qualityControl, type):
     # Spatial
     # standLAI = np.array(simuStandLAI).mean(axis=0)
-    standLAI = np.array(simuStandLAI)
+    standLAI = np.array(simuStandLAI) 
     if type == 1:
         winsi_len = 11
         lineAll_RMSE = []
-        for winSize in range(5, winsi_len):
+        for winSize in range(1, winsi_len):
             print(winSize)
             oneLine = []
             for euc_pow in range(1, 6):
@@ -61,12 +70,13 @@ def get_wight_better_para(simuStandLAI, fileDatas, landCover, qualityControl, ty
                    
     # Temporal
     else:
-        tem_len = 8
-        SES_pow_array = [0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]
+        tem_len = 7
+        SES_pow_array = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
         lineAll_RMSE = []
         lineAll_Std = []
         for ses_pow in SES_pow_array:
             oneLine_RMSE = []
+            oneLine_Std = []
             for temporalLength in range(1, tem_len):
                 oneYear = []
                 for index in range(0, 46):
@@ -76,45 +86,146 @@ def get_wight_better_para(simuStandLAI, fileDatas, landCover, qualityControl, ty
                 # calRMSE = np.sqrt((1/(len(fileDatas[0])*len(fileDatas[0][0]))) * np.sum(np.square(standLAI - yearMean)))
                 yearMean = np.array(oneYear)
                 TileRMSE = np.sqrt((1/46) * np.sum(np.square(standLAI - yearMean), axis=0))
-                RMSE_Mean = np.mean(TileRMSE)
-                Std = np.std(TileRMSE)
-                # calRMSE = np.sqrt((1/(len(fileDatas[0])*len(fileDatas[0][0])*46)) * np.sum(np.square(standLAI - yearMean)))
+                RMSE_Mean = np.mean(TileRMSE) / 10
+                Std = np.std(TileRMSE, ddof=1) / 10
                 oneLine_RMSE.append(RMSE_Mean)
+                oneLine_Std.append(Std)
+            lineAll_RMSE.append(oneLine_RMSE)
+            lineAll_Std.append(oneLine_Std)
+
+    return {'RMSE': lineAll_RMSE, 'Std':lineAll_Std}
+
+
+# 求参数的最佳值_绘制RMSE空间图 （求46期的均值，若单独取某一期的数据会存在季节性变化的差异）
+def get_better_para_2(simuStandLAI, fileDatas, landCover, qualityControl, type):
+    # Spatial
+    # standLAI = np.array(simuStandLAI).mean(axis=0)
+    standLAI = np.array(simuStandLAI) 
+    if type == 1:
+        winsi_len = 11
+        lineAll_RMSE = []
+        for winSize in range(1, winsi_len):
+            print(winSize)
+            oneLine = []
+            for euc_pow in range(1, 6):
+                oneYear = []
+                for index in range(0, 46):
+                    result = Filling_Pixel.Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, euc_pow, winSize)
+                    oneYear.append(result)
+                yearMean = np.array(oneYear).mean(axis=0)
+                calRMSE = np.sqrt((1/(len(fileDatas[0])*len(fileDatas[0][0]))) * np.sum(np.square(standLAI - yearMean)))
+                oneLine.append(calRMSE)
+            lineAll_RMSE.append(oneLine)
+                   
+    # Temporal
+    else:
+        tem_len = 7
+        SES_pow_array = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+        lineAll_RMSE = []
+        lineAll_Std = []
+        for ses_pow in SES_pow_array:
+            oneLine_RMSE = []
+            for temporalLength in range(1, tem_len):
+                oneYear = []                
+                for index in range(0, 46):
+                    result = Filling_Pixel.Temporal_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, temporalLength, ses_pow)
+                    oneYear.append(result)
+                # yearMean = np.array(oneYear).mean(axis=0)
+                # calRMSE = np.sqrt((1/(len(fileDatas[0])*len(fileDatas[0][0]))) * np.sum(np.square(standLAI - yearMean)))
+                yearMean = np.array(oneYear)
+                TileRMSE = np.sqrt((1/46) * np.sum(np.square(standLAI - yearMean), axis=0))
+                oneLine_RMSE.append(TileRMSE / 10)
+                
             lineAll_RMSE.append(oneLine_RMSE)
 
-    return lineAll_RMSE
+    return {'RMSE': lineAll_RMSE}
+
+# 将参数绘制成折线图
+def parameter_line(paraType, lineAll):
+    if paraType == 1:
+        Draw_PoltLine.draw_polt_Line(np.arange(1, 6, 1),{
+            'title': '' ,
+            'xlable': 'Correlation Coefficient',
+            'ylable': 'RMSE',
+            'line': lineAll,
+            # 'le_name': ['Pow=1', 'Pow=2', 'Pow=3', 'Pow=4', 'Pow=5'],
+            'le_name': ['HW=5','HW=6', 'HW=7','HW=8','HW=9','HW=10'],
+            'color': False,
+            'marker': False,
+            'size': False,
+            'lineStyle': []
+            },'./Daily_cache/0506/Spatial_Para_(100,200)', True, 1)
+    else:
+        # Draw_PoltLine.draw_polt_Line(np.arange(1, 7, 1),{ #tem_len
+        #     'title': '',
+        #     'xlable': 'Half Length',
+        #     'ylable': 'RMSE',
+        #     'line': lineAll['Std'],
+        #     'le_name': ['cc=0.1', 'cc=0.2', 'cc=0.3','cc=0.4', 'cc=0.5', 'cc=0.6', 'cc=0.7', 'cc=0.8', 'cc=0.9'],
+        #     'color': False,
+        #     'marker': False,
+        #     'size': False,
+        #     'lineStyle': []
+        #     },'./Daily_cache/0518/Temporal_Para_(100,300)', False, 1)
+        
+        color_arr = ['#548bb7', '#958b8c', '#bfdb39', '#ffe117', '#fd7400', '#7ba79c', '#016382', '#dd8146', '#a4ac80', '#d9b15c', '#1f8a6f', '#987b2d']
+        marker_arr = ['s', 'o', '.', '^', ',', 'v', '8', '*', 'H', '+', 'x', '_']
+        x = np.arange(1, 7, 1)
+        plt.figure(figsize=(8,4))
+        
+        plt.title('', family='Times New Roman', fontsize=18)   
+        plt.xlabel('Half Length', fontsize=15, family='Times New Roman') 
+        plt.ylabel('RMSE', fontsize=15, family='Times New Roman')
+        line_arr = []
+        for i in range(0, len(lineAll['RMSE'])):
+            # line_arr.append((plt.plot(x,lineAll['RMSE'][i], label='count', color=color_arr[i],  marker=marker_arr[i], markersize=3))[0])
+            line_arr.append((plt.errorbar(x, lineAll['RMSE'][i], yerr=lineAll['Std'][i], label='count', color=color_arr[i], linewidth=1, linestyle='dotted', marker=marker_arr[i], markersize=3))[0])
+            # plt.errorbar(np.arange(1, 7, 1), lineAll['RMSE'][0], yerr=lineAll['Std'][0], label='both limits (default)')
+            # ax.fill_between(np.arange(1, 7, 1), lineAll['Std'][i][0], lineAll['Std'][i][1] , alpha=.3, linewidth=0, color=color_arr[i])
+        
+        plt.legend(
+            (line_arr), 
+            (['cc=0.2', 'cc=0.3','cc=0.4', 'cc=0.5', 'cc=0.6', 'cc=0.7']),
+            loc = 1, prop={'size':15, 'family':'Times New Roman'},
+            )
+        plt.savefig('./Daily_cache/0518/Temporal_Para_(100,300)_err', dpi=300)       
+        plt.show()
+
+# 将参数绘制成空间图
+def parameter_images(lineAll):
+    # plt.figure(figsize=(10,4))
+    fig, axs = plt.subplots(6, 6, figsize=(9,8))
+    # fig.suptitle('Multiple images')
+    images = []
+    for i in range(6):
+        for j in range(6):
+            # Generate data with a range that varies from one plot to the next.
+            # data = ((1 + i + j) / 10) * np.random.rand(10, 20)
+            images.append(axs[i, j].imshow(lineAll['RMSE'][i][j]))
+            axs[i, j].axis('off')
+            # axs[i, j].width = 
+
+    # Find the min and max of all colors for use in setting the color scale.
+    vmin = min(image.get_array().min() for image in images)
+    vmax = max(image.get_array().max() for image in images)
+    norm = pltcolor.Normalize(vmin=vmin, vmax=vmax,)
+    for im in images:
+        im.set_norm(norm)
+
+    fig.colorbar(images[0], ax=axs,  fraction=.1)
+    plt.savefig('./Daily_cache/0518/Temporal_Para_(100,300)_combine', dpi=300)
+    plt.show()
+
 
 simuStandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
 fileDatas = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
 LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
 Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
 left = 100
-right = 200
+right = 300
 paraType = 2
-lineAll = get_wight_better_para(simuStandLAI[:,left:right,left:right], fileDatas[:,left:right,left:right], LandCover[left:right,left:right], Err_weight[:,left:right,left:right], paraType)
-# print(lineAll)
-if paraType == 1:
-    Draw_PoltLine.draw_polt_Line(np.arange(1, 6, 1),{
-        'title': '' ,
-        'xlable': 'Correlation Coefficient',
-        'ylable': 'RMSE',
-        'line': lineAll,
-        # 'le_name': ['Pow=1', 'Pow=2', 'Pow=3', 'Pow=4', 'Pow=5'],
-        'le_name': ['HW=5','HW=6', 'HW=7','HW=8','HW=9','HW=10'],
-        'color': False,
-        'marker': False,
-        'size': False,
-        'lineStyle': []
-        },'./Daily_cache/0506/Spatial_Para_(100,200)', True, 1)
-else:
-    Draw_PoltLine.draw_polt_Line(np.arange(1, 8, 1),{ #tem_len
-        'title': '',
-        'xlable': 'Half Length',
-        'ylable': 'RMSE',
-        'line': lineAll,
-        'le_name': ['cc=0.20', 'cc=0.25','cc=0.30', 'cc=0.35', 'cc=0.40', 'cc=0.45', 'cc=0.50'],
-        'color': False,
-        'marker': False,
-        'size': False,
-        'lineStyle': []
-        },'./Daily_cache/0518/Temporal_Para_(100,200)', True, 1)
+lineAll = get_better_para_1(simuStandLAI[:,left:right,left:right], fileDatas[:,left:right,left:right], LandCover[left:right,left:right], Err_weight[:,left:right,left:right], paraType)
+# aa = np.array(lineAll['RMSE'])
+# print(aa.shape)
+parameter_line(paraType, lineAll)
+# parameter_images(lineAll)

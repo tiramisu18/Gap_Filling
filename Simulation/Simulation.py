@@ -4,6 +4,7 @@ import matplotlib.colors as pltcolor
 import random
 import scipy.io as scio
 import numpy.ma as ma
+import Transform
 
 def render_LAI (data, title='Image', issave=False, savepath=''):
     colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
@@ -81,51 +82,10 @@ def draw_polt_Line (x, obj, savePath = '', issave = False, loc = 0):
         if issave :plt.savefig(savePath, dpi=300)
         plt.show()
 
-# 随机增加误差后生成的误差数据集、误差百分比数据集、误差值数据集
-def add_ErrDataSet():
-    # LAI_Err_Peren = [[[0.0] * 500] * 500] * 46 # 生成浮点型的矩阵
-    # np.save('./Simulation_Dataset/Err_zero(double)', LAI_Err_Peren)
-    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
-    Err_Peren = np.load('./Simulation_Dataset/Err_zero(int).npy')
-    Err_value = np.load('./Simulation_Dataset/Err_zero(double).npy')
-    for day in range(0,46):
-        print(day)
-        x = int_random(0, 499, 50000)
-        y = int_random(0, 499, 50000)    
-        for i in range(0, 50000): # 选取20%的像元            
-            # print(day, x[i], y[i])
-            L_ori = LAI_Simu[day][x[i]][y[i]]
-            if Err_Peren[day][x[i]][y[i]] == 0 and L_ori <= 7 and L_ori > 0:  
-                err = round(random.uniform(-1.5, 1.5),1)          
-                LAI_addErr = LAI_Simu[day][x[i]][y[i]] + err
-                if LAI_addErr > 7:
-                    LAI_Simu[day][x[i]][y[i]] = 7
-                    err = 7 - L_ori
-                elif LAI_addErr < 0:
-                    LAI_Simu[day][x[i]][y[i]] = 0
-                    err = -L_ori
-                else:
-                    LAI_Simu[day][x[i]][y[i]] = round(LAI_addErr,2)
-                try :
-                    Err_Peren[day][x[i]][y[i]] = int(round(abs(err) / L_ori, 2) * 100)
-                    Err_value[day][x[i]][y[i]] = err
-                except:
-                    print(err, L_ori)
-    
-    np.save('./Simulation_Dataset/LAI/Simu_Method_2/Err_peren', Err_Peren)       
-    np.save('./Simulation_Dataset/LAI/Simu_Method_2/Err_value', Err_value) 
-
-    for idx in range(0, 46):
-        print(idx)
-        for i in range(0, 500):
-            for j in range(0,500):
-                if LAI_Simu[idx][i][j] <= 7 : 
-                    LAI_Simu[idx][i][j] = LAI_Simu[idx][i][j] * 10
-    np.save('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70)', LAI_Simu)
-
+# 添加随机误差后生成的误差数据集、误差百分比数据集、误差值数据集
 def add_ErrDataSet_matrix():
     LAI_Simu = np.array(np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy'))
-    relativeErr_value = np.random.uniform(-80,80,(46,500,500)) # 相对误差比例   
+    relativeErr_value = np.random.uniform(-40,40,(46,500,500)) # 相对误差比例   
     # print(relativeErr_value)
     Err_value = np.around(LAI_Simu * relativeErr_value * 0.01, 2)
     # np.set_printoptions(precision = 1)
@@ -165,6 +125,7 @@ def add_ErrDataSet_matrix():
     np.save('./Simulation_Dataset/LAI/Simu_Method_3/Err_peren', Err_Peren)       
     np.save('./Simulation_Dataset/LAI/Simu_Method_3/Err_value', Err_value)
     np.save('./Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70)', LAI_addErr)
+    Transform.set_err_weight()
 
 # LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
 LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
@@ -179,8 +140,8 @@ LAI_addErr = np.load('./Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-7
     # render_Img(Err_weight[i], title='Weight', issave=True, savepath='../Filling/Daily_cache/0506/Simu/Weight')
     # render_Img(Err_percent[i], title='Percentage', issave=True, savepath='../Filling/Daily_cache/0506/Simu/Percentage')
 
-x_v = 50
-y_v = 50
+x_v = 150
+y_v = 150
 aa = LAI_Simu[:, x_v, y_v] / 10
 bb = LAI_addErr[:, x_v, y_v] / 10
 
@@ -193,7 +154,7 @@ draw_polt_Line(np.arange(0, 361, 8),{
     'color': ['#bfdb39', 'gray','#fd7400', '#1f8a6f', '#548bb7','gray', '#bfdb39',],
     'marker': ['o',  ',','^',],
     'lineStyle': ['solid', 'dashed', '',]
-    },'../Filling/Daily_cache/0506/lai_addErr', True, 2)
+    },'../Filling/Daily_cache/0518/lai_addErr', True, 2)
 
 
 
