@@ -138,24 +138,48 @@ def Average_LAI():
     #     spa_data = np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % i)
     #     Tem_improvedArray.append(tem_data)
     #     Spa_improvedArray.append(spa_data)
-    i = 33
-    tem_data = np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % i)
-    spa_data = np.loadtxt('./Daily_cache/0518/Spa_LAI/LAI_%s' % i)
+    i = 23
+    tem_data = np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % i)
+    spa_data = np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % i)
     Tem_improvedLAI = np.array(tem_data)
     Spa_improvedLAI = np.array(spa_data)
 
 
-    render_LAI(StandLAI[i], title='LAI', issave=True, savepath='./Daily_cache/0518/Standard_LAI')
-    render_LAI(InaccurateLAI[i], title='LAI', issave=True, savepath='./Daily_cache/0518/Inaccurate_LAI')
-    render_LAI(Tem_improvedLAI, title='LAI', issave=True, savepath='./Daily_cache/0518/Impro_Tem_LAI')
-    render_LAI(Spa_improvedLAI, title='LAI', issave=True, savepath='./Daily_cache/0518/Impro_Spa_LAI')
+    render_LAI(StandLAI[i], title='LAI', issave=True, savepath='./Daily_cache/0522/Standard_LAI')
+    render_LAI(InaccurateLAI[i], title='LAI', issave=True, savepath='./Daily_cache/0522/Inaccurate_LAI')
+    render_LAI(Tem_improvedLAI, title='LAI', issave=True, savepath='./Daily_cache/0522/Impro_Tem_LAI')
+    render_LAI(Spa_improvedLAI, title='LAI', issave=True, savepath='./Daily_cache/0522/Impro_Spa_LAI')
 
-    # 46期均值相对标准数据的绝对差
-    render_Img((StandLAI[i]-InaccurateLAI[i])/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Inaccurate')
-    render_Img((StandLAI[i]-Tem_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Tem')
-    render_Img((StandLAI[i]-Spa_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Spa')
-    
-    print(np.mean(np.abs(StandLAI[i]-InaccurateLAI[i])/10), np.mean(np.abs(StandLAI[i]-Tem_improvedLAI)/10), np.mean(np.abs(StandLAI[i]-Spa_improvedLAI)/10))
+    # 相对标准数据的绝对差
+    Ina = (StandLAI[i]-InaccurateLAI[i])/10
+    Tem = (StandLAI[i]-Tem_improvedLAI)/10
+    Spa = (StandLAI[i]-Spa_improvedLAI)/10
+    # render_Img((StandLAI[i]-InaccurateLAI[i])/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Inaccurate')
+    # render_Img((StandLAI[i]-Tem_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Tem')
+    # render_Img((StandLAI[i]-Spa_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Spa')
+    data = [Ina, Tem, Spa]
+    fig, axs = plt.subplots(1, 3)
+    # fig.suptitle('Multiple images')
+    images = []
+
+    for j in range(3):
+            # Generate data with a range that varies from one plot to the next.
+            # data = ((1 + i + j) / 10) * np.random.rand(10, 20)
+        images.append(axs[j].imshow(data[j], cmap = plt.cm.seismic))
+        axs[j].axis('off')
+            # axs[i, j].width = 
+
+    # Find the min and max of all colors for use in setting the color scale.
+    vmin = min(image.get_array().min() for image in images)
+    vmax = max(image.get_array().max() for image in images)
+    norm = pltcolor.Normalize(vmin=vmin, vmax=vmax,)
+    for im in images:
+        im.set_norm(norm)
+
+    fig.colorbar(images[0], ax=axs,  fraction=.1)
+    plt.savefig('./Daily_cache/0522/diff_%s'% i, dpi=300)
+    plt.show()
+    print(np.mean(np.abs(Ina)), np.mean(np.abs(Tem)), np.mean(np.abs(Spa)))
     
     # 当空间范围内无相同LC时，空间计算值为0
     # LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')

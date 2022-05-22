@@ -17,12 +17,12 @@ def Simu_improved():
     Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
     
 
-    for index in range(0,46): 
+    for index in range(0, 46): 
         print(index)
-        # result = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  0.35)
-        # np.savetxt('./Daily_cache/0506/Tem_LAI/LAI_%s'% (index + 1), result)
-        result = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  8)
-        # np.savetxt('./Daily_cache/0518/Spa_LAI/LAI_%s'% (index + 1), result)
+        Tem = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  0.5)
+        # np.savetxt('./Daily_cache/0522/Tem_LAI/LAI_%s'% (index + 1), Tem)
+        Spa = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 2,  4)
+        # np.savetxt('./Daily_cache/0522/Spa_LAI/LAI_%s'% (index + 1), Spa)
 
 
         # Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, [15,15], LandCover,  Err_weight, 3, 12, 0.35, 3, 8, 2)
