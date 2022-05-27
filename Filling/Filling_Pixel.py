@@ -18,15 +18,15 @@ import sympy as sp
 # 修改为矩阵计算 并且最终权重计算修改为牛顿迭代法求解参数
 
 # 整个tile计算
-def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, temporalLength, SES_pow, position=(0,0)):
+def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, half_temLength, ses_pow, position=(0,0)):
     # calculate smoothing parameter (half temLength)
     paraRightHalf = []
-    for i in range(0, temporalLength):
-        para = round(SES_pow * (1 - SES_pow) ** i, 4)
+    for i in range(0, half_temLength):
+        para = round(ses_pow * (1 - ses_pow) ** i, 4)
         paraRightHalf.append(para)
 
-    back_count = len(fileDatas) - index - 1 if index + temporalLength > len(fileDatas) - 1  else temporalLength
-    forward_count = index if index - temporalLength < 0  else temporalLength
+    back_count = len(fileDatas) - index - 1 if index + half_temLength > len(fileDatas) - 1  else half_temLength
+    forward_count = index if index - half_temLength < 0  else half_temLength
     paraLeftHalf = paraRightHalf[:forward_count]
     paraLeftHalf.reverse()
     smoothingList = paraLeftHalf + paraRightHalf[:back_count]
@@ -53,7 +53,7 @@ def Temporal_Cal_Matrix_Tile (fileDatas, index, landCover, qualityControl, tempo
     return LAIImprovedDatas
 
 # 整个tile计算
-def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, EUC_pow, winSize, position=(15,15)):
+def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, euc_pow, half_winWidth, position=(15,15)):
     # print('begin_tem_v1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     # print(landCover[20,20])
     LAIImprovedDatas = np.array(fileDatas[index, ...]).copy()
@@ -72,8 +72,8 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, EUC_pow
         EdQCList = []
         EdList = []
         # EdLAIArray = ma.array([])    
-        for i in range(-winSize, winSize+1):
-            for j in range(-winSize, winSize+1):
+        for i in range(-half_winWidth, half_winWidth+1):
+            for j in range(-half_winWidth, half_winWidth+1):
                 # mm = ma.array(np.zeros(rawLAI.size, dtype=np.int16).reshape(rawLAI.shape), mask=True)
                 mm = ma.masked_all(rawLAI.shape)
                 nn = ma.masked_all(rawLAI.shape)           
@@ -94,7 +94,7 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, EUC_pow
                         nn[0:rowSize-i, 0:colSize-j] = rawQCMasked[i:, j:]
                 EdLAIList.append(mm)
                 EdQCList.append(nn)
-                EdList.append((math.sqrt(abs(i) ** 2 + abs(j) ** 2) ** -EUC_pow))
+                EdList.append((math.sqrt(abs(i) ** 2 + abs(j) ** 2) ** -euc_pow))
         EdLAIArray = ma.array(EdLAIList)
         # EdLAIArray = ma.stack(tuple(EdLAIList), axis=0) # 将EdLAIList列表转为元组，按照默认最外面的轴堆叠元组
         EdQCArray = ma.array(EdQCList)
@@ -118,7 +118,7 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, EUC_pow
 
 # 整个tile权重计算
 def Calculate_Weight(TemLAI, SpaLAI, RawLAI, LandCover, qualityControl, pos):  
-    winSize = 2  
+    winSize = 4  
     # print('Tem',TemLAI[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1])
     # print('LC',LandCover[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1])
     # print('QC',qualityControl[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1])
@@ -163,7 +163,8 @@ def Calculate_Weight(TemLAI, SpaLAI, RawLAI, LandCover, qualityControl, pos):
         temArray = ma.array(temList)
         spaArray = ma.array(spaList)
         rawArray = ma.array(rawList)
-        mse = Structure_Lagrange(temArray, spaArray, rawArray)
+        print('2', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        weight = Structure_Lagrange(temArray, spaArray, rawArray)
         # print(mse[:,0])
         # temWeight = []
         # spaWeight = []

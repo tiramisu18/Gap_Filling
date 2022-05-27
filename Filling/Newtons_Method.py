@@ -320,8 +320,8 @@ def simulated_martix(Fxy, x, y): # Fxy, g, x, y, k
     stp1 = np.vectorize(myfun)
     # stp1 = np.frompyfunc(myfun,3,1)
     m = stp1(dx,dy,dk)
-    # print(m)
-    print(m[5,5])
+    print(m)
+    # print(m[5,5])
     # print(m[20,20])
     print('end', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     return m

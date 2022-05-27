@@ -7,6 +7,7 @@ import math
 import Filling_Pixel
 import Draw_PoltLine
 import Public_Motheds
+import time
 
 # 模拟数据的时空提升
 def Simu_improved():
@@ -17,18 +18,19 @@ def Simu_improved():
     Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
     
 
-    for index in range(0, 46): 
+    for index in range(20, 21): 
+        print('1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         print(index)
-        Tem = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  0.5)
+        # Tem = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 3,  0.5)
         # np.savetxt('./Daily_cache/0522/Tem_LAI/LAI_%s'% (index + 1), Tem)
-        Spa = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 2,  4)
+        # Spa = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Simu_addErr, index, LandCover, Err_weight, 2,  4)
         # np.savetxt('./Daily_cache/0522/Spa_LAI/LAI_%s'% (index + 1), Spa)
 
 
         # Filling_Pixel.Fill_Pixel_One(LAI_Simu_addErr, index, [15,15], LandCover,  Err_weight, 3, 12, 0.35, 3, 8, 2)
         # result = Filling_Pixel.Fill_Pixel_Matrix(LAI_Simu_addErr, index, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, position=tuple(Position))
         # Filling_Pixel.Calculate_Weight(result['Tem'], result['Spa'], LAI_Simu_addErr[index], LandCover, Err_weight[index], tuple(Position))
-        # Filling_Pixel.Calculate_Weight(np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % (index+1))[0:15, 0:15], np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % (index+1))[0:15, 0:15], LAI_Simu_addErr[index, 0:15, 0:15], LandCover[0:15, 0:15], Err_weight[index, 0:15, 0:15], (5,5))
+        Filling_Pixel.Calculate_Weight(np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % (index+1))[0:10, 0:10], np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % (index+1))[0:10, 0:10], LAI_Simu_addErr[index, 0:10, 0:10], LandCover[0:10, 0:10], Err_weight[index, 0:10, 0:10], (5,5))
         
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Position, LandCover, 6, 12, ses_pow, 2, 5)
         # Fil_val_1.append(re1['Tem'][0]/10)
