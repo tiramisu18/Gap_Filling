@@ -18,8 +18,8 @@ def render_LAI (data, title='Image', issave=False, savepath=''):
     plt.show()
 
 def render_Img (data, title='Algo Path', issave=False, savepath=''):
-    plt.imshow(data, cmap = plt.cm.seismic)  # cmap= plt.cm.jet
-    # plt.imshow(data, cmap = plt.cm.coolwarm) 
+    # plt.imshow(data, cmap = plt.cm.seismic)  # cmap= plt.cm.jet
+    plt.imshow(data, cmap = plt.cm.coolwarm) 
     plt.title(title, family='Times New Roman', fontsize=18)
     colbar = plt.colorbar()
     plt.axis('off')
@@ -27,35 +27,29 @@ def render_Img (data, title='Algo Path', issave=False, savepath=''):
     plt.show()
 
 
-# 计算数据提升之后整个tile的46期与原始含有误差数据的RMSE
-def calRMSE_Spa():
-    improvedArray = []
+# 计算数据提升之后整个tile46期与原始含有误差数据的RMSE
+def calRMSE_allTile():
+    improvedArray_spa = []
+    improvedArray_tem = []
     for i in range(1, 47):
-        data = np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % i)
-        improvedArray.append(data)
-    improvedLAI = np.array(improvedArray)
+        improvedArray_spa.append(np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % i))
+        improvedArray_tem.append(np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % i))
+    improvedLAI_spa = np.array(improvedArray_spa)
+    improvedLAI_tem = np.array(improvedArray_tem)
     standLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
-    calRMSE = np.sqrt((1/len(improvedArray))* np.sum(np.square(standLAI - improvedLAI), axis=0)) / 10
-    print(np.mean(calRMSE))
-    render_Img(calRMSE, title='RMSE', savepath='./Daily_cache/0506/RMSE_Spa_Improved', issave=False)
+    # Spatial
+    calRMSE_spa = np.sqrt((1/len(improvedArray_spa))* np.sum(np.square(standLAI - improvedLAI_spa), axis=0)) / 10
+    print(np.mean(calRMSE_spa))
+    render_Img(calRMSE_spa, title='RMSE', savepath='./Daily_cache/0530/RMSE_Spa_Improved', issave=True)
+    # Temporal
+    calRMSE_tem = np.sqrt((1/len(improvedArray_tem))* np.sum(np.square(standLAI - improvedLAI_tem), axis=0)) / 10
+    print(np.mean(calRMSE_tem))
+    render_Img(calRMSE_tem, title='RMSE', savepath='./Daily_cache/0530/RMSE_Tem_Improved', issave=True)  
+    # Inaccurate
     LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
-    calRMSE_err = np.sqrt((1/len(improvedArray))* np.sum(np.square(standLAI - LAI_Simu_addErr), axis=0)) / 10
-    print(np.mean(calRMSE_err))
-    render_Img(calRMSE_err, title='RMSE', savepath='./Daily_cache/0506/RMSE', issave=False)
-
-def calRMSE_Tem():
-    improvedArray = []
-    for i in range(1, 47):
-        data = np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % i)
-        improvedArray.append(data)
-    improvedLAI = np.array(improvedArray)
-    standLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
-    calRMSE = np.sqrt((1/len(improvedArray))* np.sum(np.square(standLAI - improvedLAI), axis=0)) / 10
-    print(np.mean(calRMSE))
-    render_Img(calRMSE, title='RMSE', savepath='./Daily_cache/0506/RMSE_Tem_Improved', issave=False)
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
-    calRMSE_err = np.sqrt((1/len(improvedArray))* np.sum(np.square(standLAI - LAI_Simu_addErr), axis=0)) / 10    
-    render_Img(calRMSE_err, title='RMSE', savepath='./Daily_cache/0506/RMSE', issave=True)
+    calRMSE_inacc = np.sqrt((1/len(improvedArray_spa))* np.sum(np.square(standLAI - LAI_Simu_addErr), axis=0)) / 10
+    print(np.mean(calRMSE_inacc))
+    render_Img(calRMSE_inacc, title='RMSE', savepath='./Daily_cache/0530/RMSE', issave=True)
 
 # 计算数据提升之后不同植被类型与原始含有误差数据的曲线变化
 def landCover_Improved_Spa():    
@@ -127,8 +121,8 @@ def landCover_Improved_Tem():
         'lineStyle': ['solid', 'dashed']
         },'./Daily_cache/0506/Tem_LC/lc_type_%s'% lc_type, True, 2)
 
-# 计算整个tile的LAI差
-def Average_LAI():
+# 计算单独一期整个tile的LAI差
+def diff_LAI():
     StandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
     InaccurateLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
     Tem_improvedArray = []
@@ -193,4 +187,70 @@ def Average_LAI():
     # print(Tem_improvedLAI[:, pos[0], pos[1]])
     # print(Spa_improvedLAI[:, pos[0], pos[1]])
     # print(LandCover[pos])
+    return
+
+# 统计LAI绝对差的误差，绘制误差统计直方图
+def diffLAI_histogram():
+    StandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
+    InaccurateLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
+    Tem_improvedArray = []
+    Spa_improvedArray = []
+    for i in range(1, 47):
+        tem_data = np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % i)
+        spa_data = np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % i)
+        Tem_improvedArray.append(tem_data)
+        Spa_improvedArray.append(spa_data)
     
+    Tem_improvedLAI = np.array(Tem_improvedArray)
+    Spa_improvedLAI = np.array(Spa_improvedArray)
+
+    # 相对标准数据的绝对差
+    Ina = (StandLAI - InaccurateLAI) / 10
+    Tem = (StandLAI - Tem_improvedLAI) / 10
+    Spa = (StandLAI - Spa_improvedLAI) / 10
+    # i = 0
+    print(Ina.shape, np.max(Ina), np.min(Ina))
+    print(Ina.shape, np.max(Tem), np.min(Tem))
+    print(Ina.shape, np.max(Spa), np.min(Spa))
+  
+    print(np.nonzero(Spa < -4))
+    print(StandLAI[:, 337,133])
+    print(Spa_improvedLAI[:, 337,133])
+    print(Tem_improvedLAI[:, 337,133])
+    print(InaccurateLAI[:, 238,440])
+    
+    
+
+    # 绘制误差的分布密度直方图
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.hist(Ina.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.8, label='Inaccurate')
+    ax.hist(Tem.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Temporal')
+    ax.hist(Spa.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Spatial')
+
+    
+    ax.set_xlabel('Absolute Difference', fontsize=15, family='Times New Roman')
+    ax.set_ylabel('Density', fontsize=15, family='Times New Roman')
+    ax.legend(prop={'size':15, 'family':'Times New Roman'})
+    fig.tight_layout()
+    plt.xticks( family='Times New Roman', fontsize=15)
+    plt.yticks( family='Times New Roman', fontsize=15)
+    plt.savefig('./Daily_cache/0530/diffLAI_histogram', dpi=300)
+    plt.show()
+
+
+def update():
+    StandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
+    InaccurateLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
+    print(StandLAI[:, 238,440])
+    # StandLAI[-8:, 238,440] = (4,4,4,4,4,4,4,4)
+    # print(StandLAI[:, 238,440])
+    InaccurateLAI[-8:, 238,440] = (4,4,4,4,4,4,4,4)
+    # np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard', StandLAI)
+    # np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70)', InaccurateLAI)
+
+    # Err_weight = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
+    # # print(Err_value[-8:, 238,440])
+    # # print(Err_weight[43,239,216])
+
+    # Err_weight[-8:, 238,440] = (10,10,10,10,10,10,10,10)
+    # np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight', Err_weight)
