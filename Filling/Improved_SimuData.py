@@ -5,8 +5,8 @@ import numpy.ma as ma
 import ReadDirFiles
 import math
 import Filling_Pixel
-import Draw_PoltLine
-import Public_Motheds
+import Public_Methods
+import Public_Methods
 import time
 
 # 模拟数据的时空提升
@@ -34,7 +34,7 @@ def Simu_improved():
         # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Simu_addErr, index, Position, LandCover, 6, 12, ses_pow, 2, 5)
         # Fil_val_1.append(re1['Tem'][0]/10)
    
-    # Draw_PoltLine.draw_polt_Line(np.arange(0, 361, 8),{
+    # Public_Methods.draw_polt_Line(np.arange(0, 361, 8),{
     #     # 'title': 'pos_%s_%s' % (x_v, y_v),
     #     'title': '',
     #     'xlable': 'Day',
@@ -83,7 +83,7 @@ def Improved_position():
     improved = np.sqrt((1/46)* np.sum(np.square(LAI_Simu_noErr[:, 5, 5] / 10 - improved_5_5)))
     print(inaccurate, spa, tem, improved)
     # print(Spa_5_5)
-    Draw_PoltLine.draw_polt_Line(np.arange(0, 361, 8),{
+    Public_Methods.draw_polt_Line(np.arange(0, 361, 8),{
         # 'title': 'pos_%s_%s' % (x_v, y_v),
         'title': '',
         'xlable': 'Day',
@@ -129,7 +129,7 @@ def previous_method():
     improved = np.sqrt((1/44)* np.sum(np.square(LAI_Simu_noErr[1:45, 5, 5] / 10 - improved_5_5)))
     print(inaccurate, spa, tem, improved)
 
-    Draw_PoltLine.draw_polt_Line(np.arange(8, 353, 8),{
+    Public_Methods.draw_polt_Line(np.arange(8, 353, 8),{
         # 'title': 'pos_%s_%s' % (x_v, y_v),
         'title': '',
         'xlable': 'Day',

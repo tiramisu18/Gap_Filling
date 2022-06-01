@@ -13,7 +13,7 @@ import h5py
 import time
 import random
 import Filling_Pixel
-import Draw_PoltLine
+import Public_Methods
 
 def ReadFile(path):
     file = gdal.Open(path)
@@ -294,7 +294,7 @@ def smooth_curve(points, factor=0.8):
 #     B1=all_vege_data[0], B3=all_vege_data[1], B4=all_vege_data[2], B6=all_vege_data[3], B7=all_vege_data[4], B8=all_vege_data[5])
 
 
-# Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
+# Public_Methods.draw_polt_Line(np.arange(1, 47, 1),{
 #     'title': 'Vege_Line',
 #     'xlable': 'Day',
 #     'ylable': 'LAI',
@@ -313,7 +313,7 @@ def smooth_curve(points, factor=0.8):
 # # vege_line = signal.savgol_filter(vege_line, 11, 2) 
 # print(vege_line)
 
-# Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
+# Public_Methods.draw_polt_Line(np.arange(1, 47, 1),{
 #     'title': 'B%s'% vege_type,
 #     'xlable': 'Day',
 #     'ylable': 'LAI',
@@ -419,7 +419,7 @@ for i in range(0, 46):
 # print(bb)
 # print(cc)
 # print(dd)
-Draw_PoltLine.draw_polt_Line(np.arange(1, 47, 1),{
+Public_Methods.draw_polt_Line(np.arange(1, 47, 1),{
     'title': 'Vege_Line',
     'xlable': 'Day',
     'ylable': 'LAI',

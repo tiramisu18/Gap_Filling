@@ -10,7 +10,7 @@ import matplotlib.colors as pltcolor
 import copy
 import math
 import time
-import Public_Motheds
+import Public_Methods
 import Newtons_Method
 import sympy as sp
 
@@ -61,7 +61,7 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, euc_pow
     rawQC = ma.array(qualityControl[index, ...], mask=rawLAI.mask) 
     rowSize = rawLAI.shape[0]
     colSize = rawLAI.shape[1]
-    # Public_Motheds.render_LAI(fileDatas[index, ...], title='Raw')
+    # Public_Methods.render_LAI(fileDatas[index, ...], title='Raw')
     for lcType in range(1, 9):
         # lcma = ma.masked_not_equal(landCover, lcType) 
         # rawLAIMasked = ma.array(rawLAI, mask=lcma.mask) # 再按照不同的lc类型进行mask
@@ -113,7 +113,7 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, euc_pow
     # 目前，255填充值通过计算修补了部分数据，下面两步会将原来的填充值255还原
     pos1 = fileDatas[index, ...].__gt__(70)
     LAIImprovedDatas[pos1] = fileDatas[index, ...][pos1]
-    # Public_Motheds.render_LAI(LAIImprovedDatas, title='Spatial', issave=False, savepath='./Daily_cache/0410/Spatial_v3')
+    # Public_Methods.render_LAI(LAIImprovedDatas, title='Spatial', issave=False, savepath='./Daily_cache/0410/Spatial_v3')
     return LAIImprovedDatas
 
 # 整个tile权重计算
@@ -294,8 +294,8 @@ def Spatial_Cal_Matrix_Tile_v2(fileDatas, index, position, landCover, qualityCon
         pos = landCover.__eq__(lcType)
         LAIImprovedDatas[pos] = LAIImprovedData[pos]
         # if lcType == 4:
-        #     Public_Motheds.render_LAI(rawLAIMasked[10])
-        #     Public_Motheds.render_Img(numerators)
+        #     Public_Methods.render_LAI(rawLAIMasked[10])
+        #     Public_Methods.render_Img(numerators)
 
 
     # print('test_euc', EdList, len(EdList))  

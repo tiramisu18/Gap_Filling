@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
-import Draw_PoltLine
+import Public_Methods
    
 
 def tile_mean(tiles):
@@ -70,7 +70,7 @@ simu = vege_type_mean(LAI_Simu_2, LandCover)
 
 vege_type_list = [1,3,4,6,7,8]
 for type in vege_type_list:
-    Draw_PoltLine.draw_polt_Line(np.arange(0, 361, 8),{
+    Public_Methods.draw_polt_Line(np.arange(0, 361, 8),{
         'title': 'B%s'% type,
         'xlable': 'Day',
         'ylable': 'LAI',

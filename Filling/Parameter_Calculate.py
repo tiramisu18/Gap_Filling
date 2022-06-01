@@ -16,7 +16,7 @@ import h5py
 import time
 import random
 import Filling_Pixel
-import Draw_PoltLine
+import Public_Methods
 
 # 生成一个包含n个介于a和b之间随机整数的数组（不重复）
 def int_random(a, b, n) :
