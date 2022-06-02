@@ -391,14 +391,14 @@ def pixel_SG():
                         Simu_Step2[order][i][j] = round(sg_line[order],0)
                     # print(Simu_Step2[order][i][j])
 
-    np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2', Simu_Step2)
+    np.save('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard', Simu_Step2)
    
 
 LAI_Ori = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
 LAI_Simu = np.load('../Simulation/Simulation_Dataset/LAI_Simu_noErr_10.npy')
 
 Simu_Step1 = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step1.npy')
-Simu_Step2 = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+Simu_Step2 = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
 # QC_All = np.load('../QC/h11v04_2018_AgloPath_Wei.npy')
 # print(Simu_Step1[23][10][10])
 # print(Simu_Step2[23][10][10])

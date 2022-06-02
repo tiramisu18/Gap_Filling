@@ -35,7 +35,7 @@ def calRMSE_allTile():
         improvedArray_tem.append(np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % i))
     improvedLAI_spa = np.array(improvedArray_spa)
     improvedLAI_tem = np.array(improvedArray_tem)
-    standLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+    standLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
     # Spatial
     calRMSE_spa = np.sqrt((1/len(improvedArray_spa))* np.sum(np.square(standLAI - improvedLAI_spa), axis=0)) / 10
     print(np.mean(calRMSE_spa))
@@ -52,7 +52,7 @@ def calRMSE_allTile():
 
 # 计算单独一期整个tile的LAI差
 def diff_LAI():
-    StandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+    StandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
     InaccurateLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
     Tem_improvedArray = []
     Spa_improvedArray = []

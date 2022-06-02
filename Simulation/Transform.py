@@ -6,7 +6,7 @@ import numpy.ma as ma
 
 # LAI数值转为0-7
 def LAI_multiples():
-    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
     for idx in range(0, 46):
         print(idx)
         for i in range(0, 500):
@@ -17,7 +17,7 @@ def LAI_multiples():
 
 # 将误差百分比转换为对应的权重
 def set_err_weight():
-    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')   
+    LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')   
     Err = np.load('./Simulation_Dataset/LAI/Simu_Method_3/Err_peren.npy')
 
     zero = np.zeros(46*500*500, dtype=int).reshape(46, 500, 500)

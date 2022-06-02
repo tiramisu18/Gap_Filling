@@ -121,11 +121,8 @@ def QC_CloudState(QCBin):
     np.save('../QC/h11v04_2018_CloudState_Wei', QC_Wei)
 
 
-# LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
-
 tile = 'h25v06'
 fileLists = ReadDirFiles.readDir('../HDF/%s' % tile)
-# print('lists', len(fileLists))
 
 LAIDatas = []
 QCDatas = []
@@ -134,13 +131,10 @@ for file in fileLists:
     LAIDatas.append(result['LAI'])
     QCDatas.append(result['QC'])
 
-
 # 将QC转为对应的权重
 # read_QC(QCDatas, '../QC/%s_2018/%s_Bin' % (tile, tile))
 # QC_bin = np.load('../QC/%s_2018/%s_Bin.npy' % (tile, tile))
 # QC_weight = QC_AgloPath(QC_bin, '../QC/%s_2018/%s_AgloPath_Wei' % (tile, tile))
-
-
 
 LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h25v06.006.2019200011117.hdf')
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
@@ -152,7 +146,7 @@ qualityControl = np.load('../QC/%s_2018/%s_AgloPath_Wei.npy' % (tile, tile))
 for index in range(0, 46): 
     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     print(index)
-    Tem = Filling_Pixel.Temporal_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 3,  0.5)
-    np.save('../Imporved_RealData/%s_2018/Temporal/LAI_%s'% (tile, (index + 1)), Tem)
-    # Spa = Filling_Pixel.Spatial_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 2,  4)
-    # np.save('../Imporved_RealData/h29v11_2018/Spatial/LAI_%s'% (index + 1), Spa)
+    # Tem = Filling_Pixel.Temporal_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 3,  0.5)
+    # np.save('../Imporved_RealData/%s_2018/Temporal/LAI_%s'% (tile, (index + 1)), Tem)
+    Spa = Filling_Pixel.Spatial_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 2,  4)
+    np.save('../Imporved_RealData/%s_2018/Spatial/LAI_%s'% (tile, (index + 1)), Spa)

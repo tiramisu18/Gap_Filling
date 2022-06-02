@@ -128,7 +128,7 @@ def add_ErrDataSet_matrix():
     Transform.set_err_weight()
 
 # LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_noErr(0-7).npy')
-LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+LAI_Simu = np.load('./Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
 LAI_addErr = np.load('./Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
 
 # err_value = np.load('./Simulation_Dataset/LAI/Simu_Method_2/Err_value.npy')

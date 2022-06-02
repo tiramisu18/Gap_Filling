@@ -160,7 +160,7 @@ def parameter_images(paraType, lineAll):
     plt.show()
 
 
-simuStandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Step2.npy')
+simuStandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
 fileDatas = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
 LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
 Err_weight= np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/Err_weight.npy')
