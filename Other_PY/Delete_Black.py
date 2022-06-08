@@ -1,3 +1,4 @@
+# 删掉背景色
 from skimage import io
 def corp_margin(img):
         img2=img.sum(axis=2)
@@ -28,7 +29,7 @@ def corp_margin(img):
  
         new_img=img[row_top:raw_down+1,col_top:col_down+1,0:3]
         return new_img
-im = io.imread(‘test_blur2.jpg‘)
+im = io.imread('test_blur2.jpg')
 img_re = corp_margin(im)
-io.imsave(‘result.png‘,img_re)
+io.imsave('result.png',img_re)
 io.imshow(img_re)

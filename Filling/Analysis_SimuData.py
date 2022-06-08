@@ -118,7 +118,7 @@ def diff_LAI():
     # print(LandCover[pos])
     return
 
-# 统计LAI绝对差的误差，绘制误差统计直方图
+# 统计LAI绝对差的误差, 绘制误差统计直方图
 def diffLAI_histogram():
     StandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
     InaccurateLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
