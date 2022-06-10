@@ -15,7 +15,7 @@ def readDir(dirPath):
                 subFiles = readDir(f)
                 allFiles = subFiles + allFiles #合并当前目录与子目录的所有文件路径
             else:
-                allFiles.append(f)
+                if f.find('.hdf') != -1: allFiles.append(f)
         print('allFiles', len(allFiles))
         return allFiles
     else:

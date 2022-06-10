@@ -124,6 +124,7 @@ def QC_CloudState(QCBin):
 tile = 'h12v04'
 fileLists = ReadDirFiles.readDir('../HDF/%s' % tile)
 
+print(fileLists[15])
 LAIDatas = []
 QCDatas = []
 for file in fileLists:

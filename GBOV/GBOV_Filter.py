@@ -22,6 +22,7 @@ def readDir(dirPath):
         return allFiles
     else:
         return 'error, not a dir'
+        
 # 判断是否闰年
 def f(n):
     if n % 4 == 0 and n % 100 != 0 or n % 400 == 0:

@@ -43,4 +43,4 @@ def calculate_Mean(url):
 
     # render_Img(aa[4])
 
-calculate_Mean('./Raw_Data/Test/GBOV_LP03_L08_BART_20170326_20170326_001_UOS_V3.0_300M.TIF')
+# calculate_Mean('./Raw_Data/Test/GBOV_LP03_L08_BART_20170326_20170326_001_UOS_V3.0_300M.TIF')
