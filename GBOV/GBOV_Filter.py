@@ -74,7 +74,7 @@ def filter_ValidPixels():
         'TALL': {'h': 10, 'v':5, 'line': 1691.39, 'samp': 1599.03},
         'UNDE': {'h': 11, 'v':4, 'line': 903.35, 'samp': 1935.23},
         'WOOD': {'h': 11, 'v':4, 'line': 688.72, 'samp': 594.74},
-    }
+    } # 24个
     validedFiles = []
     for file in fileLists:
         with open(file, 'r') as fo:
@@ -90,25 +90,19 @@ def filter_ValidPixels():
                 tifUrl = f'{fo.name[:-10]}300M.TIF'
                 siteValue = Read_Tiff.calculate_Mean(tifUrl)
                 c6Doy = ((int(str(doy)[-3:]) - 1) // 8) * 8 + 1
-                validedFiles.append([fullName, split_[2], siteName, split_[4], doy, siteValue, sites[f'{siteName}']['h'], sites[f'{siteName}']['v'],sites[f'{siteName}']['line'],sites[f'{siteName}']['samp'], '%s%03d'% (str(doy)[:4],c6Doy)])
+                validedFiles.append([fullName, split_[2], siteName, split_[4], doy, siteValue, sites[f'{siteName}']['h'], sites[f'{siteName}']['v'], sites[f'{siteName}']['line'],sites[f'{siteName}']['samp'], '%s%03d'% (str(doy)[:4],c6Doy)])
 
    
     print(len(validedFiles))
     # print(validedFiles)
     # 写入到csv文件中
-    # title = ['Valid pixels(%) > 50', 'Satellite', 'Site name', 'Date', 'DOY', 'Site value', 'h', 'v', 'line', 'samp', 'c6Doy']
-    # with open("数据筛选.csv",'w',newline='') as file:#numline是来控制空的⾏数的
-    #     writer=csv.writer(file)#这⼀步是创建⼀个csv的写⼊器
-    #     writer.writerow(title)#写⼊标签
-    #     writer.writerows(validedFiles)#写⼊样本数据
+    title = ['Valid pixels(%) > 50', 'Satellite', 'Site name', 'Date', 'DOY', 'Site value', 'h', 'v', 'line', 'samp', 'c6 DOY']
+    with open("数据筛选.csv",'w',newline='') as file:#numline是来控制空的⾏数的
+        writer=csv.writer(file)#这⼀步是创建⼀个csv的写⼊器
+        writer.writerow(title)#写⼊标签
+        writer.writerows(validedFiles)#写⼊样本数据
 
 filter_ValidPixels()
-
-# 读取csv
-# with open("数据筛选.csv") as csvFile:
-#     reader=csv.reader(csvFile) 
-#     column=[row[0] for row in reader]
-#     print(column)
 
 
 
