@@ -114,7 +114,7 @@ qualityControl[pos] = 3
 Public_Methods.render_Img(ma.masked_equal(qualityControl[15]/10, 0), title = '', issave=True,savepath='./Daily_cache/0614/0614_2')
 
 std = ma.masked_greater(StdLAIDatas, 100)
-map_std = 1 + ((0.3 - 1) / (0.5 + ma.max(std) - ma.min(std))) * (std - ma.min(std))
+map_std = 1 + ((0.3 - 1) / (0.5 + ma.max(std) - ma.min(std))) * (std - ma.min(std)) # 数据归一化映射
 Public_Methods.render_Img(std[15], issave=True, savepath='./Daily_cache/0614/0614_3')
 aa = np.array(ma.filled(map_std, 1))
 
