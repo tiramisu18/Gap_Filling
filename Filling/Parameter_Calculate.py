@@ -29,15 +29,6 @@ def int_random(a, b, n) :
             pass
     return a_list
 
-def random_pos(QC, ran_len, length):
-    rand_pos_1 = int_random(0, 2399, ran_len)
-    rand_pos_2 = int_random(0, 2399, ran_len)
-    fill_pos = []
-    for ele in range(0, ran_len):
-        if QC[rand_pos_1[ele]][rand_pos_2[ele]] == 10:
-            fill_pos.append([rand_pos_1[ele], rand_pos_2[ele]])
-            if len(fill_pos) == length: return fill_pos
-
 def render_Img (data, title='Algo Path', issave=False, savepath=''):
     plt.imshow(data, cmap = plt.cm.coolwarm)  # cmap= plt.cm.jet
     # plt.imshow(data, cmap = plt.cm.coolwarm) 

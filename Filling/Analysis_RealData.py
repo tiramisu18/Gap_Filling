@@ -114,9 +114,8 @@ tem = []
 spa = []
 for i in range(1, 47):
     print(i)
-    spa_data = np.load('../Imporved_RealData/%s_2018/Spatial/LAI_%s.npy' % (tile, i))
-    tem_data = np.load('../Imporved_RealData/%s_2018/Temporal/LAI_%s.npy' % (tile, i))
-    # tem_data = np.loadtxt('../Imporved_RealData/%s_2018/Temporal/LAI_%s' % (tile, i))
+    spa_data = np.load('../Improved_RealData/%s_2018/Spatial/LAI_%s.npy' % (tile, i))
+    tem_data = np.load('../Improved_RealData/%s_2018/Temporal/LAI_%s.npy' % (tile, i))
     tem.append(tem_data)
     spa.append(spa_data)
 tem_LAI = np.array(tem)

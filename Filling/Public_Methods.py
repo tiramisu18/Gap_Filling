@@ -16,11 +16,11 @@ def render_LAI (data, title='LAI', issave=False, savepath=''):
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
 
-def render_Img (data, title='Title', issave=False, savepath='', color=plt.cm.jet):
+def render_Img (data, title='Title', issave=False, savepath='', color=plt.cm.jet, axisType = 'off'):
     plt.imshow(data, cmap = color)  # cmap= plt.cm.jet
     plt.title(title, family='Times New Roman', fontsize=18)
     colbar = plt.colorbar()
-    # plt.axis('off')
+    plt.axis(axisType)
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
 

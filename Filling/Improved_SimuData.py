@@ -97,7 +97,7 @@ def Improved_position():
         'lineStyle': ['solid','solid','dashed','dashed','solid',],
         },'./Daily_cache/0530/Simu_Improved_(350, 150)', True, 2)
 
-#计算一个点提升后的LAI值（之间的权重计算方法）
+#计算一个点提升后的LAI值（之前的权重计算方法）
 def previous_method():
     LAI_Standard = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
     LAI_Inaccurate = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Inaccurate(0-70).npy')
