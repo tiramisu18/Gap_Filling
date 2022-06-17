@@ -12,7 +12,6 @@ import math
 import h5py
 import time
 import random
-import Filling_Pixel
 import Public_Methods
 
 def ReadFile(path):

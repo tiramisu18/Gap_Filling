@@ -4,7 +4,7 @@ import numpy as np
 import numpy.ma as ma
 import ReadDirFiles
 import math
-import Filling_Pixel
+import Improved_Pixel
 import Public_Methods
 import Public_Methods
 import time
@@ -20,18 +20,18 @@ def Simu_improved():
     for index in range(0, 1): 
         # print('1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         print(index)
-        # Tem = Filling_Pixel.Temporal_Cal_Matrix_Tile(LAI_Inaccurate, index, LandCover, Err_weight, 3,  0.5)
+        # Tem = Improved_Pixel.Temporal_Cal_Matrix_Tile(LAI_Inaccurate, index, LandCover, Err_weight, 3,  0.5)
         # np.savetxt('./Daily_cache/0522/Tem_LAI/LAI_%s'% (index + 1), Tem)
-        # Spa = Filling_Pixel.Spatial_Cal_Matrix_Tile(LAI_Inaccurate, index, LandCover, Err_weight, 2,  4)
+        # Spa = Improved_Pixel.Spatial_Cal_Matrix_Tile(LAI_Inaccurate, index, LandCover, Err_weight, 2,  4)
         # np.savetxt('./Daily_cache/0522/Spa_LAI/LAI_%s'% (index + 1), Spa)
 
 
-        Filling_Pixel.Fill_Pixel_One(LAI_Inaccurate, index, [337,133], LandCover,  Err_weight, 3, 12, 0.5, 2, 4, 2)
-        # result = Filling_Pixel.Fill_Pixel_Matrix(LAI_Inaccurate, index, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, position=tuple(Position))
-        # Filling_Pixel.Calculate_Weight(result['Tem'], result['Spa'], LAI_Inaccurate[index], LandCover, Err_weight[index], tuple(Position))
-        # Filling_Pixel.Calculate_Weight(np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % (index+1))[0:10, 0:10], np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % (index+1))[0:10, 0:10], LAI_Inaccurate[index, 0:10, 0:10], LandCover[0:10, 0:10], Err_weight[index, 0:10, 0:10], (5,5))
+        Improved_Pixel.Fill_Pixel_One(LAI_Inaccurate, index, [337,133], LandCover,  Err_weight, 3, 12, 0.5, 2, 4, 2)
+        # result = Improved_Pixel.Fill_Pixel_Matrix(LAI_Inaccurate, index, LandCover, Err_weight, 6, 12, ses_pow, 2, 5, position=tuple(Position))
+        # Improved_Pixel.Calculate_Weight(result['Tem'], result['Spa'], LAI_Inaccurate[index], LandCover, Err_weight[index], tuple(Position))
+        # Improved_Pixel.Calculate_Weight(np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % (index+1))[0:10, 0:10], np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % (index+1))[0:10, 0:10], LAI_Inaccurate[index, 0:10, 0:10], LandCover[0:10, 0:10], Err_weight[index, 0:10, 0:10], (5,5))
         
-        # re1 = Filling_Pixel.Fill_Pixel_noQC(LAI_Inaccurate, index, Position, LandCover, 6, 12, ses_pow, 2, 5)
+        # re1 = Improved_Pixel.Fill_Pixel_noQC(LAI_Inaccurate, index, Position, LandCover, 6, 12, ses_pow, 2, 5)
         # Fil_val_1.append(re1['Tem'][0]/10)
    
     # Public_Methods.draw_polt_Line(np.arange(0, 361, 8),{
@@ -110,8 +110,8 @@ def previous_method():
     Spa_Weight = []
     for index in range(1, 45):
         print(index)
-        Tem = Filling_Pixel.Temporal_Cal(LAI_Inaccurate, index, pos, LandCover, Err_weight, 3, 8, 0.35)
-        Spa = Filling_Pixel.Spatial_Cal(LAI_Inaccurate, index, pos, LandCover, Err_weight, 3, 8)
+        Tem = Improved_Pixel.Temporal_Cal(LAI_Inaccurate, index, pos, LandCover, Err_weight, 3, 8, 0.35)
+        Spa = Improved_Pixel.Spatial_Cal(LAI_Inaccurate, index, pos, LandCover, Err_weight, 3, 8)
         Tem_Lai.append(Tem['filling'])
         Tem_Weight.append(Tem['weight'])
         Spa_Lai.append(Spa['filling'])

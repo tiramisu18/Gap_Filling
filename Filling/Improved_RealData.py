@@ -4,7 +4,7 @@ import ReadDirFiles
 import math
 import random
 import time
-import Filling_Pixel
+import Improved_Pixel
 import Public_Methods
 
 def ReadFile(path):
@@ -48,9 +48,9 @@ qualityControl = np.load('../QC/Version_2/%s_2018/%s_Weight.npy' % (tile, tile))
 # for index in range(43, 46): 
 #     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 #     print(index)
-#     Tem = Filling_Pixel.Temporal_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 3,  0.5)
+#     Tem = Improved_Pixel.Temporal_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 3,  0.5)
 #     np.save('./Daily_cache/0614/Temporal/LAI_%s'% (index + 1), Tem)
 #     # np.save('../Improved_RealData/%s_2018/Temporal/LAI_%s'% (tile, (index + 1)), Tem)
-#     Spa = Filling_Pixel.Spatial_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 2,  4)
+#     Spa = Improved_Pixel.Spatial_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 2,  4)
 #     np.save('./Daily_cache/0614/Spatial/LAI_%s'% (index + 1), Spa)
     # np.save('../Improved_RealData/%s_2018/Spatial/LAI_%s'% (tile, (index + 1)), Spa)
