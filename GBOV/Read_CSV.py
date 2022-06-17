@@ -8,7 +8,7 @@ def classification_site():
     # print(data1)
     h = 8
     v = 5
-    specific = data1.loc[(data1['h'] == h) & (data1['v'] == v)]
+    specific = data1.loc[(data1['h'] == h) & (data1['v'] == v)] # 选定特定条件下的数据
     # specific = data1.loc[(data1['Site name'] == 'MOAB') ]
     count = len(specific)
     print(count)

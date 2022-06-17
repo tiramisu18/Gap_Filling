@@ -177,6 +177,121 @@ def Spatial_Cal_Matrix_Tile_NoQC(fileDatas, index, landCover, euc_pow, half_winW
 
 
 
+# 整个tile权重计算
+def Calculate_Weight(TemLAI, SpaLAI, RawLAI, LandCover, qualityControl, pos):  
+    winSize = 4  
+    # print('Tem',TemLAI[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1])
+    # print('LC',LandCover[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1])
+    # print('QC',qualityControl[pos[0]-size:pos[0]+size+1, pos[1]-size:pos[1]+size+1])
+    rowSize = RawLAI.shape[0]
+    colSize = RawLAI.shape[1]
+    for lcType in range(1, 2):
+        temMask = ma.array(ma.array(TemLAI, mask=LandCover != lcType), mask=qualityControl < 8)
+        spaMask = ma.array(ma.array(SpaLAI, mask=LandCover != lcType), mask=qualityControl < 8)
+        rawMask = ma.array(ma.array(RawLAI, mask=LandCover != lcType), mask=qualityControl < 8)
+
+        temList = []
+        spaList = []
+        rawList = []
+        # EdLAIArray = ma.array([])    
+        for i in range(-winSize, winSize+1):
+            for j in range(-winSize, winSize+1):
+                mm = ma.masked_all(RawLAI.shape)
+                nn = ma.masked_all(RawLAI.shape) 
+                zz = ma.masked_all(RawLAI.shape)
+                if i == 0 and j == 0: continue
+                if i <= 0 :
+                    if j <= 0: 
+                        mm[abs(i):, abs(j):] = temMask[:rowSize-abs(i), :colSize-abs(j)]
+                        nn[abs(i):, abs(j):] = spaMask[:rowSize-abs(i), :colSize-abs(j)]
+                        zz[abs(i):, abs(j):] = rawMask[:rowSize-abs(i), :colSize-abs(j)]
+                    else: 
+                        mm[abs(i):, 0:colSize-j] = temMask[:rowSize-abs(i), j:]
+                        nn[abs(i):, 0:colSize-j] = spaMask[:rowSize-abs(i), j:]
+                        zz[abs(i):, 0:colSize-j] = rawMask[:rowSize-abs(i), j:]
+                else:
+                    if j <= 0: 
+                        mm[0:rowSize-i, abs(j):] = temMask[i:, :colSize-abs(j)]
+                        nn[0:rowSize-i, abs(j):] = spaMask[i:, :colSize-abs(j)]
+                        zz[0:rowSize-i, abs(j):] = rawMask[i:, :colSize-abs(j)]
+                    else: 
+                        mm[0:rowSize-i, 0:colSize-j] = temMask[i:, j:]
+                        nn[0:rowSize-i, 0:colSize-j] = spaMask[i:, j:]
+                        zz[0:rowSize-i, 0:colSize-j] = rawMask[i:, j:]
+                temList.append(mm)
+                spaList.append(nn)
+                rawList.append(zz)
+        temArray = ma.array(temList)
+        spaArray = ma.array(spaList)
+        rawArray = ma.array(rawList)
+        print('2', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        weight = Structure_Lagrange(temArray, spaArray, rawArray)
+        # print(mse[:,0])
+        # temWeight = []
+        # spaWeight = []
+        # for row in mse:
+        #     temRow = []
+        #     spaRow = []
+        #     for ele in row:
+        #         print(ele)
+        #         print(ele[0])
+        #         print(ele[0].keys())
+        #         print(dict(ele[0]).get('x', default=None))
+                # spaRow.append(ele[0]['X'])
+        #         temRow.append(ele[0]['y'])
+        #     temWeight.append(temRow)
+        #     spaWeight.append(spaRow)
+        # print(temWeight)
+        # print(np.array(temWeight).shape)
+        # print(mse.shape, mse[pos[0],pos[1]])
+        # aa = temArray[:,pos[0],pos[1]]
+        # print(aa[~aa.mask])
+        # print(spaArray[:,pos[0],pos[1]])
+        # print(rawArray[:,pos[0],pos[1]])
+        # numerators = (EdLAIArray * EdQCArray * EdArray).sum(axis=0)
+        # denominators = (EdArray * EdQCArray).sum(axis=0)
+        # LAIImprovedData = ma.round(numerators / denominators)
+        # pos = landCover.__eq__(lcType)
+        # LAIImprovedDatas[pos] = LAIImprovedData[pos]   
+        
+    # 单个点    
+    # lcType = LandCover[pos]
+    # print(lcType)
+    # temMask = ma.array(ma.array(TemLAI, mask=LandCover != lcType), mask=qualityControl < 8)
+    # spaMask = ma.array(ma.array(SpaLAI, mask=LandCover != lcType), mask=qualityControl < 8)
+    # rawMask = ma.array(ma.array(RawLAI, mask=LandCover != lcType), mask=qualityControl < 8)
+
+    # partTemMask = temMask[pos[0]-winSize:pos[0]+winSize+1, pos[1]-winSize:pos[1]+winSize+1]
+    # partSpaMask = spaMask[pos[0]-winSize:pos[0]+winSize+1, pos[1]-winSize:pos[1]+winSize+1]
+    # partRawMask = rawMask[pos[0]-winSize:pos[0]+winSize+1, pos[1]-winSize:pos[1]+winSize+1]
+
+    # partTem = partTemMask[~partTemMask.mask]
+    # partSpa = partSpaMask[~partSpaMask.mask]
+    # partRaw = np.round(partRawMask[~partRawMask.mask],1)
+    # print(partTem.tolist())
+    # print(partSpa.tolist())
+    # print(partRaw.tolist())
+    # x, y, k= sp.symbols('x y k')
+    # dataSum1 = 0
+    # for i in range(0, len(partTem)):
+    #     final = (partSpa[i] * x + partTem[i] * y) / (x + y)
+    #     dataSum1 = dataSum1 + ((final - partRaw[i])**2)
+    # # print(dataSum1)
+    return 
+
+# 构造函数
+def Structure_Lagrange(Tem, Spa, Raw):
+    x, y= sp.symbols('x y', real=True)
+    Spa = np.array(ma.filled(Spa, 0))
+    Tem = np.array(ma.filled(Tem, 0))
+    Raw = np.array(ma.filled(Raw, 0))
+    final = (Spa * x + Tem * y) / (x + y)
+    # mse = (np.square(final - Raw)).sum(axis=0)
+    mse = np.mean(np.square(final - Raw), axis=0)
+    weight = Newtons_Method.simulated_martix(mse, x, y)
+    return weight
+
+
 # 逐像元循环计算（哒咩）
 def Temporal_Cal (fileDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):
     # print('begin_tem_previous', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
