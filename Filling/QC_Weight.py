@@ -107,21 +107,20 @@ raw_LAI = np.array(LAIDatas, dtype=float)
 # # QC_weight = QC_AgloPath(QC_bin, '../QC/Version_1/%s_2018/%s_AgloPath_Wei' % (tile, tile))
 
 # 加上StdLAI作为权重的一部分
-qualityControl = np.load('../QC/Version_1/%s_2018/%s_AgloPath_Wei.npy' % (tile, tile))
-Public_Methods.render_Img(qualityControl[15], issave=True, savepath='./Daily_cache/0614/0614_1')
-pos = qualityControl == 5
-qualityControl[pos] = 3
-Public_Methods.render_Img(ma.masked_equal(qualityControl[15]/10, 0), title = '', issave=True,savepath='./Daily_cache/0614/0614_2')
+# qualityControl = np.load('../QC/Version_1/%s_2018/%s_AgloPath_Wei.npy' % (tile, tile))
+# Public_Methods.render_Img(qualityControl[15], issave=True, savepath='./Daily_cache/0614/0614_1')
+# pos = qualityControl == 5
+# qualityControl[pos] = 3
+# Public_Methods.render_Img(ma.masked_equal(qualityControl[15]/10, 0), title = '', issave=True,savepath='./Daily_cache/0614/0614_2')
 
-std = ma.masked_greater(StdLAIDatas, 100)
-map_std = 1 + ((0.3 - 1) / (0.5 + ma.max(std) - ma.min(std))) * (std - ma.min(std)) # 数据归一化映射
-Public_Methods.render_Img(std[15], issave=True, savepath='./Daily_cache/0614/0614_3')
-aa = np.array(ma.filled(map_std, 1))
+# std = ma.masked_greater(StdLAIDatas, 100)
+# map_std = 1 + ((0.3 - 1) / (0.5 + ma.max(std) - ma.min(std))) * (std - ma.min(std)) # 数据归一化映射
+# Public_Methods.render_Img(std[15], issave=True, savepath='./Daily_cache/0614/0614_3')
+# aa = np.array(ma.filled(map_std, 1))
 
-final_qualityControl = aa * qualityControl
-Public_Methods.render_Img(ma.masked_equal(final_qualityControl[15]/10, 0), title='', issave=True,savepath='./Daily_cache/0614/0614_4')
+# final_qualityControl = aa * qualityControl
+# Public_Methods.render_Img(ma.masked_equal(final_qualityControl[15]/10, 0), title='', issave=True,savepath='./Daily_cache/0614/0614_4')
 
-# np.save('../QC/Version_3/%s_Weight' % (tile), final_qualityControl)
 # np.save('../QC/Version_2/%s_2018/%s_Weight' % (tile, tile), final_qualityControl)
 
 
@@ -143,7 +142,7 @@ def landCover_Improved(raw, spatial, temporal, landCover, lcType):
         'xlable': 'Day',
         'ylable': 'LAI',
         'line': [raw_mean, spa_mean, tem_mean],
-        'le_name': ['Tem3','Tem2', 'Temporal'],
+        'le_name': ['Raw','Spatial', 'Temporal'],
         'color': ['gray', '#bfdb39', '#fd7400'],
         'marker': [',', 'o', '^', '.' ],
         'size': {'width': 10, 'height': 6},
@@ -153,22 +152,20 @@ def landCover_Improved(raw, spatial, temporal, landCover, lcType):
 LC_file = gdal.Open('../LC/MCD12Q1.A2018001.h12v04.006.2019199202045.hdf')
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
 landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
+lcType = 6
 
 tem = []
-tem2 = []
-tem3 = []
+spa = []
 for i in range(1, 47):
     print(i)
-    tem2_data = np.load('./Daily_cache/0614/Temporal/LAI_%s.npy' % (i))
-    tem3_data = np.load('./Daily_cache/0614/Temporal1/LAI_%s.npy' % (i))
-    tem_data = np.load('../Improved_RealData/%s_2018/Temporal/LAI_%s.npy' % (tile, i))
+    spa_data = np.load('./Daily_cache/0614/Spatial/LAI_%s.npy' % (i))
+    tem_data = np.load('../Improved_RealData/%s_2018/Spatial/LAI_%s.npy' % (tile, i))
     tem.append(tem_data)
-    tem2.append(tem2_data)
-    tem3.append(tem3_data)
+    spa.append(spa_data)
 tem_LAI = np.array(tem)
-tem2_LAI = np.array(tem2)
-tem3_LAI = np.array(tem3)
-lcType = 6
-landCover_Improved(tem3_LAI, tem2_LAI, tem_LAI, landCover, lcType)
+spa_LAI = np.array(spa)
+    
+landCover_Improved(raw_LAI, spa_LAI, tem_LAI, landCover, lcType)
+
 
 
