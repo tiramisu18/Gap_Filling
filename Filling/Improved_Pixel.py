@@ -8,7 +8,7 @@ import sympy as sp
 
 
 # 整个tile矩阵时间计算
-def Temporal_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, half_temLength, ses_pow, position=(0,0)):
+def Temporal_Cal(fileDatas, index, landCover, qualityControl, half_temLength, ses_pow, position=(0,0)):
     # calculate smoothing parameter (half temLength)
     paraRightHalf = []
     for i in range(0, half_temLength):
@@ -41,7 +41,7 @@ def Temporal_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, half_t
     return LAIImprovedDatas
 
 # 整个tile矩阵空间计算
-def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, euc_pow, half_winWidth, position=(15,15)):
+def Spatial_Cal(fileDatas, index, landCover, qualityControl, euc_pow, half_winWidth, position=(15,15)):
     # print('begin_tem_v1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     LAIImprovedDatas = np.array(fileDatas[index, ...]).copy()
     rawLAI = ma.masked_greater(fileDatas[index, ...], 70) # 因为存在lc分类错误的情况（植被类型下的lai值为254【水域】）所以先将lai值大于70的位置mask
@@ -101,7 +101,7 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, euc_pow
 
 
 # 不考虑像元质量
-def Temporal_Cal_Matrix_Tile_N(fileDatas, index, landCover, half_temLength, ses_pow):
+def Temporal_Cal_N(fileDatas, index, landCover, half_temLength, ses_pow):
     # calculate smoothing parameter (half temLength)
     paraRightHalf = []
     for i in range(0, half_temLength):
@@ -133,7 +133,7 @@ def Temporal_Cal_Matrix_Tile_N(fileDatas, index, landCover, half_temLength, ses_
     return LAIImprovedDatas
 
 # 不考虑像元质量
-def Spatial_Cal_Matrix_Tile_N(fileDatas, index, landCover, euc_pow, half_winWidth):
+def Spatial_Cal_N(fileDatas, index, landCover, euc_pow, half_winWidth):
     # print('begin_tem_v1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     LAIImprovedDatas = np.array(fileDatas[index, ...]).copy()
     rawLAI = ma.masked_greater(fileDatas[index, ...], 70)
@@ -169,12 +169,11 @@ def Spatial_Cal_Matrix_Tile_N(fileDatas, index, landCover, euc_pow, half_winWidt
         no_lc = np.logical_and(pos, LAIImprovedData.mask)
         LAIImprovedData[no_lc] = fileDatas[index, ...][no_lc]
         LAIImprovedDatas[pos] = LAIImprovedData[pos]
-        
+
     # 目前，255填充值通过计算修补了部分数据，下面两步会将原来的填充值255还原
     pos1 = fileDatas[index, ...].__gt__(70)
     LAIImprovedDatas[pos1] = fileDatas[index, ...][pos1]
     return LAIImprovedDatas
-
 
 
 # 逐像元循环计算（哒咩）

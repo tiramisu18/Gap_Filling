@@ -8,7 +8,7 @@ import sympy as sp
 
 
 # 整个tile矩阵时间计算
-def Temporal_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, half_temLength, ses_pow, position=(0,0)):
+def Temporal_Cal(fileDatas, index, landCover, qualityControl, half_temLength, ses_pow, position=(0,0)):
     # calculate smoothing parameter (half temLength)
     paraRightHalf = []
     for i in range(0, half_temLength):
@@ -41,7 +41,7 @@ def Temporal_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, half_t
     return LAIImprovedDatas
 
 # 整个tile矩阵空间计算
-def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, euc_pow, half_winWidth, position=(15,15)):
+def Spatial_Cal(fileDatas, index, landCover, qualityControl, euc_pow, half_winWidth, position=(15,15)):
     # print('begin_tem_v1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     LAIImprovedDatas = np.array(fileDatas[index, ...]).copy()
     rawLAI = ma.masked_greater(fileDatas[index, ...], 70) # 因为存在lc分类错误的情况（植被类型下的lai值为254【水域】）所以先将lai值大于70的位置mask
@@ -101,7 +101,7 @@ def Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, euc_pow
 
 
 # 不考虑像元质量
-def Temporal_Cal_Matrix_Tile_NoQC(fileDatas, index, landCover, half_temLength, ses_pow):
+def Temporal_Cal_NoQC(fileDatas, index, landCover, half_temLength, ses_pow):
     # calculate smoothing parameter (half temLength)
     paraRightHalf = []
     for i in range(0, half_temLength):
@@ -133,7 +133,7 @@ def Temporal_Cal_Matrix_Tile_NoQC(fileDatas, index, landCover, half_temLength, s
     return LAIImprovedDatas
 
 # 不考虑像元质量
-def Spatial_Cal_Matrix_Tile_NoQC(fileDatas, index, landCover, euc_pow, half_winWidth):
+def Spatial_Cal_NoQC(fileDatas, index, landCover, euc_pow, half_winWidth):
     # print('begin_tem_v1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     LAIImprovedDatas = np.array(fileDatas[index, ...]).copy()
     rawLAI = ma.masked_greater(fileDatas[index, ...], 70)

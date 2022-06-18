@@ -20,9 +20,9 @@ def Simu_improved():
     for index in range(0, 1): 
         # print('1', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
         print(index)
-        # Tem = Improved_Pixel.Temporal_Cal_Matrix_Tile(LAI_Inaccurate, index, LandCover, Err_weight, 3,  0.5)
+        # Tem = Improved_Pixel.Temporal_Cal(LAI_Inaccurate, index, LandCover, Err_weight, 3,  0.5)
         # np.savetxt('./Daily_cache/0522/Tem_LAI/LAI_%s'% (index + 1), Tem)
-        # Spa = Improved_Pixel.Spatial_Cal_Matrix_Tile(LAI_Inaccurate, index, LandCover, Err_weight, 2,  4)
+        # Spa = Improved_Pixel.Spatial_Cal(LAI_Inaccurate, index, LandCover, Err_weight, 2,  4)
         # np.savetxt('./Daily_cache/0522/Spa_LAI/LAI_%s'% (index + 1), Spa)
 
 

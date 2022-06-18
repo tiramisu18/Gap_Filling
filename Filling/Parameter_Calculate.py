@@ -64,7 +64,7 @@ def get_better_para(simuStandLAI, fileDatas, landCover, qualityControl, type):
             print(c1,c2)
             oneYear = []
             for index in range(0, 46):
-                result = Improved_Pixel.Spatial_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, c1, c2) if type == 1 else Improved_Pixel.Temporal_Cal_Matrix_Tile(fileDatas, index, landCover, qualityControl, c2, c1)
+                result = Improved_Pixel.Spatial_Cal(fileDatas, index, landCover, qualityControl, c1, c2) if type == 1 else Improved_Pixel.Temporal_Cal(fileDatas, index, landCover, qualityControl, c2, c1)
                 oneYear.append(result)
             # yearMean = np.array(oneYear).mean(axis=0)
             # calRMSE = np.sqrt((1/(len(fileDatas[0])*len(fileDatas[0][0]))) * np.sum(np.square(standLAI - yearMean)))
