@@ -33,24 +33,30 @@ def calMean_Analysis():
     hv = 'h12v04'
     fileLists = readDir(f'../HDF/{hv}')
     data = pd.read_csv(f'./Site_Classification/站点_{hv}.csv', usecols= ['Site value', 'line', 'samp', 'c6 DOY'], dtype={'Site value': float, 'line': float, 'samp': float, 'c6 DOY': str})
-    # print(data)
+    
     MODISValue = []
     spatialValue = []
     temporalValue = []
+    spatialValue_N = []
+    temporalValue_N = []
     for ele in data.values:
         # print(ele)
         file_index = (int(ele[3][4:])  - 1 ) / 8
         raw = Read_HDF.calculate_RawMean(fileLists, int(file_index), int(ele[1]), int(ele[2]))
         spa = Read_HDF.calculate_TemSpaMean(f'../Improved_RealData/{hv}_2018/Spatial/LAI_{int(file_index) + 1}.npy', int(ele[1]), int(ele[2]))
         tem = Read_HDF.calculate_TemSpaMean(f'../Improved_RealData/{hv}_2018/Temporal/LAI_{int(file_index) + 1}.npy', int(ele[1]), int(ele[2]))
+        spa_n = Read_HDF.calculate_TemSpaMean(f'../Improved_RealData_N/{hv}_2018/Spatial/LAI_{int(file_index) + 1}.npy', int(ele[1]), int(ele[2]))
+        tem_n = Read_HDF.calculate_TemSpaMean(f'../Improved_RealData_N/{hv}_2018/Temporal/LAI_{int(file_index) + 1}.npy', int(ele[1]), int(ele[2]))
         MODISValue.append(raw / 10)
         spatialValue.append(spa / 10)
         temporalValue.append(tem / 10)
+        spatialValue_N.append(spa_n / 10)
+        temporalValue_N.append(tem_n / 10)
 
     # print(data['Site value'])
     # x = data['Site value']
     # y = MODISValue
-    specific = pd.DataFrame({'Site': data['Site value'], 'Raw': MODISValue, 'Spatial':spatialValue, 'Temporal': tmporalValue})
+    specific = pd.DataFrame({'Site': data['Site value'], 'Raw': MODISValue, 'Spatial':spatialValue, 'Temporal': temporalValue, 'Spatial_N': spatialValue_N, 'Temporal_N': temporalValue_N})
     specific.to_csv(f'./Site_Analysis/{hv}.csv')
 
 
@@ -81,7 +87,7 @@ def drawScatter(x, y, hv, type):
     plt.show()
 
 
-# 读取分析数据文件绘制散点图
+# 读取分析数据文件绘制单个Tile散点图
 def getScatterPanel():
     hv = 'h12v04'
     data = pd.read_csv(f'./Site_Analysis/{hv}.csv', dtype=float)
@@ -89,6 +95,9 @@ def getScatterPanel():
     drawScatter(data['Site'], data['Spatial'], hv, 'Spatial')
     drawScatter(data['Site'], data['Temporal'], hv, 'Temporal')
     drawScatter(data['Site'], (data['Temporal'] + data['Spatial']) / 2, hv, 'Temporal+Spatial')
+    drawScatter(data['Site'], data['Spatial_N'], hv, 'Spatial_N')
+    drawScatter(data['Site'], data['Temporal_N'], hv, 'Temporal_N')
+    drawScatter(data['Site'], (data['Temporal_N'] + data['Spatial_N']) / 2, hv, 'Temporal+Spatial_N')
 
 
 def draw_Line (y1, y2, y3, gx, gy, savePath = '', issave = False, title = ''):

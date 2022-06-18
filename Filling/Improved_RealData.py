@@ -45,12 +45,19 @@ landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
 qualityControl = np.load('../QC/Version_2/%s_2018/%s_Weight.npy' % (tile, tile))
 
 # 时空相关性计算
-# for index in range(43, 46): 
-#     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-#     print(index)
-#     Tem = Improved_Pixel.Temporal_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 3,  0.5)
-#     np.save('./Daily_cache/0614/Temporal/LAI_%s'% (index + 1), Tem)
-#     # np.save('../Improved_RealData/%s_2018/Temporal/LAI_%s'% (tile, (index + 1)), Tem)
-#     Spa = Improved_Pixel.Spatial_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 2,  4)
-#     np.save('./Daily_cache/0614/Spatial/LAI_%s'% (index + 1), Spa)
+for index in range(0, 46): 
+    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    print(index)
+    # Tem = Improved_Pixel.Temporal_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 3,  0.5)
+    # np.save('../Improved_RealData/%s_2018/Temporal/LAI_%s'% (tile, (index + 1)), Tem)
+    Spa = Improved_Pixel.Spatial_Cal_Matrix_Tile(np.array(LAIDatas), index, landCover, qualityControl, 2,  4)
     # np.save('../Improved_RealData/%s_2018/Spatial/LAI_%s'% (tile, (index + 1)), Spa)
+
+# 时空相关性计算（不含质量控制）
+for index in range(0, 46): 
+    print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    print(index)
+    # Tem = Improved_Pixel.Temporal_Cal_Matrix_Tile_N(np.array(LAIDatas), index, landCover, 3,  0.5)
+    # np.save('../Improved_RealData_N/%s_2018/Temporal/LAI_%s'% (tile, (index + 1)), Tem)
+    Spa = Improved_Pixel.Spatial_Cal_Matrix_Tile_N(np.array(LAIDatas), index, landCover, 2,  4)
+    # np.save('../Improved_RealData_N/%s_2018/Spatial/LAI_%s'% (tile, (index + 1)), Spa)
