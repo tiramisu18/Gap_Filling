@@ -21,10 +21,8 @@ def read_QC(QC, url, hv):
                 row_bin.append(one)
             file_bin.append(row_bin)
         QC_Bin.append(file_bin)
-    if Path(url).is_dir(): np.save(f'{url}/{hv}_Bin', QC_Bin)
-    else:
-        os.mkdir(url)
-        np.save(f'{url}/{hv}_Bin', QC_Bin)
+    if not Path(url).is_dir(): os.mkdir(url)
+    np.save(f'{url}/{hv}_Bin', QC_Bin)
 
 # 读取二进制QC(bin)的算法路径，转为相应的权重
 def QC_AgloPath(hv, url):

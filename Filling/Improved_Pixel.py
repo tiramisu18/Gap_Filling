@@ -2,8 +2,6 @@ import numpy as np
 import numpy.ma as ma
 import math
 import time
-import Public_Methods
-import Newtons_Method
 import sympy as sp
 
 
@@ -232,7 +230,7 @@ def Temporal_Weight(rawDatas, impTemDatas, index, qualityControl, landCover, hal
     
 
 # 逐像元循环计算（哒咩）
-def Temporal_Cal (rawDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):
+def Temporal_Cal_Previous(rawDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):
     # print('begin_tem_previous', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
   # interpolation
     cu_dataset = rawDatas[index]
@@ -312,7 +310,7 @@ def Temporal_Cal (rawDatas, index, Filling_Pos, LC_info, QC_File, temporalLength
     print('previous', tem_filling_value, tem_weight, or_value)
     return {'weight': tem_weight, 'filling': tem_filling_value, 'or_value': or_value}
 
-def Spatial_Cal (rawDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral):
+def Spatial_Cal_Previous(rawDatas, index, Filling_Pos, LC_info, QC_File, EUC_pow, spa_winSize_unilateral):
     # print('begin_spa', time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
     spa_filling_value = 0
     spa_weight = 0

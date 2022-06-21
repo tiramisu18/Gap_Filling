@@ -20,3 +20,24 @@ def readDir(dirPath):
         return allFiles
     else:
         return 'error, not a dir'
+
+def readDir_LC(dirPath, hv):
+    if dirPath[-1] == '/':
+        print('path can not end with /')
+        return
+    allFiles = []
+    if os.path.isdir(dirPath):
+        fileList = os.listdir(dirPath)
+        fileList.sort()
+        # print(fileList[17])
+        for f in fileList:
+            f = dirPath+'/'+f
+            if os.path.isdir(f):
+                subFiles = readDir(f)
+                allFiles = subFiles + allFiles #合并当前目录与子目录的所有文件路径
+            else:
+                if f.find(hv) != -1: allFiles.append(f)
+        print('lcFiles', len(allFiles))
+        return allFiles
+    else:
+        return 'error, not a dir'

@@ -27,8 +27,17 @@ def calculate_RawMean(fileLists, index, line, samp):
     step2 = ma.masked_greater(step1, 70)
     return ma.mean(step2)
 
+# 计算整个Tile内的6*6
 def calculate_TemSpaMean(url, line, samp):
     data = np.load(url)
     step1 = data[line-2:line+4, samp-2:samp+4]
     step2 = ma.masked_greater(step1, 70)
     return ma.mean(step2)
+
+# 计算站点范围21*21内的6*6
+def calculate_part(url):
+    data = np.load(url)
+    step1 = data[8:14, 8:14]
+    step2 = ma.masked_greater(step1, 70)
+    return ma.mean(step2)
+
