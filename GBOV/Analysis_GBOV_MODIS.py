@@ -52,7 +52,7 @@ def drawScatter(x, y, hv, type):
     plt.savefig(f'./PNG/Scatter/{hv}_{type}', dpi=300)
     plt.show()
 
-def draw_Line (y1, y2, y3, gx, gy, savePath = '', issave = False, title = ''):
+def draw_Line (y1, y2, y3, y4, gx, gy, savePath = '', issave = False, title = ''):
     x = np.arange(0, 361, 8)
     plt.figure(figsize=(12, 6)) #宽，高
     plt.title(title, family='Times New Roman', fontsize=18)   
@@ -63,10 +63,11 @@ def draw_Line (y1, y2, y3, gx, gy, savePath = '', issave = False, title = ''):
     line1=plt.plot(x,y1, label='count', color='gray',  marker='o', markersize=3, linestyle= 'dashed')
     line2=plt.plot(x,y2, label='count', color='#ffe117',  marker='.', markersize=3)
     line3=plt.plot(x,y3, label='count', color='#bfdb39',  marker='^', markersize=3)
-    line4=plt.scatter(gx,gy, label='count', color='#fd7400')
+    line4=plt.plot(x,y4, label='count', color='#fd7400',  marker='+', markersize=3)
+    line5=plt.scatter(gx,gy, label='count', color='#fd7400')
     plt.legend(
-    (line1[0],  line2[0],  line3[0],  line4), 
-    ('Raw', 'Temporal', 'Spatial', 'GBOV'),
+    (line1[0],  line2[0],  line3[0],  line4[0], line5), 
+    ('Raw', 'Temporal', 'Spatial', 'Improved', 'GBOV'),
     loc = 2, prop={'size':15, 'family':'Times New Roman'},
     )
     if issave :plt.savefig(savePath, dpi=300)
@@ -155,6 +156,7 @@ def getSiteLine(hv = 'h12v04', site = 'BART'):
     MODISValue = []
     spatialValue = []
     temporalValue = []
+    improvedValue = []
     GBOVDay = []
     GBOVValue = []
     if len(specific) > 0:
@@ -163,20 +165,20 @@ def getSiteLine(hv = 'h12v04', site = 'BART'):
         for i in range(46):
             # print(i)
             raw = Read_HDF.calculate_RawMean(fileLists, i, line, samp)
-            spa = Read_HDF.calculate_TemSpaMean(f'../Improved_RealData/{hv}_2018/Spatial/LAI_{i + 1}.npy', line, samp)
-            tem = Read_HDF.calculate_TemSpaMean(f'../Improved_RealData/{hv}_2018/Temporal/LAI_{i + 1}.npy', line, samp)
-            # spa = Read_HDF.calculate_part(f'./Site_Calculate/{site}/Spatial/LAI_{i + 1}.npy')
-            # tem = Read_HDF.calculate_part(f'./Site_Calculate/{site}/Temporal/LAI_{i + 1}.npy')
+            spa = Read_HDF.calculate_part(f'./Site_Calculate/{site}/Spatial/LAI_{i + 1}.npy')
+            tem = Read_HDF.calculate_part(f'./Site_Calculate/{site}/Temporal/LAI_{i + 1}.npy')
+            improved = Read_HDF.calculate_part(f'./Site_Calculate/{site}/Improved/LAI_{i + 1}.npy')
             MODISValue.append(raw / 10)
             spatialValue.append(spa / 10)
             temporalValue.append(tem / 10)
+            improvedValue.append(improved / 10)
             currentDOY = i * 8 + 1       
             ele = np.array(specific.loc[specific['c6 DOY'] == '2018%03d' % currentDOY]['Site value'])
             if len(ele) > 0:
                 GBOVDay.append(currentDOY - 1)
                 GBOVValue.append(ele.mean())
 
-    draw_Line(MODISValue, temporalValue, spatialValue, GBOVDay, GBOVValue, issave=True, savePath=f'./PNG/{hv}_{site}_Line', title=f'{site}')
+    draw_Line(MODISValue, temporalValue, spatialValue, improvedValue, GBOVDay, GBOVValue, issave=True, savePath=f'./PNG/{hv}_{site}_Line', title=f'{site}')
 
 # 读取分析数据文件绘制单个Tile散点图
 def getScatterPanel():
@@ -192,8 +194,26 @@ def getScatterPanel():
     drawScatter(data['Site'], data['Improved'], hv, 'Improved')
 
 
-
-hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
+# getSiteLine(hv = 'h12v05', site = 'SERC')
+# hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
 
 # for hv in hvLists:
 #     calMean_Analysis(hv=hv)
+hv = 'h12v04'
+site = 'BART'
+index = 26
+aa = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Spatial_Weight/LAI_{index + 1}.npy')
+print(np.array(aa, dtype=int), aa.mean())
+bb = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Temporal_Weight/LAI_{index + 1}.npy')
+print(np.array(bb, dtype=int), bb.mean())
+cc = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Spatial/LAI_{index + 1}.npy')
+print(np.array(cc, dtype=int),cc.mean())
+dd = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Temporal/LAI_{index + 1}.npy')
+print(np.array(dd, dtype=int), dd.mean())
+
+fileLists = readDir(f'../HDF/{hv}')
+raw = Read_HDF.calcuExtent(fileLists, index, 1424, 2105)
+print(raw, raw.mean())
+
+improved = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Improved/LAI_{index + 1}.npy')
+print(np.array(improved, dtype=int), improved.mean())

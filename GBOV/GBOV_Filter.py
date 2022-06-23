@@ -104,8 +104,3 @@ def filter_ValidPixels():
         writer.writerows(validedFiles)#写⼊样本数据
 
 filter_ValidPixels()
-
-
-
-
-# dateToDay('20180507')

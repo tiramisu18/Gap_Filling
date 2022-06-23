@@ -41,3 +41,12 @@ def calculate_part(url):
     step2 = ma.masked_greater(step1, 70)
     return ma.mean(step2)
 
+def calcuExtent_part(url):
+    data = np.load(url)
+    step1 = data[8:14, 8:14]
+    return step1
+
+def calcuExtent(fileLists, index, line, samp):
+    data = readFile(fileLists[index])
+    step1 = data[line-2:line+4, samp-2:samp+4]
+    return step1
