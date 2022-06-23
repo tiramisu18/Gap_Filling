@@ -83,7 +83,7 @@ def filter_ValidPixels():
             line = line.splitlines()
             ValidPixels = line[27].split('=')
             # print ("读取的字符串: %s" % (ValidPixels))
-            if float(ValidPixels[1]) > 50:
+            if float(ValidPixels[1]) > 80:
                 fullName = fo.name.split('/')[-1]
                 split_ = fullName.split('_')
                 siteName = split_[3]

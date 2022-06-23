@@ -228,6 +228,12 @@ def Temporal_Weight(rawDatas, impTemDatas, index, qualityControl, landCover, hal
     calRMSEs[no_ele] = 0
     return np.array(calRMSEs)
     
+def cal_TSS(LAIDatas, index):
+    numerators = np.absolute(((LAIDatas[index + 1] - LAIDatas[index - 1]) * index) - (LAIDatas[index] * 2) - ((LAIDatas[index + 1] - LAIDatas[index - 1]) * (index - 1)) + (LAIDatas[index - 1] * 2))
+    denominators = np.sqrt(np.square(LAIDatas[index + 1] - LAIDatas[index - 1]) + 2**2)
+    absoluteTSS = (numerators / denominators) / 10
+    # value = 1 if absoluteTSS == 0 else (1 / absoluteTSS)
+    return  np.nan_to_num(1 / absoluteTSS, posinf=1, neginf=1)
 
 # 逐像元循环计算（哒咩）
 def Temporal_Cal_Previous(rawDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):

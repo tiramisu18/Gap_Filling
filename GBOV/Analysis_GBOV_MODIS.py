@@ -195,3 +195,5 @@ def getScatterPanel():
 
 hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
 
+# for hv in hvLists:
+#     calMean_Analysis(hv=hv)
