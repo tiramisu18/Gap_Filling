@@ -4,6 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 import Read_HDF
+import sys
+sys.path.append("..")
+from Filling import Public_Methods
 
 def readDir(dirPath):
     if dirPath[-1] == '/':
@@ -32,7 +35,6 @@ def rsquared(x, y):
     # print(slope, intercept,"r", r_value,"r-squared", r_value**2)
     return [slope, intercept, r_value**2]
     
-
 def drawScatter(x, y, hv, type):
     calRMSE = np.sqrt((1/len(x))* np.sum(np.square(x - y)))
     parameter = rsquared(x, y)
@@ -45,14 +47,13 @@ def drawScatter(x, y, hv, type):
     plt.xticks(family='Times New Roman', fontsize=15)
     plt.yticks(family='Times New Roman', fontsize=15)
     # parameter = np.polyfit(x, y, deg=1)
-    # print(parameter)
-    
+    # print(parameter)   
     plt.plot(x, y2, color='#ffe117', linewidth=1, alpha=1)
     plt.plot((0, 7), (0, 7),  ls='--',c='k', alpha=0.8, label="1:1 line")
     plt.savefig(f'./PNG/Scatter/{hv}_{type}', dpi=300)
     plt.show()
 
-def draw_Line (y1, y2, y3, y4, gx, gy, savePath = '', issave = False, title = ''):
+def draw_Line (y1, y2, y3, y4, y6, gx, gy, savePath = '', issave = False, title = ''):
     x = np.arange(0, 361, 8)
     plt.figure(figsize=(12, 6)) #宽，高
     plt.title(title, family='Times New Roman', fontsize=18)   
@@ -60,14 +61,15 @@ def draw_Line (y1, y2, y3, y4, gx, gy, savePath = '', issave = False, title = ''
     plt.ylabel('LAI', fontsize=15, family='Times New Roman')
     plt.xticks(family='Times New Roman', fontsize=15)
     plt.yticks(family='Times New Roman', fontsize=15)
-    line1=plt.plot(x,y1, label='count', color='gray',  marker='o', markersize=3, linestyle= 'dashed')
-    line2=plt.plot(x,y2, label='count', color='#ffe117',  marker='.', markersize=3)
-    line3=plt.plot(x,y3, label='count', color='#bfdb39',  marker='^', markersize=3)
+    line1=plt.plot(x,y1, label='count', color='gray',  marker='o', markersize=3)
+    line2=plt.plot(x,y2, label='count', color='#ffe117',  marker='.', markersize=3, linestyle= 'dashed')
+    line3=plt.plot(x,y3, label='count', color='#bfdb39',  marker='^', markersize=3, linestyle= 'dashed')
     line4=plt.plot(x,y4, label='count', color='#fd7400',  marker='+', markersize=3)
+    line6=plt.plot(x,y6, label='count', color='#b8defd',  marker='H', markersize=3)
     line5=plt.scatter(gx,gy, label='count', color='#fd7400')
     plt.legend(
-    (line1[0],  line2[0],  line3[0],  line4[0], line5), 
-    ('Raw', 'Temporal', 'Spatial', 'Improved', 'GBOV'),
+    (line1[0],  line2[0],  line3[0], line6[0], line4[0], line5), 
+    ('Raw', 'Temporal', 'Spatial', 'Tem+Spa', 'Improved', 'GBOV'),
     loc = 2, prop={'size':15, 'family':'Times New Roman'},
     )
     if issave :plt.savefig(savePath, dpi=300)
@@ -136,7 +138,7 @@ def calMean_Analysis(hv='h12v04'):
     # print(specific)
     specific.to_csv(f'./Site_Analysis/{hv}.csv')
 
-# 合并Site_Analysis单独的Tile
+# Step2: 合并Site_Analysis单独的Tile
 def siteAnalysisMerge():
     data_=pd.DataFrame()
     for inputfile in os.listdir('./Site_Analysis'):
@@ -159,6 +161,7 @@ def getSiteLine(hv = 'h12v04', site = 'BART'):
     improvedValue = []
     GBOVDay = []
     GBOVValue = []
+    diffValue = []
     if len(specific) > 0:
         line = int(specific.iloc[0, 2])
         samp =  int(specific.iloc[0, 3])
@@ -177,8 +180,14 @@ def getSiteLine(hv = 'h12v04', site = 'BART'):
             if len(ele) > 0:
                 GBOVDay.append(currentDOY - 1)
                 GBOVValue.append(ele.mean())
+                diffValue.append((f'Day {currentDOY}', np.abs(np.array([raw/10, tem/10, spa/10, ((tem+spa)/2)/10, improved/10]) - ele.mean())))
+    averageValue = (np.array(spatialValue) + np.array(temporalValue)) / 2
+    draw_Line(MODISValue, temporalValue, spatialValue, improvedValue, averageValue, GBOVDay, GBOVValue, issave=True, savePath=f'./PNG/{hv}_{site}_Line', title=f'{site}')
 
-    draw_Line(MODISValue, temporalValue, spatialValue, improvedValue, GBOVDay, GBOVValue, issave=True, savePath=f'./PNG/{hv}_{site}_Line', title=f'{site}')
+    category_names = ['Raw', 'Temporal', 'Spatial', 'Tem+Spa', 'Improved']
+    Public_Methods.survey(dict(diffValue), category_names)
+    plt.savefig(f'./PNG/{hv}_{site}_Line_Survey', dpi=300)
+    plt.show()
 
 # 读取分析数据文件绘制单个Tile散点图
 def getScatterPanel():
@@ -194,18 +203,36 @@ def getScatterPanel():
     drawScatter(data['Site'], data['Improved'], hv, 'Improved')
 
 
-# getSiteLine(hv = 'h12v05', site = 'SERC')
+# getSiteLine(hv = 'h11v05', site = 'ORNL')
 # hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
 
 # for hv in hvLists:
 #     calMean_Analysis(hv=hv)
+
 hv = 'h12v04'
 site = 'BART'
-index = 26
-aa = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Spatial_Weight/LAI_{index + 1}.npy')
-print(np.array(aa, dtype=int), aa.mean())
-bb = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Temporal_Weight/LAI_{index + 1}.npy')
-print(np.array(bb, dtype=int), bb.mean())
+# index = 26
+# spaWei = Read_HDF.calcuExtent(f'./Site_Calculate/{site}/Spatial_Weight/LAI_{index + 1}.npy')
+# temWei = Read_HDF.calcuExtent(f'./Site_Calculate/{site}/Temporal_Weight/LAI_{index + 1}.npy')
+# print(spaWei, temWei)
+spalist = []
+temlist = []
+rawlist = []
+for index in range(25, 45):
+    aa = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Spatial_Weight/LAI_{index + 1}.npy')
+    # print(np.array(aa, dtype=int), aa.mean()) 
+    spalist.append(aa.mean())
+    bb = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Temporal_Weight/LAI_{index + 1}.npy')
+    # print(np.array(bb, dtype=int), bb.mean())
+    temlist.append(bb.mean()) 
+    cc = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Raw_Weight/LAI_{index + 1}.npy')
+    # print(np.array(bb, dtype=int), bb.mean())
+    rawlist.append(cc.mean())
+print('raw', 1/np.array(rawlist))
+print('spa',1/np.array(spalist))
+print('tem', 1/np.array(temlist))
+
+
 cc = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Spatial/LAI_{index + 1}.npy')
 print(np.array(cc, dtype=int),cc.mean())
 dd = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Temporal/LAI_{index + 1}.npy')
@@ -217,3 +244,5 @@ print(raw, raw.mean())
 
 improved = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Improved/LAI_{index + 1}.npy')
 print(np.array(improved, dtype=int), improved.mean())
+
+

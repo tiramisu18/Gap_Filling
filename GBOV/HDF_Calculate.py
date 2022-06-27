@@ -44,6 +44,7 @@ sites = {
     'WOOD': {'h': 11, 'v':4, 'line': 688.72, 'samp': 594.74},
 } # 24个
 
+# 时空相关性计算、权重计算 
 for key, ele in sites.items():
     print(key)
     hv = 'h%02dv%02d' % (ele['h'], ele['v'])
@@ -64,24 +65,24 @@ for key, ele in sites.items():
         result = ReadFile(file)
         LAIDatas.append(result['LAI'])
     rawLAI = np.array(LAIDatas)[:, line-10:line+11, samp-10:samp+11]
-    LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
-    LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
-    landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()[line-10:line+11, samp-10:samp+11]
+    # LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
+    # LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
+    # landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()[line-10:line+11, samp-10:samp+11]
 
-    qualityControl = np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')[:, line-10:line+11, samp-10:samp+11]
+    # qualityControl = np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')[:, line-10:line+11, samp-10:samp+11]
 
     # 时空相关性计算
-    for index in range(0, 46): 
-        Tem = Improved_Pixel.Temporal_Cal(rawLAI, index, landCover, qualityControl, 3,  0.5)
-        np.save(f'{url}/Temporal/LAI_{index + 1}', Tem)
-        Spa = Improved_Pixel.Spatial_Cal(rawLAI, index, landCover, qualityControl, 2,  4)
-        np.save(f'{url}/Spatial/LAI_{index + 1}', Spa)
+    # for index in range(0, 46): 
+    #     Tem = Improved_Pixel.Temporal_Cal(rawLAI, index, landCover, qualityControl, 3,  0.5)
+    #     np.save(f'{url}/Temporal/LAI_{index + 1}', Tem)
+    #     Spa = Improved_Pixel.Spatial_Cal(rawLAI, index, landCover, qualityControl, 2,  4)
+    #     np.save(f'{url}/Spatial/LAI_{index + 1}', Spa)
         
-        # 不含质量控制
-        Tem_N = Improved_Pixel.Temporal_Cal_N(rawLAI, index, landCover, 3,  0.5)
-        np.save(f'{url}/Temporal_N/LAI_{index + 1}', Tem_N)
-        Spa_N = Improved_Pixel.Spatial_Cal_N(rawLAI, index, landCover, 2,  4)
-        np.save(f'{url}/Spatial_N/LAI_{index + 1}', Spa_N)
+    #     # 不含质量控制
+    #     Tem_N = Improved_Pixel.Temporal_Cal_N(rawLAI, index, landCover, 3,  0.5)
+    #     np.save(f'{url}/Temporal_N/LAI_{index + 1}', Tem_N)
+    #     Spa_N = Improved_Pixel.Spatial_Cal_N(rawLAI, index, landCover, 2,  4)
+    #     np.save(f'{url}/Spatial_N/LAI_{index + 1}', Spa_N)
 
     # 权重计算 
     tem = []
@@ -126,7 +127,7 @@ for key, ele in sites.items():
         result = ReadFile(file)
         LAIDatas.append(result['LAI'])
     rawLAI = np.array(LAIDatas)[:, line-10:line+11, samp-10:samp+11]
-    qualityControl = (np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')[:, line-10:line+11, samp-10:samp+11])/10
+    qualityControl = (np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')[:, line-10:line+11, samp-10:samp+11]) / 10
 
     tem = []
     spa = []
@@ -174,6 +175,7 @@ for key, ele in sites.items():
         result = ReadFile(file)
         LAIDatas.append(result['LAI'])
     rawLAI = np.array(LAIDatas)[1:45, line-10:line+11, samp-10:samp+11]
+    qualityControl = (np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')[1:45, line-10:line+11, samp-10:samp+11])
 
     tem = []
     spa = []
@@ -197,6 +199,9 @@ for key, ele in sites.items():
     tem_Weight = np.array(temWei)
     spa_Weight = np.array(spaWei)
     raw_Weight = np.array(rawWei)
+    # 质量小于5的像元不用于最终的权重计算
+    # pos = qualityControl < 5
+    # raw_Weight[pos] = 0
     # 计算权重求和后的值
     for i in range(46):
         if i == 0 or i == 45:

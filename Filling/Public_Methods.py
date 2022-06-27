@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
-from scipy.stats import gaussian_kde
+from scipy import stats
+
 
 def render_LAI (data, title='LAI', issave=False, savepath=''):
     colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
@@ -127,19 +128,65 @@ def draw_one_plot(x, y):
 
     # fig.savefig("test.png")
     plt.show() 
-
+# 散点图参数计算
+def rsquared(x, y): 
+    slope, intercept, r_value, p_value, std_err = stats.linregress(x, y) 
+    #a、b、r
+    # print(slope, intercept,"r", r_value,"r-squared", r_value**2)
+    return [slope, intercept, r_value**2]
+    
 # 散点图
-def density_scatter_plot(x, y):
-    # x = np.random.normal(size=500)
-    # y = x * 3 + np.random.normal(size=500)
-    # print(x, y)
-    # Calculate the point density
-    xy = np.vstack([x,y])
-    z = gaussian_kde(xy)(xy)
-    # Sort the points by density, so that the densest points are plotted last
-    idx = z.argsort()
-    x, y, z = x[idx], y[idx], z[idx] 
-    fig, ax = plt.subplots()
-    plt.scatter(x, y,c=z,  s=20,cmap='Spectral')
-    plt.colorbar()
+def density_scatter_plot(x, y, url):
+    calRMSE = np.sqrt((1/len(x))* np.sum(np.square(x - y)))
+    parameter = rsquared(x, y)
+    print('RMSE, a, b, R2', calRMSE, parameter)
+    y2 = parameter[0] * x + parameter[1]
+
+    plt.scatter(x, y, color='#bfdb39')
+    plt.ylabel(f'{type} LAI', fontsize=15, family='Times New Roman')
+    plt.xlabel('GBOV LAI', fontsize=15, family='Times New Roman')
+    plt.xticks(family='Times New Roman', fontsize=15)
+    plt.yticks(family='Times New Roman', fontsize=15)
+    # parameter = np.polyfit(x, y, deg=1)
+    # print(parameter)
+    
+    plt.plot(x, y2, color='#ffe117', linewidth=1, alpha=1)
+    plt.plot((0, 7), (0, 7),  ls='--',c='k', alpha=0.8, label="1:1 line")
+    plt.savefig(url, dpi=300)
     plt.show()
+
+# Discrete distribution as horizontal bar chart
+def survey(results, category_names):
+    """
+    Parameters
+    ----------
+    results : dict
+        A mapping from question labels to a list of answers per category.
+        It is assumed all lists contain the same number of entries and that
+        it matches the length of *category_names*.
+    category_names : list of str
+        The category labels.
+    """
+    labels = list(results.keys())
+    data = np.array(list(results.values()))
+    data_cum = data.cumsum(axis=1)
+    # category_colors = plt.colormaps['RdYlGn'](np.linspace(0.15, 0.85, data.shape[1]))
+    category_colors = ['#e44f35','#fcbb6b', '#fdffbe', '#b3df72', '#3faa5a']
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.invert_yaxis()
+    ax.xaxis.set_visible(False)
+    ax.set_xlim(0, np.sum(data, axis=1).max())
+    # ax.set_xlabel('Day', fontsize=15, family='Times New Roman')
+    # plt.xlabel('GBOV LAI', fontsize=15, family='Times New Roman')
+
+    for i, (colname, color) in enumerate(zip(category_names, category_colors)):
+        widths = data[:, i]
+        starts = data_cum[:, i] - widths
+        rects = ax.barh(labels, widths, left=starts, height=0.5, label=colname, color=color)
+
+        # r, g, b, _ = color
+        # text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
+        # ax.bar_label(rects, label_type='center')
+    ax.legend(ncol=len(category_names), bbox_to_anchor=(0, 1), loc='lower left', prop={'size':12, 'family':'Times New Roman'})
+
+    return fig, ax
