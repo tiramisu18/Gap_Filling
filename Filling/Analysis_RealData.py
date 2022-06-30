@@ -175,7 +175,3 @@ draw_TSS_Image(gather_TSS_re, hv, 'relative')
 # plt.savefig('./Daily_cache/0530/Test', dpi=300)
 # plt.show()
 
-aa = np.arange(12).reshape(2, 3, 2)
-print(aa)
-
-print(np.mean(np.mean(aa, axis=1), axis=1))

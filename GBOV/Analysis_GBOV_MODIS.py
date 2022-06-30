@@ -53,9 +53,10 @@ def drawScatter(x, y, hv, type):
     plt.savefig(f'./PNG/Scatter/{hv}_{type}', dpi=300)
     plt.show()
 
-def draw_Line (y1, y2, y3, y4, y6, gx, gy, savePath = '', issave = False, title = ''):
+def draw_Line (y1, y2, y3, y4, gx, gy, RMSE, savePath = '', issave = False, title = ''):
     x = np.arange(0, 361, 8)
-    plt.figure(figsize=(12, 6)) #宽，高
+    fig = plt.figure(figsize=(12, 6)) #宽，高
+    ax = fig.add_subplot()
     plt.title(title, family='Times New Roman', fontsize=18)   
     plt.xlabel('Day', fontsize=15, family='Times New Roman') 
     plt.ylabel('LAI', fontsize=15, family='Times New Roman')
@@ -65,11 +66,23 @@ def draw_Line (y1, y2, y3, y4, y6, gx, gy, savePath = '', issave = False, title 
     line2=plt.plot(x,y2, label='count', color='#ffe117',  marker='.', markersize=3, linestyle= 'dashed')
     line3=plt.plot(x,y3, label='count', color='#bfdb39',  marker='^', markersize=3, linestyle= 'dashed')
     line4=plt.plot(x,y4, label='count', color='#fd7400',  marker='+', markersize=3)
-    line6=plt.plot(x,y6, label='count', color='#b8defd',  marker='H', markersize=3)
+    # line6=plt.plot(x,y6, label='count', color='#b8defd',  marker='H', markersize=3)
     line5=plt.scatter(gx,gy, label='count', color='#fd7400')
+    ax.text(310, 3, f'{RMSE[0]} (RMSE)',
+        verticalalignment='bottom', horizontalalignment='left',
+        color='gray', fontsize=18, family='Times New Roman')
+    ax.text(310, 2.7, f'{RMSE[1]}',
+        verticalalignment='bottom', horizontalalignment='left',
+        color='#ffe117', fontsize=18, family='Times New Roman')
+    ax.text(310, 2.4, f'{RMSE[2]}',
+        verticalalignment='bottom', horizontalalignment='left',
+        color='#bfdb39', fontsize=18, family='Times New Roman')
+    ax.text(310, 2.1, f'{RMSE[3]}',
+        verticalalignment='bottom', horizontalalignment='left',
+        color='#fd7400', fontsize=18, family='Times New Roman')
     plt.legend(
-    (line1[0],  line2[0],  line3[0], line6[0], line4[0], line5), 
-    ('Raw', 'Temporal', 'Spatial', 'Tem+Spa', 'Improved', 'GBOV'),
+    (line1[0],  line2[0],  line3[0], line4[0], line5), 
+    ('Raw', 'Temporal', 'Spatial', 'Improved', 'GBOV'),
     loc = 2, prop={'size':15, 'family':'Times New Roman'},
     )
     if issave :plt.savefig(savePath, dpi=300)
@@ -150,17 +163,12 @@ def siteAnalysisMerge():
 
 # 读取分析数据文件绘制特定站点折线图
 def getSiteLine(hv = 'h12v04', site = 'BART'):
-    # hv = 'h12v04'
-    # site = 'BART'
     data = pd.read_csv(f'./Site_Classification/站点_{hv}.csv', usecols= ['Site name', 'Site value', 'line', 'samp', 'c6 DOY'], dtype={'Site name': str, 'Site value': float, 'line': float, 'samp': float, 'c6 DOY': str})
     specific = data.loc[data['Site name'] == f'{site}'] 
     fileLists = readDir(f'../HDF/{hv}')
-    MODISValue = []
-    spatialValue = []
-    temporalValue = []
-    improvedValue = []
-    GBOVDay = []
-    GBOVValue = []
+    MODISValue, spatialValue, temporalValue, improvedValue = [], [], [], []
+    GBOVDay, GBOVValue = [], []
+    onlyGBOVDay_raw, onlyGBOVDay_spa, onlyGBOVDay_tem, onlyGBOVDay_imp = [], [], [], []
     diffValue = []
     if len(specific) > 0:
         line = int(specific.iloc[0, 2])
@@ -180,13 +188,25 @@ def getSiteLine(hv = 'h12v04', site = 'BART'):
             if len(ele) > 0:
                 GBOVDay.append(currentDOY - 1)
                 GBOVValue.append(ele.mean())
-                diffValue.append((f'Day {currentDOY}', np.abs(np.array([raw/10, tem/10, spa/10, ((tem+spa)/2)/10, improved/10]) - ele.mean())))
-    averageValue = (np.array(spatialValue) + np.array(temporalValue)) / 2
-    draw_Line(MODISValue, temporalValue, spatialValue, improvedValue, averageValue, GBOVDay, GBOVValue, issave=True, savePath=f'./PNG/{hv}_{site}_Line', title=f'{site}')
+                onlyGBOVDay_raw.append(raw / 10)
+                onlyGBOVDay_spa.append(spa / 10)
+                onlyGBOVDay_tem.append(tem / 10)
+                onlyGBOVDay_imp.append(improved / 10)
+                # diffValue.append((f'Day {currentDOY}', np.abs(np.array([raw/10, tem/10, spa/10, ((tem+spa)/2)/10, improved/10]) - ele.mean())))
+                diffValue.append((f'Day {currentDOY}', np.abs(np.array([raw/10, tem/10, spa/10, improved/10]) - ele.mean())) if len(diffValue) == 0 else (f'{currentDOY}', np.abs(np.array([raw/10, tem/10, spa/10, improved/10]) - ele.mean())))
+    # averageValue = (np.array(spatialValue) + np.array(temporalValue)) / 2
+   
+    RMSE_raw = np.round(np.sqrt((1/len(onlyGBOVDay_raw))* np.sum(np.square(np.array(onlyGBOVDay_raw) - np.array(GBOVValue)))), 2)
+    RMSE_tem = np.round(np.sqrt((1/len(onlyGBOVDay_tem))* np.sum(np.square(np.array(onlyGBOVDay_tem) - np.array(GBOVValue)))), 2)
+    RMSE_spa = np.round(np.sqrt((1/len(onlyGBOVDay_spa))* np.sum(np.square(np.array(onlyGBOVDay_spa) - np.array(GBOVValue)))), 2)
+    RMSE_imp = np.round(np.sqrt((1/len(onlyGBOVDay_imp))* np.sum(np.square(np.array(onlyGBOVDay_imp) - np.array(GBOVValue)))), 2)
+    print(RMSE_raw, RMSE_tem, RMSE_spa, RMSE_imp)
+    draw_Line(MODISValue, temporalValue, spatialValue, improvedValue, GBOVDay, GBOVValue, [RMSE_raw, RMSE_tem, RMSE_spa, RMSE_imp], issave=True, savePath=f'./PNG/Line_Survey/{hv}_{site}_Line', title=f'{site}')
 
-    category_names = ['Raw', 'Temporal', 'Spatial', 'Tem+Spa', 'Improved']
+    # category_names = ['Raw', 'Temporal', 'Spatial', 'Tem+Spa', 'Improved']
+    category_names = ['Raw', 'Temporal', 'Spatial', 'Improved']
     Public_Methods.survey(dict(diffValue), category_names)
-    plt.savefig(f'./PNG/{hv}_{site}_Line_Survey', dpi=300)
+    plt.savefig(f'./PNG/Line_Survey/{hv}_{site}_Line_Survey', dpi=300)
     plt.show()
 
 # 读取分析数据文件绘制单个Tile散点图
@@ -203,46 +223,22 @@ def getScatterPanel():
     drawScatter(data['Site'], data['Improved'], hv, 'Improved')
 
 
-# getSiteLine(hv = 'h11v05', site = 'ORNL')
+# getSiteLine(hv = 'h11v04', site = 'UNDE')
 # hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
 
 # for hv in hvLists:
 #     calMean_Analysis(hv=hv)
 
-hv = 'h12v04'
-site = 'BART'
-# index = 26
-# spaWei = Read_HDF.calcuExtent(f'./Site_Calculate/{site}/Spatial_Weight/LAI_{index + 1}.npy')
-# temWei = Read_HDF.calcuExtent(f'./Site_Calculate/{site}/Temporal_Weight/LAI_{index + 1}.npy')
-# print(spaWei, temWei)
-spalist = []
-temlist = []
-rawlist = []
-for index in range(25, 45):
-    aa = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Spatial_Weight/LAI_{index + 1}.npy')
-    # print(np.array(aa, dtype=int), aa.mean()) 
-    spalist.append(aa.mean())
-    bb = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Temporal_Weight/LAI_{index + 1}.npy')
-    # print(np.array(bb, dtype=int), bb.mean())
-    temlist.append(bb.mean()) 
-    cc = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Raw_Weight/LAI_{index + 1}.npy')
-    # print(np.array(bb, dtype=int), bb.mean())
-    rawlist.append(cc.mean())
-print('raw', 1/np.array(rawlist))
-print('spa',1/np.array(spalist))
-print('tem', 1/np.array(temlist))
 
 
-cc = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Spatial/LAI_{index + 1}.npy')
-print(np.array(cc, dtype=int),cc.mean())
-dd = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Temporal/LAI_{index + 1}.npy')
-print(np.array(dd, dtype=int), dd.mean())
-
-fileLists = readDir(f'../HDF/{hv}')
-raw = Read_HDF.calcuExtent(fileLists, index, 1424, 2105)
-print(raw, raw.mean())
-
-improved = Read_HDF.calcuExtent_part(f'./Site_Calculate/{site}/Improved/LAI_{index + 1}.npy')
-print(np.array(improved, dtype=int), improved.mean())
-
-
+# Public_Methods.polt_Line_twoScale(np.arange(8, 353, 8),{
+#         'title': f'{site}_{x}_{y}',
+#         'xlable': 'Day',
+#         'ylable': 'LAI',
+#         'line': [[rawlist, temlist, spalist, implist], [rawwei, step3]],
+#         'le_name': ['Raw', 'Temporal', 'Spatial', 'Improved', 'Raw_TSS', 'Diff'],
+#         'size': {'width': 13, 'height': 6},
+#         'color': ['#958b8c',  '#bfdb39', '#ffe117', '#fd7400', '#7ba79c', '#b8defd'],
+#         'marker': ['s', 's', 's', 's', 's', 's'],
+#         'lineStyle': []
+#         },f'./PNG/{hv}_{site}_Combine', True, 2)

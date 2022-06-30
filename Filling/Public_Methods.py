@@ -62,7 +62,8 @@ def polt_Line_twoScale (x, obj, savePath = '', issave = False, loc = 0):
     marker_arr = ['o', '.', '^', 's', ',', 'v', '8', '*', 'H', '+', 'x', '_']
     if obj['color'] : color_arr = obj['color']
     if obj['marker'] : marker_arr = obj['marker']
-    fig, ax1 = plt.subplots()
+    
+    fig, ax1 = plt.subplots(figsize=(obj['size']['width'], obj['size']['height']))
     ax1.set_title(obj['title'], family='Times New Roman', fontsize=18)   
     ax1.set_xlabel(obj['xlable'], fontsize=15, family='Times New Roman') 
     ax1.set_ylabel(obj['ylable'], fontsize=15, family='Times New Roman')
@@ -176,6 +177,7 @@ def survey(results, category_names):
     ax.invert_yaxis()
     ax.xaxis.set_visible(False)
     ax.set_xlim(0, np.sum(data, axis=1).max())
+    # ax.set_ylabel()
     # ax.set_xlabel('Day', fontsize=15, family='Times New Roman')
     # plt.xlabel('GBOV LAI', fontsize=15, family='Times New Roman')
 
@@ -186,7 +188,7 @@ def survey(results, category_names):
 
         # r, g, b, _ = color
         # text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
-        # ax.bar_label(rects, label_type='center')
+        # ax.bar_label(rects, label_type='center', fontsize=5, family='Times New Roman')
     ax.legend(ncol=len(category_names), bbox_to_anchor=(0, 1), loc='lower left', prop={'size':12, 'family':'Times New Roman'})
 
     return fig, ax

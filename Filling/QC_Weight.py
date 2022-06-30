@@ -8,6 +8,16 @@ import os
 import ReadDirFiles
 import Public_Methods
 
+# 读取HDF文件数据集
+def ReadFile(path):
+    file = gdal.Open(path)
+    subdatasets = file.GetSubDatasets() #  获取hdf中的子数据集
+    # print('Number of subdatasets: {}'.format(len(subdatasets)))
+    LAI = gdal.Open(subdatasets[1][0]).ReadAsArray()
+    QC = gdal.Open(subdatasets[2][0]).ReadAsArray()
+    StdLAI = gdal.Open(subdatasets[5][0]).ReadAsArray()
+    return {'LAI': LAI, 'QC': QC, 'StdLAI': StdLAI}
+
 # 传入HDF文件的QC层信息，将十进制转为8位的二进制数据
 def read_QC(QC, url, hv):    
     QC_Bin = []
@@ -95,30 +105,110 @@ def addStdLAI(StdLAIDatas, hv, url):
     np.save(f'{url}/{hv}_Weight', final_qualityControl)
     print(f'{hv} end')
 
-# 读取HDF文件数据集
-def ReadFile(path):
-    file = gdal.Open(path)
-    subdatasets = file.GetSubDatasets() #  获取hdf中的子数据集
-    # print('Number of subdatasets: {}'.format(len(subdatasets)))
-    LAI = gdal.Open(subdatasets[1][0]).ReadAsArray()
-    QC = gdal.Open(subdatasets[2][0]).ReadAsArray()
-    StdLAI = gdal.Open(subdatasets[5][0]).ReadAsArray()
-    return {'LAI': LAI, 'QC': QC, 'StdLAI': StdLAI}
+# def addStdLAITSS(StdLAIDatas, TSSValues, hv, url):
+#     qualityControl = np.load(f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei.npy')
+#     # 将质量等级为5的备用算法修改为3
+#     pos = qualityControl == 5
+#     qualityControl[pos] = 3
+#     # StdLAI有效值范围为0-100
+#     std = ma.masked_greater(StdLAIDatas, 100)
+#     control = 0.5 * std + 0.5 * TSSValues
+#     map_control = 0.5 + ((0.15 - 0.5) / (ma.max(control) - ma.min(control))) * (control - ma.min(control)) 
+#     surplus = np.array(ma.filled(map_control, 1))
+#     final_qualityControl = surplus * qualityControl
+#     if not Path(url).is_dir(): os.mkdir(url)
+#     np.save(f'{url}/{hv}_Weight', final_qualityControl)
+#     print(f'{hv} end')
 
 
-hv = 'h09v05'
-fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
-LAIDatas, QCDatas, StdLAIDatas = [], [], []
-for file in fileLists:
-    result = ReadFile(file)
-    LAIDatas.append(result['LAI'])
-    QCDatas.append(result['QC'])
-    StdLAIDatas.append(result['StdLAI'])
-raw_LAI = np.array(LAIDatas, dtype=float)
+# 权重加上StdLAI和相对TSS
+def addStdLAITSS(StdLAIDatas, TSSValues, hv, url):
+    qualityControl = np.load(f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei.npy')
+    # 将质量等级为5的备用算法修改为3
+    pos = qualityControl == 5
+    qualityControl[pos] = 3
+    # StdLAI有效值范围为0-100
+    std = ma.masked_greater(StdLAIDatas, 100)
+    map_std = 0.5 + ((0.15 - 0.5) / (0.5 + ma.max(std) - ma.min(std))) * (std - ma.min(std)) 
+    tss = ma.array(TSSValues, mask = pos)
+    map_tss = 0.5 + ((0.15 - 0.5) / (1 - 0) * (tss - 0))
+    p2 = map_tss < 0
+    map_tss[p2] = 0
+    control = map_std + map_tss
+    surplus = np.array(ma.filled(control, 1))
+    final_qualityControl = surplus * qualityControl
+    if not Path(url).is_dir(): os.mkdir(url)
+    np.save(f'{url}/{hv}_Weight', final_qualityControl)
+    print(f'{hv} end')
 
-# 将QC转为对应的权重
-read_QC(QCDatas, f'../QC/Version_1/{hv}_2018', hv)
-QC_AgloPath(hv, f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei')
-addStdLAI(StdLAIDatas, hv, f'../QC/Version_2/{hv}_2018')
+def cal_TSS(LAIDatas, index):
+    numerators = np.absolute(((LAIDatas[index + 1] - LAIDatas[index - 1]) * index) - (LAIDatas[index] * 2) - ((LAIDatas[index + 1] - LAIDatas[index - 1]) * (index - 1)) + (LAIDatas[index - 1] * 2))
+    denominators = np.sqrt(np.square(LAIDatas[index + 1] - LAIDatas[index - 1]) + 2**2)
+    # absoluteTSS = (numerators / denominators) / 10
+    absoluteTSS = numerators / denominators
+    relativeTSS = absoluteTSS / LAIDatas[index]
+    return np.nan_to_num(relativeTSS, posinf=1, neginf=1)
+    
+# hv = 'h12v05'
+hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
+# hvLists = ['h12v04']
 
 
+for hv in hvLists:
+    print(hv)
+    fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
+    LAIDatas, QCDatas, StdLAIDatas = [], [], []
+    for file in fileLists:
+        result = ReadFile(file)
+        LAIDatas.append(result['LAI'])
+        QCDatas.append(result['QC'])
+        StdLAIDatas.append(result['StdLAI'])
+    raw_LAI = np.array(LAIDatas, dtype=float)
+
+    TSSArray = np.ones((1,raw_LAI.shape[1], raw_LAI.shape[2]))
+ 
+    for index in range(1,45):
+        one = cal_TSS(raw_LAI, index)
+        TSSArray = np.append(TSSArray, one.reshape(1, one.shape[0], one.shape[1]), axis=0)
+    TSSArray = np.append(TSSArray, np.ones((1,raw_LAI.shape[1], raw_LAI.shape[2])), axis=0)
+
+    
+    # # 将QC转为对应的权重
+    # read_QC(QCDatas, f'../QC/Version_1/{hv}_2018', hv)
+    # QC_AgloPath(hv, f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei')
+    # addStdLAI(StdLAIDatas, hv, f'../QC/Version_2/{hv}_2018')
+    addStdLAITSS(StdLAIDatas, TSSArray, hv, f'../QC/Version_4/{hv}_2018')
+
+# hv = 'h12v04'
+# fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
+# LAIDatas, QCDatas, StdLAIDatas = [], [], []
+# for file in fileLists:
+#     result = ReadFile(file)
+#     LAIDatas.append(result['LAI'])
+#     # QCDatas.append(result['QC'])
+#     # StdLAIDatas.append(result['StdLAI'])
+# raw_LAI = np.array(LAIDatas, dtype=float)
+
+# TSSArray = np.zeros((1,raw_LAI.shape[1], raw_LAI.shape[2]))
+# for index in range(30,45):
+#     one = cal_TSS(raw_LAI, index)
+#     # TSSArray = np.append(TSSArray, one.reshape(1, one.shape[0], one.shape[1]), axis=0)
+#     print(np.max(one), np.min(one), np.mean(one))
+#     Public_Methods.render_Img(one, issave=True, savepath=f'./Daily_cache/0620/TSS/tss_{hv}_{index}')
+#     Public_Methods.render_Img(ma.masked_greater(one, 1), issave=True, savepath=f'./Daily_cache/0620/TSS/tss_{hv}_{index}_mask')
+
+
+hv = 'h12v04'
+qualityControl1 = np.load(f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei.npy')
+qualityControl2 = np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')
+qualityControl3 = np.load(f'../QC/Version_3/{hv}_2018/{hv}_Weight.npy')
+qualityControl4 = np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')
+i = 33
+Public_Methods.render_Img(qualityControl1[i], issave=True, savepath='./Daily_cache/0620/qc1')
+Public_Methods.render_Img(qualityControl2[i], issave=True, savepath='./Daily_cache/0620/qc2')
+Public_Methods.render_Img(qualityControl3[i], issave=True, savepath='./Daily_cache/0620/qc3')
+Public_Methods.render_Img(qualityControl4[i], issave=True, savepath='./Daily_cache/0620/qc4')
+
+std = 10
+map_std = 0.5 + ((0.15 - 0.5) / (1 - 0)) * (std - 0) 
+print(map_std)

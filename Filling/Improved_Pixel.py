@@ -235,7 +235,7 @@ def cal_TSS(LAIDatas, index):
     absoluteTSS = numerators / denominators
     relativeTSS = (absoluteTSS / LAIDatas[index]) / 10
     # return  np.nan_to_num(1 / absoluteTSS, posinf=100, neginf=100)
-    return relativeTSS
+    return np.nan_to_num(1 / relativeTSS, posinf=100, neginf=100)
 
 # 逐像元循环计算（哒咩）
 def Temporal_Cal_Previous(rawDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):
