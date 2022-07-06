@@ -105,6 +105,7 @@ def addStdLAI(StdLAIDatas, hv, url):
     np.save(f'{url}/{hv}_Weight', final_qualityControl)
     print(f'{hv} end')
 
+# 权重加上StdLAI和相对TSS
 # def addStdLAITSS(StdLAIDatas, TSSValues, hv, url):
 #     qualityControl = np.load(f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei.npy')
 #     # 将质量等级为5的备用算法修改为3
@@ -151,7 +152,6 @@ def cal_TSS(LAIDatas, index):
     
 # hv = 'h12v05'
 hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
-# hvLists = ['h12v04']
 
 
 for hv in hvLists:
@@ -209,6 +209,6 @@ Public_Methods.render_Img(ma.array(qualityControl2[i], mask=raw_LAI[i]>70), issa
 Public_Methods.render_Img(ma.array(qualityControl3[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc3')
 Public_Methods.render_Img(ma.array(qualityControl4[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc4')
 
-std = 10
-map_std = 0.5 + ((0.15 - 0.5) / (1 - 0)) * (std - 0) 
-print(map_std)
+# std = 10
+# map_std = 0.5 + ((0.15 - 0.5) / (1 - 0)) * (std - 0) 
+# print(map_std)

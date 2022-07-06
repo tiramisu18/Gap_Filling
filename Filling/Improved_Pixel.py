@@ -36,7 +36,7 @@ def Temporal_Cal(rawDatas, index, landCover, qualityControl, half_temLength, ses
     # u, count = np.unique(rawDatas[index , ...], return_counts=True)  
     # intersect = (LAIRange <= 70) == (lcRange == posLC)
     # filter = np.nonzero(intersect == True) #get the indices of elements that satisfy the conditions, return array (row indices, column indices)  
-    return LAIImprovedDatas
+    return np.array(LAIImprovedDatas, dtype=int)
 
 # 整个tile矩阵空间计算
 def Spatial_Cal(rawDatas, index, landCover, qualityControl, euc_pow, half_winWidth, position=(15,15)):
@@ -97,6 +97,16 @@ def Spatial_Cal(rawDatas, index, landCover, qualityControl, euc_pow, half_winWid
     LAIImprovedDatas[pos1] = rawDatas[index, ...][pos1]
     return LAIImprovedDatas
 
+# 计算TSS（将相对TSS的倒数作为权重）    
+def cal_TSS(LAIDatas, index):
+    np.nan_to_num(LAIDatas, posinf=0, neginf=0)
+    numerators = np.absolute(((LAIDatas[index + 1] - LAIDatas[index - 1]) * index) - (LAIDatas[index] * 2) - ((LAIDatas[index + 1] - LAIDatas[index - 1]) * (index - 1)) + (LAIDatas[index - 1] * 2))
+    denominators = np.sqrt(np.square(LAIDatas[index + 1] - LAIDatas[index - 1]) + 2**2)
+    # absoluteTSS = (numerators / denominators) / 10
+    absoluteTSS = numerators / denominators
+    relativeTSS = np.round((absoluteTSS / LAIDatas[index]) / 10, 2)
+    # return  np.nan_to_num(1 / absoluteTSS, posinf=100, neginf=100)
+    return np.nan_to_num(1 / relativeTSS, posinf=100, neginf=100)
 
 # 不考虑像元质量
 def Temporal_Cal_N(rawDatas, index, landCover, half_temLength, ses_pow):
@@ -168,7 +178,7 @@ def Spatial_Cal_N(rawDatas, index, landCover, euc_pow, half_winWidth):
     LAIImprovedDatas[pos1] = rawDatas[index, ...][pos1]
     return LAIImprovedDatas
 
-# 计算空间权重
+# 计算空间权重 (RMSE倒数)
 def Spatial_Weight(rawDatas, impSpaDatas, index, qualityControl, half_temLength):
     back_count = len(rawDatas) - index - 1 if index + half_temLength > len(rawDatas) - 1  else half_temLength
     forward_count = index if index - half_temLength < 0  else half_temLength
@@ -182,7 +192,7 @@ def Spatial_Weight(rawDatas, impSpaDatas, index, qualityControl, half_temLength)
     calRMSE[no_ele] = 0
     return np.array(calRMSE)
 
-# 计算时间权重
+# 计算时间权重(RMSE倒数)
 def Temporal_Weight(rawDatas, impTemDatas, index, qualityControl, landCover, half_winWidth):  
     target = ma.array(impTemDatas[index], mask = qualityControl[index] < 7)
     raw = ma.array(rawDatas[index], mask = qualityControl[index] < 7)
@@ -227,16 +237,6 @@ def Temporal_Weight(rawDatas, impTemDatas, index, qualityControl, landCover, hal
     no_ele = np.logical_and(qualityControl[index] > 0, calRMSEs.mask)
     calRMSEs[no_ele] = 0
     return np.array(calRMSEs)
-    
-def cal_TSS(LAIDatas, index):
-    np.nan_to_num(LAIDatas, posinf=0, neginf=0)
-    numerators = np.absolute(((LAIDatas[index + 1] - LAIDatas[index - 1]) * index) - (LAIDatas[index] * 2) - ((LAIDatas[index + 1] - LAIDatas[index - 1]) * (index - 1)) + (LAIDatas[index - 1] * 2))
-    denominators = np.sqrt(np.square(LAIDatas[index + 1] - LAIDatas[index - 1]) + 2**2)
-    # absoluteTSS = (numerators / denominators) / 10
-    absoluteTSS = numerators / denominators
-    relativeTSS = (absoluteTSS / LAIDatas[index]) / 10
-    # return  np.nan_to_num(1 / absoluteTSS, posinf=100, neginf=100)
-    return np.nan_to_num(1 / relativeTSS, posinf=100, neginf=100)
 
 # 逐像元循环计算（哒咩）
 def Temporal_Cal_Previous(rawDatas, index, Filling_Pos, LC_info, QC_File, temporalLength, tem_winSize_unilateral, SES_pow):

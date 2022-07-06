@@ -49,7 +49,7 @@ def landCover_Improved(raw, spatial, temporal, improvedLAI, landCover, lcType):
         'marker': [',', 'o', '^', '*'],
         'size': {'width': 10, 'height': 6},
         'lineStyle': ['solid', 'dashed', 'dashed']
-        },f'./Daily_cache/0630/lc_part_{lcType}', True, 1)
+        },f'./Daily_cache/0630/lc_{lcType}_line', True, 1)
 
 def draw_Violinplot(all_data):
     fig, ax = plt.subplots()
@@ -112,36 +112,36 @@ def diff_LAI(raw, raw_after, spatial, temporal, improved):
 
 def draw_TSS_Image(data, tile, type):
     name = ['Raw', 'Temporal', 'Spatial', 'Improved']
-    # data = [Self, Spa, Tem, Imp]
-    count = 4
-    fig, axs = plt.subplots(1, count, figsize=(15,8))
-    # fig.suptitle()
-    images = []
-    for j in range(count):
-            # Generate data with a range that varies from one plot to the next.
-            # data = ((1 + i + j) / 10) * np.random.rand(10, 20)
-        images.append(axs[j].imshow(data[j], cmap = plt.cm.seismic))
-        axs[j].axis('off')
-        # axs[j].width = 100
+    # # data = [Self, Spa, Tem, Imp]
+    # count = 4
+    # fig, axs = plt.subplots(1, count, figsize=(15,8))
+    # # fig.suptitle()
+    # images = []
+    # for j in range(count):
+    #         # Generate data with a range that varies from one plot to the next.
+    #         # data = ((1 + i + j) / 10) * np.random.rand(10, 20)
+    #     images.append(axs[j].imshow(data[j], cmap = plt.cm.seismic))
+    #     axs[j].axis('off')
+    #     # axs[j].width = 100
 
-    # Find the min and max of all colors for use in setting the color scale.
-    vmin = min(image.get_array().min() for image in images)
-    vmax = max(image.get_array().max() for image in images)
-    norm = pltcolor.Normalize(vmin=vmin, vmax=vmax,)
-    for im in images:
-        im.set_norm(norm)
+    # # Find the min and max of all colors for use in setting the color scale.
+    # vmin = min(image.get_array().min() for image in images)
+    # vmax = max(image.get_array().max() for image in images)
+    # norm = pltcolor.Normalize(vmin=vmin, vmax=vmax,)
+    # for im in images:
+    #     im.set_norm(norm)
 
-    fig.colorbar(images[0], ax=axs,  fraction=.1)
-    plt.savefig('./Daily_cache/0630/TSS/%s_%s_all' % (type, tile), dpi=300)
-    plt.show()
+    # fig.colorbar(images[0], ax=axs,  fraction=.1)
+    # plt.savefig('./Daily_cache/0630/TSS/%s_%s_all' % (type, tile), dpi=300)
+    # plt.show()
 
-    # for i in range(len(data)):
-    #     plt.imshow(data[i], cmap = plt.cm.rainbow)  # cmap= plt.cm.jet
-    #     plt.title('', family = 'Times New Roman', fontsize = 18)
-    #     colbar = plt.colorbar()
-    #     plt.axis('off')
-    #     plt.savefig('./Daily_cache/0630/TSS/%s_%s_%s' % (type, tile, name[i]), dpi=300)
-    #     plt.show()
+    for i in range(len(data)):
+        plt.imshow(data[i], cmap = plt.cm.rainbow)  # cmap= plt.cm.jet
+        plt.title('', family = 'Times New Roman', fontsize = 18)
+        colbar = plt.colorbar()
+        plt.axis('off')
+        plt.savefig('./Daily_cache/0630/TSS/%s_%s_%s' % (type, tile, name[i]), dpi=300)
+        plt.show()
 
 
 lcType = 6
@@ -223,25 +223,26 @@ tem_Re_Gather = (ma.array(tem_TSS) / (tem_LAI[1:45] / 10)).sum(axis=0)
 spa_Re_Gather = (ma.array(spa_TSS) / (spa_LAI[1:45] / 10)).sum(axis=0)
 imp_Re_Gather = (ma.array(imp_TSS) / (imp_LAI[1:45] / 10)).sum(axis=0)
 
-draw_TSS_Image([raw_Re_Gather, tem_Re_Gather, spa_Re_Gather, imp_Re_Gather], hv, 'relative')
-
 
 # 绘制误差的分布密度直方图
-fig, ax = plt.subplots(figsize=(10,5))
-ax.hist(raw_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.8, label='Raw')
-ax.hist(tem_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Temporal')
-ax.hist(spa_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Spatial')
-ax.hist(imp_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Improved')
+# h1 = (tem_LAI - raw_LAI).flatten()
+# h2 = (spa_LAI - raw_LAI).flatten()
+# h3 = (imp_LAI - raw_LAI).flatten()
+# fig, ax = plt.subplots(figsize=(10,5))
+# # ax.hist(raw_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.8, label='Raw')
+# ax.hist(h1, density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Temporal')
+# ax.hist(h2, density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Spatial')
+# ax.hist(h3, density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Improved')
 
     
-ax.set_xlabel('Relative TSS', fontsize=15, family='Times New Roman')
-ax.set_ylabel('Density', fontsize=15, family='Times New Roman')
-ax.legend(prop={'size':15, 'family':'Times New Roman'})
-fig.tight_layout()
-ax.set(xlim=(0, 500))
-        # ylim=(0, 8), yticks=np.arange(1, 8))
-plt.xticks( family='Times New Roman', fontsize=15)
-plt.yticks( family='Times New Roman', fontsize=15)
-plt.savefig('./Daily_cache/0630/histogram', dpi=300)
-plt.show()
+# ax.set_xlabel('Relative TSS', fontsize=15, family='Times New Roman')
+# ax.set_ylabel('Density', fontsize=15, family='Times New Roman')
+# ax.legend(prop={'size':15, 'family':'Times New Roman'})
+# fig.tight_layout()
+# # ax.set(xlim=(0, 500))
+#         # ylim=(0, 8), yticks=np.arange(1, 8))
+# plt.xticks( family='Times New Roman', fontsize=15)
+# plt.yticks( family='Times New Roman', fontsize=15)
+# plt.savefig('./Daily_cache/0630/histogram', dpi=300)
+# plt.show()
 

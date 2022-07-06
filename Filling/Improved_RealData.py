@@ -67,20 +67,20 @@ qualityControl = np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')
 
 # print('weight')
 # 计算权重
-tem = []
-spa = []
-for i in range(1, 47):
-    # print(i)
-    spa_data = np.load(f'{url}/Spatial/LAI_{i}.npy')
-    tem_data = np.load(f'{url}/Temporal/LAI_{i}.npy')
-    tem.append(tem_data)
-    spa.append(spa_data)
-tem_LAI = np.array(tem)
-spa_LAI = np.array(spa)
+# tem = []
+# spa = []
+# for i in range(1, 47):
+#     # print(i)
+#     spa_data = np.load(f'{url}/Spatial/LAI_{i}.npy')
+#     tem_data = np.load(f'{url}/Temporal/LAI_{i}.npy')
+#     tem.append(tem_data)
+#     spa.append(spa_data)
+# tem_LAI = np.array(tem)
+# spa_LAI = np.array(spa)
 
-Public_Methods.render_LAI(rawLAI[23])
-Public_Methods.render_LAI(tem_LAI[23])
-Public_Methods.render_LAI(spa_LAI[23])
+# Public_Methods.render_LAI(rawLAI[23])
+# Public_Methods.render_LAI(tem_LAI[23])
+# Public_Methods.render_LAI(spa_LAI[23])
 
 # for index in range(1, 45):
 #     print(index)
@@ -112,10 +112,9 @@ for i in range(2, 46):
     rawWei.append(raw_wei)
 tem_LAI = np.array(tem)
 spa_LAI = np.array(spa)
-tem_Weight = np.array(temWei)
-spa_Weight = np.array(spaWei)
-raw_Weight = np.array(rawWei)
-# Public_Methods.render_Img(spa_Weight[0])
+tem_Weight = np.array(temWei, dtype=float)
+spa_Weight = np.array(spaWei, dtype=float)
+raw_Weight = np.array(rawWei, dtype=float)
 
 # 计算权重求和后的值
 for i in range(46):
