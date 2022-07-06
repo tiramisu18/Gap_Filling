@@ -179,15 +179,15 @@ for hv in hvLists:
     # addStdLAI(StdLAIDatas, hv, f'../QC/Version_2/{hv}_2018')
     addStdLAITSS(StdLAIDatas, TSSArray, hv, f'../QC/Version_4/{hv}_2018')
 
-# hv = 'h12v04'
-# fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
-# LAIDatas, QCDatas, StdLAIDatas = [], [], []
-# for file in fileLists:
-#     result = ReadFile(file)
-#     LAIDatas.append(result['LAI'])
-#     # QCDatas.append(result['QC'])
-#     # StdLAIDatas.append(result['StdLAI'])
-# raw_LAI = np.array(LAIDatas, dtype=float)
+hv = 'h12v04'
+fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
+LAIDatas, QCDatas, StdLAIDatas = [], [], []
+for file in fileLists:
+    result = ReadFile(file)
+    LAIDatas.append(result['LAI'])
+    # QCDatas.append(result['QC'])
+    # StdLAIDatas.append(result['StdLAI'])
+raw_LAI = np.array(LAIDatas, dtype=float)
 
 # TSSArray = np.zeros((1,raw_LAI.shape[1], raw_LAI.shape[2]))
 # for index in range(30,45):
@@ -204,10 +204,10 @@ qualityControl2 = np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')
 qualityControl3 = np.load(f'../QC/Version_3/{hv}_2018/{hv}_Weight.npy')
 qualityControl4 = np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')
 i = 33
-Public_Methods.render_Img(qualityControl1[i], issave=True, savepath='./Daily_cache/0620/qc1')
-Public_Methods.render_Img(qualityControl2[i], issave=True, savepath='./Daily_cache/0620/qc2')
-Public_Methods.render_Img(qualityControl3[i], issave=True, savepath='./Daily_cache/0620/qc3')
-Public_Methods.render_Img(qualityControl4[i], issave=True, savepath='./Daily_cache/0620/qc4')
+Public_Methods.render_Img(ma.array(qualityControl1[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc1')
+Public_Methods.render_Img(ma.array(qualityControl2[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc2')
+Public_Methods.render_Img(ma.array(qualityControl3[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc3')
+Public_Methods.render_Img(ma.array(qualityControl4[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc4')
 
 std = 10
 map_std = 0.5 + ((0.15 - 0.5) / (1 - 0)) * (std - 0) 

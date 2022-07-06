@@ -33,7 +33,7 @@ def landCover_Improved(raw, spatial, temporal, improvedLAI, landCover, lcType):
         raw_ma = ma.array((ma.masked_greater(raw[i], 70)), mask=(landCover != lcType))
         spa_ma = ma.array((ma.masked_greater(spatial[i], 70)), mask=(landCover != lcType))
         tem_ma = ma.array((ma.masked_greater(temporal[i], 70)), mask=(landCover != lcType))
-        imp_ma = ma.array(improvedLAI[i],  mask=landCover != lcType)
+        imp_ma = ma.array((ma.masked_greater(improvedLAI[i], 70)),  mask=landCover != lcType)
         raw_mean.append(ma.mean(raw_ma) / 10)
         spa_mean.append(ma.mean(spa_ma) / 10)
         tem_mean.append(ma.mean(tem_ma) / 10)
@@ -48,32 +48,53 @@ def landCover_Improved(raw, spatial, temporal, improvedLAI, landCover, lcType):
         'color': ['gray', '#bfdb39', '#ffe117', '#fd7400'],
         'marker': [',', 'o', '^', '*'],
         'size': {'width': 10, 'height': 6},
-        'lineStyle': ['dashed']
-        },f'./Daily_cache/0620/lc_part_{lcType}', True, 1)
+        'lineStyle': ['solid', 'dashed', 'dashed']
+        },f'./Daily_cache/0630/lc_part_{lcType}', True, 1)
+
+def draw_Violinplot(all_data):
+    fig, ax = plt.subplots()
+  
+    vp = ax.violinplot(all_data, [2, 6, 10, 14], widths=2, 
+                    showmeans=True, showmedians=True, showextrema=True)
+    # styling:
+    for body in vp['bodies']:
+        body.set_alpha(0.9)
+    # ax.set(xlim=(0, 8), xticks=np.arange(1, 8),
+    #     ylim=(0, 8), yticks=np.arange(1, 8))
+    plt.yticks(family='Times New Roman', fontsize=15)
+    ax.xaxis.set_visible(False)
+    plt.savefig('./Daily_cache/0630/Violinplot', dpi=300)
+    plt.show()
 
 # 计算单独一期整个tile的LAI差
-def diff_LAI(raw, spatial, temporal, i):
-    Public_Methods.render_LAI(raw[i], title='LAI', issave=True, savepath='./Daily_cache/0530/RealData/LAI_Raw')
-    Public_Methods.render_LAI(spatial[i], title='LAI', issave=True, savepath='./Daily_cache/0530/RealData/LAI_Spatial')
-    Public_Methods.render_LAI(temporal[i], title='LAI', issave=True, savepath='./Daily_cache/0530/RealData/LAI_Temporal')
+# diff_LAI(raw, raw_after, spatial, spatial_n, temporal, temporal_n, average, improved)
+def diff_LAI(raw, raw_after, spatial, temporal, improved):
+    # Public_Methods.render_LAI(raw, title='LAI', issave=True, savepath='./Daily_cache/0630/LAI_Raw')
+    # Public_Methods.render_LAI(raw_after, title='LAI', issave=True, savepath='./Daily_cache/0630/LAI_Raw_after')
+    # Public_Methods.render_LAI(spatial, title='LAI', issave=True, savepath='./Daily_cache/0630/LAI_Spatial')
+    # Public_Methods.render_LAI(temporal, title='LAI', issave=True, savepath='./Daily_cache/0630/LAI_Temporal')
+    # Public_Methods.render_LAI(improved, title='LAI', issave=True, savepath='./Daily_cache/0630/LAI_Improved')
 
     # 相对标准数据的绝对差
-    Spa = (raw[i]-spatial[i]) / 10
-    Tem = (raw[i]-temporal[i]) / 10
-    # render_Img((StandLAI[i]-InaccurateLAI[i])/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Inaccurate')
-    # render_Img((StandLAI[i]-Tem_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Tem')
-    # render_Img((StandLAI[i]-Spa_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Spa')
-    data = [Tem, Spa]
-    fig, axs = plt.subplots(1, 2)
-    # fig.suptitle('Multiple images')
+    Self = (raw-raw_after) / 10
+    Spa = (raw-spatial) / 10
+    # Spa_N = (raw-spatial_n) / 10
+    Tem = (raw-temporal) / 10
+    # Tem_N = (raw-temporal_n) / 10
+    # Ave = (raw-average) / 10
+    Imp = (raw-improved) / 10
+    # data = [Self, Spa, Spa_N, Tem, Tem_N, Ave, Imp]
+    data = [Self, Spa, Tem, Imp]
+    count = 4
+    fig, axs = plt.subplots(1, count)
+    # fig.suptitle()
     images = []
-
-    for j in range(2):
+    for j in range(count):
             # Generate data with a range that varies from one plot to the next.
             # data = ((1 + i + j) / 10) * np.random.rand(10, 20)
         images.append(axs[j].imshow(data[j], cmap = plt.cm.seismic))
         axs[j].axis('off')
-            # axs[i, j].width = 
+        # axs[j].width = 100
 
     # Find the min and max of all colors for use in setting the color scale.
     vmin = min(image.get_array().min() for image in images)
@@ -83,23 +104,49 @@ def diff_LAI(raw, spatial, temporal, i):
         im.set_norm(norm)
 
     fig.colorbar(images[0], ax=axs,  fraction=.1)
-    plt.savefig('./Daily_cache/0530/RealData/diff_%s'% i, dpi=300)
+    plt.savefig('./Daily_cache/0630/diff', dpi=300)
     plt.show()
-    print(np.mean(np.abs(Tem)), np.mean(np.abs(Spa)))
- 
+    # print(np.mean(np.abs(Self)), np.mean(np.abs(Spa)),np.mean(np.abs(Spa_N)),np.mean(np.abs(Tem)),np.mean(np.abs(Tem_N)),  np.mean(np.abs(Ave)), np.mean(np.abs(Imp)))
+    print(np.mean(np.abs(Self)), np.mean(np.abs(Spa)),np.mean(np.abs(Tem)), np.mean(np.abs(Imp)))
+    draw_Violinplot([Self.flatten(), Spa.flatten(), Tem.flatten(), Imp.flatten()])
+
 def draw_TSS_Image(data, tile, type):
-    name = ['Raw', 'Tem', 'Spa']
-    for i in range(len(data)):
-        plt.imshow(data[i], cmap = plt.cm.rainbow)  # cmap= plt.cm.jet
-        plt.title('', family = 'Times New Roman', fontsize = 18)
-        colbar = plt.colorbar()
-        plt.axis('off')
-        plt.savefig('./Daily_cache/0530/TSS/%s_%s_%s' % (type, tile, name[i]), dpi=300)
-        plt.show()
+    name = ['Raw', 'Temporal', 'Spatial', 'Improved']
+    # data = [Self, Spa, Tem, Imp]
+    count = 4
+    fig, axs = plt.subplots(1, count, figsize=(15,8))
+    # fig.suptitle()
+    images = []
+    for j in range(count):
+            # Generate data with a range that varies from one plot to the next.
+            # data = ((1 + i + j) / 10) * np.random.rand(10, 20)
+        images.append(axs[j].imshow(data[j], cmap = plt.cm.seismic))
+        axs[j].axis('off')
+        # axs[j].width = 100
+
+    # Find the min and max of all colors for use in setting the color scale.
+    vmin = min(image.get_array().min() for image in images)
+    vmax = max(image.get_array().max() for image in images)
+    norm = pltcolor.Normalize(vmin=vmin, vmax=vmax,)
+    for im in images:
+        im.set_norm(norm)
+
+    fig.colorbar(images[0], ax=axs,  fraction=.1)
+    plt.savefig('./Daily_cache/0630/TSS/%s_%s_all' % (type, tile), dpi=300)
+    plt.show()
+
+    # for i in range(len(data)):
+    #     plt.imshow(data[i], cmap = plt.cm.rainbow)  # cmap= plt.cm.jet
+    #     plt.title('', family = 'Times New Roman', fontsize = 18)
+    #     colbar = plt.colorbar()
+    #     plt.axis('off')
+    #     plt.savefig('./Daily_cache/0630/TSS/%s_%s_%s' % (type, tile, name[i]), dpi=300)
+    #     plt.show()
 
 
 lcType = 6
 hv = 'h12v04'
+url = f'../Improved_RealData/{hv}_2018'
 # LC
 LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
@@ -112,66 +159,89 @@ for file in fileLists:
     result = ReadFile(file)
     lai.append(result['LAI'])
 raw_LAI = np.array(lai, dtype=float)
+# raw_LAI = np.array(lai, dtype=float)[:, 1450:1650, 1300:1500]
 
-qualityControl = np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')
+# index = 6
+# diff_LAI(raw_LAI[index], 
+#     raw_LAI[index+1], 
+#     np.load(f'{url}/Spatial/LAI_{index+2}.npy')[50:250, 50:250], 
+#     # np.load(f'{url}/Spatial_N/LAI_{index+2}.npy')[50:250, 50:250], 
+#     np.load(f'{url}/Temporal/LAI_{index+2}.npy')[50:250, 50:250], 
+#     # np.load(f'{url}/Temporal_N/LAI_{index+2}.npy')[50:250, 50:250], 
+#     # (np.load(f'{url}/Temporal/LAI_{index+2}.npy')[50:250, 50:250] + np.load(f'{url}/Spatial/LAI_{index+2}.npy')[50:250, 50:250]) / 2, 
+#     np.load(f'{url}/Improved/LAI_{index+2}.npy')[50:250, 50:250])
+
+
 # Temporal Spatial LAI
-tem = []
-spa = []
-temWeight = []
-spaWeight = []
+spa_LAI, tem_LAI, imp_LAI = [], [], []
+
 for i in range(1, 47):
     print(i)
-    spa_data = np.load(f'../Improved_RealData/{hv}_2018/Spatial/LAI_{i}.npy')
-    tem_data = np.load(f'../Improved_RealData/{hv}_2018/Temporal/LAI_{i}.npy')
-    temWei_data = np.load(f'../Improved_RealData/{hv}_2018/Temporal_Weight/LAI_{i}.npy')
-    spaWei_data = np.load(f'../Improved_RealData/{hv}_2018/Spatial_Weight/LAI_{i}.npy')
-    tem.append(tem_data)
-    spa.append(spa_data)
-    temWeight.append(temWei_data)
-    spaWeight.append(spaWei_data)
-tem_LAI = np.array(tem)
-spa_LAI = np.array(spa)
-tem_Wei = np.array(temWeight)
-spa_Wei = np.array(spaWeight)
-    
-improvedLAI = (ma.masked_greater(tem_LAI, 70) * tem_Wei + ma.masked_greater(spa_LAI, 70) * spa_Wei + ma.masked_greater(raw_LAI, 70) * qualityControl) / (tem_Wei + spa_Wei + qualityControl)
-landCover_Improved(raw_LAI, spa_LAI, tem_LAI, improvedLAI, landCover, lcType)
-# landCover_Improved(raw_LAI[:,2000:2250, 2000:2250], spa_LAI[:,2000:2250, 2000:2250], tem_LAI[:,2000:2250, 2000:2250], landCover[2000:2250, 2000:2250], lcType)
-# Public_Methods.render_LAI(spa_LAI[23], title='', issave=True, savepath='./Daily_cache/0530/RealData/LAI')
-# Public_Methods.render_LAI(tem_LAI[23,2000:2250, 2000:2250], title='', issave=True, savepath='./Daily_cache/0530/RealData/Part_LAI')
+    spa_LAI.append(np.load(f'{url}/Spatial/LAI_{i}.npy'))
+    tem_LAI.append(np.load(f'{url}/Temporal/LAI_{i}.npy'))
+    imp_LAI.append(np.load(f'{url}/Improved/LAI_{i}.npy'))
+spa_LAI = np.array(spa_LAI)
+tem_LAI = np.array(tem_LAI)
+imp_LAI = np.array(imp_LAI)
 
+
+# print(imp_LAI)
+landCover_Improved(raw_LAI, spa_LAI, tem_LAI, imp_LAI, landCover, lcType)
 
 # 计算绝对TSS
 raw_TSS = []
 spa_TSS = []
 tem_TSS = []
+imp_TSS = []
 for i in range(1,45):
     print(i)
     raw_one = cal_TSS(raw_LAI, i, landCover, lcType)
     spa_one = cal_TSS(spa_LAI, i, landCover, lcType)
     tem_one = cal_TSS(tem_LAI, i, landCover, lcType)
+    imp_one = cal_TSS(imp_LAI, i, landCover, lcType)
     # print(one.shape)
     raw_one_ma = ma.array(ma.array(raw_one, dtype='float', mask=raw_LAI[i].__gt__(70)), mask=landCover.__ne__(lcType))
     spa_one_ma = ma.array(ma.array(spa_one, dtype='float', mask=raw_LAI[i].__gt__(70)), mask=landCover.__ne__(lcType))
     tem_one_ma = ma.array(ma.array(tem_one, dtype='float', mask=raw_LAI[i].__gt__(70)), mask=landCover.__ne__(lcType))
+    imp_one_ma = ma.array(ma.array(imp_one, dtype='float', mask=raw_LAI[i].__gt__(70)), mask=landCover.__ne__(lcType))
     # Public_Methods.render_Img(,issave=True, savepath='./Daily_cache/0530/test%s'% i)
     raw_TSS.append(raw_one_ma)
     spa_TSS.append(spa_one_ma)
     tem_TSS.append(tem_one_ma)
+    imp_TSS.append(imp_one_ma)
 
-gather_TSS_ab = [ma.array(raw_TSS).sum(axis=0), ma.array(tem_TSS).sum(axis=0), ma.array(spa_TSS).sum(axis=0)]
+raw_Ab_Gather = ma.array(raw_TSS).sum(axis=0)
+tem_Ab_Gather = ma.array(tem_TSS).sum(axis=0)
+spa_Ab_Gather = ma.array(spa_TSS).sum(axis=0)
+imp_Ab_Gather = ma.array(imp_TSS).sum(axis=0)
 
-draw_TSS_Image(gather_TSS_ab, hv, 'absolute')
+draw_TSS_Image([raw_Ab_Gather, tem_Ab_Gather, spa_Ab_Gather, imp_Ab_Gather], hv, 'absolute')
 
 # 计算相对TSS
-gather_TSS_re = [(ma.array(raw_TSS) / (raw_LAI[1:45] / 10)).sum(axis=0), (ma.array(tem_TSS) / (tem_LAI[1:45] / 10)).sum(axis=0), (ma.array(spa_TSS) / (spa_LAI[1:45] / 10)).sum(axis=0)]
+raw_Re_Gather = (ma.array(raw_TSS) / (raw_LAI[1:45] / 10)).sum(axis=0)
+tem_Re_Gather = (ma.array(tem_TSS) / (tem_LAI[1:45] / 10)).sum(axis=0)
+spa_Re_Gather = (ma.array(spa_TSS) / (spa_LAI[1:45] / 10)).sum(axis=0)
+imp_Re_Gather = (ma.array(imp_TSS) / (imp_LAI[1:45] / 10)).sum(axis=0)
 
-draw_TSS_Image(gather_TSS_re, hv, 'relative')
+draw_TSS_Image([raw_Re_Gather, tem_Re_Gather, spa_Re_Gather, imp_Re_Gather], hv, 'relative')
 
-# plt.imshow(raw_TSS[0], cmap = plt.cm.rainbow)  # cmap= plt.cm.jet
-# plt.title('', family = 'Times New Roman', fontsize = 18)
-# colbar = plt.colorbar()
-# # plt.axis('off')
-# plt.savefig('./Daily_cache/0530/Test', dpi=300)
-# plt.show()
+
+# 绘制误差的分布密度直方图
+fig, ax = plt.subplots(figsize=(10,5))
+ax.hist(raw_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.8, label='Raw')
+ax.hist(tem_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Temporal')
+ax.hist(spa_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Spatial')
+ax.hist(imp_Re_Gather.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Improved')
+
+    
+ax.set_xlabel('Relative TSS', fontsize=15, family='Times New Roman')
+ax.set_ylabel('Density', fontsize=15, family='Times New Roman')
+ax.legend(prop={'size':15, 'family':'Times New Roman'})
+fig.tight_layout()
+ax.set(xlim=(0, 500))
+        # ylim=(0, 8), yticks=np.arange(1, 8))
+plt.xticks( family='Times New Roman', fontsize=15)
+plt.yticks( family='Times New Roman', fontsize=15)
+plt.savefig('./Daily_cache/0630/histogram', dpi=300)
+plt.show()
 

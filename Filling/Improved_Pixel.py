@@ -229,6 +229,7 @@ def Temporal_Weight(rawDatas, impTemDatas, index, qualityControl, landCover, hal
     return np.array(calRMSEs)
     
 def cal_TSS(LAIDatas, index):
+    np.nan_to_num(LAIDatas, posinf=0, neginf=0)
     numerators = np.absolute(((LAIDatas[index + 1] - LAIDatas[index - 1]) * index) - (LAIDatas[index] * 2) - ((LAIDatas[index + 1] - LAIDatas[index - 1]) * (index - 1)) + (LAIDatas[index - 1] * 2))
     denominators = np.sqrt(np.square(LAIDatas[index + 1] - LAIDatas[index - 1]) + 2**2)
     # absoluteTSS = (numerators / denominators) / 10

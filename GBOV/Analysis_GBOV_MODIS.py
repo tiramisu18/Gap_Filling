@@ -223,6 +223,41 @@ def getScatterPanel():
     drawScatter(data['Site'], data['Improved'], hv, 'Improved')
 
 
+
+def getSurvy(hv = 'h12v04', site = 'BART'):
+    hv = 'all'
+    data = pd.read_csv(f'./Site_Analysis/All.csv', dtype=float)
+
+    raw = data['Raw'] - data['Site']
+    spa = data['Spatial'] - data['Site']
+    spa_n = data['Spatial_N'] - data['Site']
+    tem = data['Temporal'] - data['Site']
+    tem_n = data['Temporal_N'] - data['Site']
+    ave = (data['Spatial'] + data['Temporal']) / 2 - data['Site']
+    imp = data['Improved'] - data['Site']
+    # 绘制误差的分布密度直方图
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.hist(raw, density=True, histtype="stepfilled", bins=50, alpha=1, label='Raw', color='#e44f35')
+    ax.hist(tem, density=True, histtype="stepfilled", bins=50, alpha=0.9, label='Temporal', color='#b8defd')
+    ax.hist(tem_n, density=True, histtype="stepfilled", bins=50, alpha=0.8, label='Temporal_N', color='#4e6ef2')
+    ax.hist(spa, density=True, histtype="stepfilled", bins=50, alpha=0.7, label='Spatial', color='#b3df72')
+    ax.hist(spa_n, density=True, histtype="stepfilled", bins=50, alpha=0.7, label='Spatial_N', color='#3faa5a')
+    ax.hist(ave, density=True, histtype="stepfilled", bins=50, alpha=0.7, label='Spa+Tem', color='#fdffbe')
+    ax.hist(imp, density=True, histtype="stepfilled", bins=50, alpha=0.5, label='Improved', color='#fd7400')
+
+        
+    ax.set_xlabel('Absolute Difference', fontsize=15, family='Times New Roman')
+    ax.set_ylabel('Density', fontsize=15, family='Times New Roman')
+    ax.legend(prop={'size':15, 'family':'Times New Roman'})
+    fig.tight_layout()
+    # ax.set(xlim=(0, 500))
+            # ylim=(0, 8), yticks=np.arange(1, 8))
+    plt.xticks( family='Times New Roman', fontsize=15)
+    plt.yticks( family='Times New Roman', fontsize=15)
+    plt.savefig('./PNG/histogram', dpi=300)
+    plt.show()
+    
+   
 # getSiteLine(hv = 'h11v04', site = 'UNDE')
 # hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
 
