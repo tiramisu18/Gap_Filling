@@ -127,7 +127,7 @@ for key, ele in sites.items():
         result = ReadFile(file)
         LAIDatas.append(result['LAI'])
     rawLAI = np.array(LAIDatas)[1:45, line-10:line+11, samp-10:samp+11]
-    qualityControl = (np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')[1:45, line-10:line+11, samp-10:samp+11])
+    # qualityControl = (np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')[1:45, line-10:line+11, samp-10:samp+11])
 
     tem = []
     spa = []

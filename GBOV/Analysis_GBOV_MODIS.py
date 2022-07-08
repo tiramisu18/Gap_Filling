@@ -259,21 +259,8 @@ def getSurvy(hv = 'h12v04', site = 'BART'):
     
    
 # getSiteLine(hv = 'h11v04', site = 'UNDE')
-# hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
+hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
 
-# for hv in hvLists:
-#     calMean_Analysis(hv=hv)
+for hv in hvLists:
+    calMean_Analysis(hv=hv)
 
-
-
-# Public_Methods.polt_Line_twoScale(np.arange(8, 353, 8),{
-#         'title': f'{site}_{x}_{y}',
-#         'xlable': 'Day',
-#         'ylable': 'LAI',
-#         'line': [[rawlist, temlist, spalist, implist], [rawwei, step3]],
-#         'le_name': ['Raw', 'Temporal', 'Spatial', 'Improved', 'Raw_TSS', 'Diff'],
-#         'size': {'width': 13, 'height': 6},
-#         'color': ['#958b8c',  '#bfdb39', '#ffe117', '#fd7400', '#7ba79c', '#b8defd'],
-#         'marker': ['s', 's', 's', 's', 's', 's'],
-#         'lineStyle': []
-#         },f'./PNG/{hv}_{site}_Combine', True, 2)

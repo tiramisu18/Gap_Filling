@@ -102,11 +102,9 @@ def cal_TSS(LAIDatas, index):
     np.nan_to_num(LAIDatas, posinf=0, neginf=0)
     numerators = np.absolute(((LAIDatas[index + 1] - LAIDatas[index - 1]) * index) - (LAIDatas[index] * 2) - ((LAIDatas[index + 1] - LAIDatas[index - 1]) * (index - 1)) + (LAIDatas[index - 1] * 2))
     denominators = np.sqrt(np.square(LAIDatas[index + 1] - LAIDatas[index - 1]) + 2**2)
-    # absoluteTSS = (numerators / denominators) / 10
     absoluteTSS = numerators / denominators
-    relativeTSS = np.round((absoluteTSS / LAIDatas[index]) / 10, 2)
-    # return  np.nan_to_num(1 / absoluteTSS, posinf=100, neginf=100)
-    return np.nan_to_num(1 / relativeTSS, posinf=100, neginf=100)
+    relativeTSS = np.round(absoluteTSS / LAIDatas[index], 2)
+    return np.nan_to_num(1 / relativeTSS, posinf=0, neginf=0)
 
 # 不考虑像元质量
 def Temporal_Cal_N(rawDatas, index, landCover, half_temLength, ses_pow):

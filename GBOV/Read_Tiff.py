@@ -3,6 +3,7 @@ import numpy as np
 import numpy.ma as ma
 import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
+
 #读取tif数据集
 def readTif(fileName):
     dataset = gdal.Open(fileName)
