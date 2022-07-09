@@ -31,7 +31,7 @@ def int_random(a, b, n) :
 
 hv = 'h12v04'
 fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
-url = f'../Improved_RealData/{hv}_2018'
+url = f'../Improved/Improved_RealData/{hv}_2018'
 LAIDatas = []
 for file in fileLists:
     result = ReadFile(file)
@@ -61,9 +61,9 @@ qualityControl = np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')
 #     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
 #     print(index)
 #     Tem = Improved_Pixel.Temporal_Cal_N(rawLAI, index, landCover, 3,  0.5)
-#     np.save(f'../Improved_RealData/{hv}_2018/Part/Temporal_N/LAI_{index + 1}', Tem)
+#     np.save(f'{url}/Temporal_N/LAI_{index + 1}', Tem)
 #     Spa = Improved_Pixel.Spatial_Cal_N(rawLAI, index, landCover, 2,  4)
-#     np.save(f'../Improved_RealData/{hv}_2018/Part/Spatial_N/LAI_{index + 1}', Spa)
+#     np.save(f'{url}/Spatial_N/LAI_{index + 1}', Spa)
 
 # print('weight')
 # 计算权重

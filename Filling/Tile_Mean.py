@@ -3,24 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
 import Public_Methods
    
-
-def tile_mean(tiles):
-    # print(np.mean(tiles[idx].flatten()))
-    count = []
-    for day in range(0, 46):
-        print(day)
-        vals = 0
-        vals_co = 0
-        for i in range(0,500):
-            for j in range(0, 500):
-                val = tiles[day][i][j]
-                if val <= 70 : 
-                    vals += tiles[day][i][j]
-                    vals_co += 1
-        count.append(round((vals/vals_co) / 10,1))
-    
-    return count
-
+   
 def vege_type_mean(datas, lc):
     B1_all = []
     B3_all = []
@@ -59,10 +42,7 @@ LAI_ori = np.load('../Simulation/Simulation_Dataset/LAI_Ori.npy')
 # LAI_Simu = np.load('../Simulation/Simulation_Dataset/LAI_Simu_noErr_10.npy')
 LAI_Simu_2 = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
 # LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_addErr(0-70).npy')
-# ori_mean = tile_mean(LAI_ori)
-# simu_mean = tile_mean(LAI_Simu)
-# simu_mean_2 = tile_mean(LAI_Simu_2)
-# simu_addErr_mean = tile_mean(LAI_Simu_addErr)
+
 LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
 ori = vege_type_mean(LAI_ori, LandCover)
 simu = vege_type_mean(LAI_Simu_2, LandCover)

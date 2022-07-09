@@ -1,22 +1,15 @@
 import os
 import numpy as np
-from numpy.core.fromnumeric import mean
-from numpy.ma.core import array
-from numpy.random.mtrand import sample
 from osgeo import gdal
 import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
 import matplotlib.patches as patches
 from matplotlib import animation 
-# from matplotlib import colors
-import copy
-import ReadDirFiles
-import math
-import h5py
 import time
 import random
-import Improved_Pixel
-import Public_Methods
+import sys
+sys.path.append("..")
+from Filling import Improved_Pixel, Public_Methods
 
 # 生成一个包含n个介于a和b之间随机整数的数组（不重复）
 def int_random(a, b, n) :
