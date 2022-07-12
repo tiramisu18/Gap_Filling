@@ -97,7 +97,7 @@ def filter_ValidPixels():
     print(len(validedFiles))
     # print(validedFiles)
     # 写入到csv文件中
-    title = ['Valid pixels(%) > 50', 'Satellite', 'Site name', 'Date', 'DOY', 'Site value', 'h', 'v', 'line', 'samp', 'c6 DOY']
+    title = ['Valid pixels(%) > 80', 'Satellite', 'Site name', 'Date', 'DOY', 'Site value', 'h', 'v', 'line', 'samp', 'c6 DOY']
     with open("数据筛选.csv",'w',newline='') as file:#numline是来控制空的⾏数的
         writer=csv.writer(file)#这⼀步是创建⼀个csv的写⼊器
         writer.writerow(title)#写⼊标签

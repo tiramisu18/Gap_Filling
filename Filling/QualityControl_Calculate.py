@@ -165,10 +165,9 @@ for hv in hvLists:
         LAIDatas.append(result['LAI'])
         QCDatas.append(result['QC'])
         StdLAIDatas.append(result['StdLAI'])
-    raw_LAI = np.array(LAIDatas, dtype=float)
+    raw_LAI = np.array(LAIDatas)
 
-    TSSArray = np.ones((1,raw_LAI.shape[1], raw_LAI.shape[2]))
- 
+    TSSArray = np.ones((1,raw_LAI.shape[1], raw_LAI.shape[2])) 
     for index in range(1,45):
         one = cal_TSS(raw_LAI, index)
         TSSArray = np.append(TSSArray, one.reshape(1, one.shape[0], one.shape[1]), axis=0)
@@ -178,8 +177,7 @@ for hv in hvLists:
     # # 将QC转为对应的权重
     # read_QC(QCDatas, f'../QC/Version_1/{hv}_2018', hv)
     # QC_AgloPath(hv, f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei')
-    # addStdLAI(StdLAIDatas, hv, f'../QC/Version_2/{hv}_2018')
-    addStdLAITSS(StdLAIDatas, TSSArray, hv, f'../QC/Version_5/{hv}_2018')
+    addStdLAITSS(StdLAIDatas, TSSArray, hv, f'../QC/Version_4/{hv}_2018')
 
 
 hv = 'h12v04'
@@ -190,7 +188,7 @@ for file in fileLists:
     LAIDatas.append(result['LAI'])
     # QCDatas.append(result['QC'])
     # StdLAIDatas.append(result['StdLAI'])
-raw_LAI = np.array(LAIDatas, dtype=float)
+raw_LAI = np.array(LAIDatas)
 
 # qualityControl1 = np.load(f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei.npy')
 # qualityControl2 = np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')
