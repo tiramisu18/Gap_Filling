@@ -195,7 +195,7 @@ def getSiteLine(hv = 'h12v04', site = 'BART'):
                 # diffValue.append((f'Day {currentDOY}', np.abs(np.array([raw/10, tem/10, spa/10, ((tem+spa)/2)/10, improved/10]) - ele.mean())))
                 diffValue.append((f'Day {currentDOY}', np.abs(np.array([raw/10, tem/10, spa/10, improved/10]) - ele.mean())) if len(diffValue) == 0 else (f'{currentDOY}', np.abs(np.array([raw/10, tem/10, spa/10, improved/10]) - ele.mean())))
     # averageValue = (np.array(spatialValue) + np.array(temporalValue)) / 2
-   
+
     RMSE_raw = np.round(np.sqrt((1/len(onlyGBOVDay_raw))* np.sum(np.square(np.array(onlyGBOVDay_raw) - np.array(GBOVValue)))), 2)
     RMSE_tem = np.round(np.sqrt((1/len(onlyGBOVDay_tem))* np.sum(np.square(np.array(onlyGBOVDay_tem) - np.array(GBOVValue)))), 2)
     RMSE_spa = np.round(np.sqrt((1/len(onlyGBOVDay_spa))* np.sum(np.square(np.array(onlyGBOVDay_spa) - np.array(GBOVValue)))), 2)
@@ -222,9 +222,8 @@ def getScatterPanel():
     drawScatter(data['Site'], (data['Temporal_N'] + data['Spatial_N']) / 2, hv, 'Temporal_N+Spatial_N')
     drawScatter(data['Site'], data['Improved'], hv, 'Improved')
 
-
-
-def getSurvy(hv = 'h12v04', site = 'BART'):
+# 绘制所有站点的密度分布直方图
+def getHistDensity(hv = 'h12v04', site = 'BART'):
     hv = 'all'
     data = pd.read_csv(f'./Site_Analysis/All.csv', dtype=float)
 
@@ -258,9 +257,9 @@ def getSurvy(hv = 'h12v04', site = 'BART'):
     plt.show()
     
    
-# getSiteLine(hv = 'h11v04', site = 'UNDE')
-hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
-
-for hv in hvLists:
-    calMean_Analysis(hv=hv)
+getSiteLine(hv = 'h12v04', site = 'BART')
+# hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
+# hvLists = ['h12v04']
+# for hv in hvLists:
+#     calMean_Analysis(hv=hv)
 

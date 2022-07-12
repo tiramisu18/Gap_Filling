@@ -95,14 +95,7 @@ for key, ele in sites.items():
         spa.append(spa_data)
     tem_LAI = np.array(tem)
     spa_LAI = np.array(spa)
-    # (version_1)
-    # for index in range(0, 46):
-    #     SpaWeight = Improved_Pixel.Spatial_Weight(rawLAI, spa_LAI, index, qualityControl, 3)
-    #     np.save(f'{url}/Spatial_Weight/LAI_{index + 1}', SpaWeight)
-    #     TemWeight = Improved_Pixel.Temporal_Weight(rawLAI, tem_LAI, index, qualityControl, landCover, 4)
-    #     np.save(f'{url}/Temporal_Weight/LAI_{index + 1}', TemWeight)
-
-    # (version_2)
+    
     for index in range(1, 45):
         rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
         np.save(f'{url}/Raw_Weight/LAI_{index + 1}', rawWeight)
