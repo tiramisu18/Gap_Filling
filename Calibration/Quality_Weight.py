@@ -86,87 +86,199 @@ def draw_Line (y1, y2, y3, y4, gx, gy, RMSE, savePath = '', issave = False, titl
     if issave :plt.savefig(savePath, dpi=300)
     plt.show()
 
+# 单站点从质量设置到计算出最终值的全过程
+def oneSiteQC_Weight(hv, site, line, samp):
+    # hv = 'h10v05' #'h12v04' 'h11v05'
+    # site = 'KONA' #'HARV' 'BART' 'SCBI'
+    # line = 212 #1790   1424   265 
+    # samp = 1207 #1636   2105   2203 
+    fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
+    LAIDatas, StdLAIDatas = [], []
+    for file in fileLists:
+        result = ReadFile(file)
+        LAIDatas.append(result['LAI'])
+        # QCDatas.append(result['QC'])
+        StdLAIDatas.append(result['StdLAI'])
+    rawLAI = np.array(LAIDatas)[:, line-10:line+11, samp-10:samp+11]
+    rawLAI = np.array(rawLAI, dtype=float)
+    StdLAIDatas = np.array(StdLAIDatas)[:, line-10:line+11, samp-10:samp+11]
 
-hv = 'h12v04'
-site = 'HARV'
-line = 1790  # 1424
-samp = 1636 # 2105
-fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
-LAIDatas, StdLAIDatas = [], []
-for file in fileLists:
-    result = ReadFile(file)
-    LAIDatas.append(result['LAI'])
-    # QCDatas.append(result['QC'])
-    StdLAIDatas.append(result['StdLAI'])
-rawLAI = np.array(LAIDatas)[:, line-10:line+11, samp-10:samp+11]
-StdLAIDatas = np.array(StdLAIDatas)[:, line-10:line+11, samp-10:samp+11]
+    TSSArray = np.ones((1,rawLAI.shape[1], rawLAI.shape[2])) 
+    for index in range(1,45):
+        one = cal_TSS(rawLAI, index)
+        TSSArray = np.append(TSSArray, one.reshape(1, one.shape[0], one.shape[1]), axis=0)
+    TSSArray = np.append(TSSArray, np.ones((1,rawLAI.shape[1], rawLAI.shape[2])), axis=0)
 
-TSSArray = np.ones((1,rawLAI.shape[1], rawLAI.shape[2])) 
-for index in range(1,45):
-    one = cal_TSS(rawLAI, index)
-    TSSArray = np.append(TSSArray, one.reshape(1, one.shape[0], one.shape[1]), axis=0)
-TSSArray = np.append(TSSArray, np.ones((1,rawLAI.shape[1], rawLAI.shape[2])), axis=0)
+    LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
+    LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
+    landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()[line-10:line+11, samp-10:samp+11]
+
+    for value in range(3, 5):
+        print(value)
+        # value = 3 
+        qcWeight = addStdLAITSS(StdLAIDatas, TSSArray, hv, line, samp, value)
+        # qcWeight = np.load(f'../QC/Version_5/{hv}_2018/{hv}_Weight.npy')[:, line-10:line+11, samp-10:samp+11]
+        # return
+        rawLAI = np.array(LAIDatas)[:, line-10:line+11, samp-10:samp+11]
+        temporalList, spatialList, improvedList = [], [], []
+        for index in range(0, 46): 
+            Tem = Improved_Pixel.Temporal_Cal(rawLAI, index, landCover, qcWeight, 3,  0.5)
+            temporalList.append(Tem)
+            Spa = Improved_Pixel.Spatial_Cal(rawLAI, index, landCover, qcWeight, 2,  4)
+            spatialList.append(Spa)
+        temLAI = np.array(temporalList)
+        spaLAI = np.array(spatialList)
+
+        for index in range(0, 46):
+            if index == 0 or index == 45:
+                improvedList.append(temLAI[index])
+            else:
+                rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
+                spaWeight = Improved_Pixel.cal_TSS(spaLAI, index)
+                temWeight = Improved_Pixel.cal_TSS(temLAI, index)
+                one = (ma.masked_greater(temLAI[index], 70) * temWeight + ma.masked_greater(spaLAI[index], 70) * spaWeight + ma.masked_greater(rawLAI[index], 70) * rawWeight) / (temWeight + spaWeight + rawWeight)
+                pos = rawLAI[index].__gt__(70)
+                one[pos] = rawLAI[index][pos]
+                improvedList.append(one)
+        improvedLAI = np.array(improvedList)
+
+        data = pd.read_csv(f'../GBOV/Site_Classification/站点_{hv}.csv', usecols= ['Site name', 'Site value', 'line', 'samp', 'c6 DOY'], dtype={'Site name': str, 'Site value': float, 'line': float, 'samp': float, 'c6 DOY': str})
+        specific = data.loc[data['Site name'] == f'{site}'] 
+
+        GBOVDay, GBOVValue, day_i = [], [], []
+        MODISValue, spatialValue, temporalValue, improvedValue = [], [], [], []
+        for i in range(46):
+            MODISValue.append(calculate_mean(rawLAI[i]))
+            spatialValue.append(calculate_mean(spaLAI[i]))
+            temporalValue.append(calculate_mean(temLAI[i]))
+            improvedValue.append(calculate_mean(improvedLAI[i]))
+            currentDOY = i * 8 + 1 
+            ele = np.array(specific.loc[specific['c6 DOY'] == '2018%03d' % currentDOY]['Site value'])
+            if len(ele) > 0:
+                GBOVDay.append(currentDOY - 1)
+                GBOVValue.append(ele.mean())
+                day_i.append(i)
+
+        onlyGBOVDay_raw = np.array(MODISValue)[day_i]
+        onlyGBOVDay_spa = np.array(spatialValue)[day_i]
+        onlyGBOVDay_tem = np.array(temporalValue)[day_i]
+        onlyGBOVDay_imp = np.array(improvedValue)[day_i]
+        # print(GBOVValue, onlyGBOVDay_raw, onlyGBOVDay_tem, onlyGBOVDay_imp)
+        RMSE_raw = np.round(np.sqrt((1/len(onlyGBOVDay_raw))* np.sum(np.square(np.array(onlyGBOVDay_raw) - np.array(GBOVValue)))), 2)
+        RMSE_tem = np.round(np.sqrt((1/len(onlyGBOVDay_tem))* np.sum(np.square(np.array(onlyGBOVDay_tem) - np.array(GBOVValue)))), 2)
+        RMSE_spa = np.round(np.sqrt((1/len(onlyGBOVDay_spa))* np.sum(np.square(np.array(onlyGBOVDay_spa) - np.array(GBOVValue)))), 2)
+        RMSE_imp = np.round(np.sqrt((1/len(onlyGBOVDay_imp))* np.sum(np.square(np.array(onlyGBOVDay_imp) - np.array(GBOVValue)))), 2)
+        print(RMSE_raw, RMSE_tem, RMSE_spa, RMSE_imp)
+        draw_Line(MODISValue, temporalValue, spatialValue, improvedValue, GBOVDay, GBOVValue, [RMSE_raw, RMSE_tem, RMSE_spa, RMSE_imp], issave=True, savePath=f'./PNG/{hv}_{site}_Line', title=f'{site}')
 
 
-# for value in range(1,9):
-value = 3
-qcWeight = addStdLAITSS(StdLAIDatas, TSSArray, hv, line, samp, value)
-# qcWeight = np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')[:, line-10:line+11, samp-10:samp+11]
+# oneSiteQC_Weight('h12v04', 'BART', 1424, 2105)
 
-LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
-LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
-landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()[line-10:line+11, samp-10:samp+11]
-
-
-temporalList, spatialList, improvedList = [], [], []
-for index in range(0, 46): 
-    Tem = Improved_Pixel.Temporal_Cal(rawLAI, index, landCover, qcWeight, 3,  0.5)
-    temporalList.append(Tem)
-    Spa = Improved_Pixel.Spatial_Cal(rawLAI, index, landCover, qcWeight, 2,  4)
-    spatialList.append(Spa)
-temLAI = np.array(temporalList)
-spaLAI = np.array(spatialList)
+sites = {
+    'BART': {'h': 12, 'v': 4, 'line': 1424.16, 'samp': 2105.61},
+    'HARV': {'h': 12, 'v': 4, 'line': 1790.43, 'samp': 1636.72},
+    'SCBI': {'h': 11, 'v':5, 'line': 265.20, 'samp': 2203.28},
+    'TALL': {'h': 10, 'v':5, 'line': 1691.39, 'samp': 1599.03},
+    # 'KONA': {'h': 10, 'v': 5, 'line': 212.99, 'samp': 1207.90},
+    # 'ONAQ': {'h': 9, 'v':4, 'line': 2356.88, 'samp': 978.91},  
+    # 'SRER': {'h': 8, 'v':5, 'line': 1940.94, 'samp': 1419.03},  
+    # 'WOOD': {'h': 11, 'v':4, 'line': 688.72, 'samp': 594.74},
+} # 均一植被类型
 
 
-for index in range(0, 46):
-    if index == 0 or index == 45:
-        improvedList.append(temLAI[index])
-    else:
-        rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
-        spaWeight = Improved_Pixel.cal_TSS(spaLAI, index)
-        temWeight = Improved_Pixel.cal_TSS(temLAI, index)
-        one = (ma.masked_greater(temLAI[index], 70) * temWeight + ma.masked_greater(spaLAI[index], 70) * spaWeight + ma.masked_greater(rawLAI[index], 70) * rawWeight) / (temWeight + spaWeight + rawWeight)
-        pos = rawLAI[index].__gt__(70)
-        one[pos] = rawLAI[index][pos]
-        improvedList.append(one)
-improvedLAI = np.array(improvedList)
+Raw_RMSEs, Tem_RMSEs, Spa_RMSEs, Imp_RMSEs = [], [], [], []
+for value in range(1, 10):
+    print(value)
+    GBOVValue = []
+    MODISValue, spatialValue, temporalValue, improvedValue = [], [], [], []
+    for key, ele in sites.items():
+        hv = 'h%02dv%02d' % (ele['h'], ele['v'])
+        site = key
+        line = int(ele['line'])
+        samp = int(ele['samp'])
 
-data = pd.read_csv(f'../GBOV/Site_Classification/站点_{hv}.csv', usecols= ['Site name', 'Site value', 'line', 'samp', 'c6 DOY'], dtype={'Site name': str, 'Site value': float, 'line': float, 'samp': float, 'c6 DOY': str})
-specific = data.loc[data['Site name'] == f'{site}'] 
+        fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
+        LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
+        LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
+        landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()[line-10:line+11, samp-10:samp+11]
 
-GBOVDay, GBOVValue, day_i = [], [], []
-MODISValue, spatialValue, temporalValue, improvedValue = [], [], [], []
-for i in range(46):
-    MODISValue.append(calculate_mean(rawLAI[i]))
-    spatialValue.append(calculate_mean(spaLAI[i]))
-    temporalValue.append(calculate_mean(temLAI[i]))
-    improvedValue.append(calculate_mean(improvedLAI[i]))
-    currentDOY = i * 8 + 1 
-    ele = np.array(specific.loc[specific['c6 DOY'] == '2018%03d' % currentDOY]['Site value'])
-    if len(ele) > 0:
-        GBOVDay.append(currentDOY - 1)
-        GBOVValue.append(ele.mean())
-        day_i.append(i)
+        LAIDatas, StdLAIDatas = [], []
+        for file in fileLists:
+            result = ReadFile(file)
+            LAIDatas.append(result['LAI'])
+            # QCDatas.append(result['QC'])
+            StdLAIDatas.append(result['StdLAI'])
+        rawLAI = np.array(LAIDatas)[:, line-10:line+11, samp-10:samp+11]
+        rawLAI = np.array(rawLAI, dtype=float)
+        StdLAIDatas = np.array(StdLAIDatas)[:, line-10:line+11, samp-10:samp+11]
 
-onlyGBOVDay_raw = np.array(MODISValue)[day_i]
-onlyGBOVDay_spa = np.array(spatialValue)[day_i]
-onlyGBOVDay_tem = np.array(temporalValue)[day_i]
-onlyGBOVDay_imp = np.array(improvedValue)[day_i]
-# print(GBOVValue, onlyGBOVDay_raw, onlyGBOVDay_tem, onlyGBOVDay_imp)
-RMSE_raw = np.round(np.sqrt((1/len(onlyGBOVDay_raw))* np.sum(np.square(np.array(onlyGBOVDay_raw) - np.array(GBOVValue)))), 2)
-RMSE_tem = np.round(np.sqrt((1/len(onlyGBOVDay_tem))* np.sum(np.square(np.array(onlyGBOVDay_tem) - np.array(GBOVValue)))), 2)
-RMSE_spa = np.round(np.sqrt((1/len(onlyGBOVDay_spa))* np.sum(np.square(np.array(onlyGBOVDay_spa) - np.array(GBOVValue)))), 2)
-RMSE_imp = np.round(np.sqrt((1/len(onlyGBOVDay_imp))* np.sum(np.square(np.array(onlyGBOVDay_imp) - np.array(GBOVValue)))), 2)
-print(RMSE_raw, RMSE_tem, RMSE_spa, RMSE_imp)
-draw_Line(MODISValue, temporalValue, spatialValue, improvedValue, GBOVDay, GBOVValue, [RMSE_raw, RMSE_tem, RMSE_spa, RMSE_imp], issave=True, savePath=f'./PNG/{hv}_{site}_Line', title=f'{site}')
+        TSSArray = np.ones((1,rawLAI.shape[1], rawLAI.shape[2])) 
+        for index in range(1,45):
+            one = cal_TSS(rawLAI, index)
+            TSSArray = np.append(TSSArray, one.reshape(1, one.shape[0], one.shape[1]), axis=0)
+        TSSArray = np.append(TSSArray, np.ones((1,rawLAI.shape[1], rawLAI.shape[2])), axis=0)
 
+        qcWeight = addStdLAITSS(StdLAIDatas, TSSArray, hv, line, samp, value)
+
+        rawLAI = np.array(LAIDatas)[:, line-10:line+11, samp-10:samp+11]
+        temporalList, spatialList, improvedList = [], [], []
+        for index in range(0, 46): 
+            Tem = Improved_Pixel.Temporal_Cal(rawLAI, index, landCover, qcWeight, 3,  0.5)
+            temporalList.append(Tem)
+            Spa = Improved_Pixel.Spatial_Cal(rawLAI, index, landCover, qcWeight, 2,  4)
+            spatialList.append(Spa)
+        temLAI = np.array(temporalList)
+        spaLAI = np.array(spatialList)
+
+
+        for index in range(0, 46):
+            if index == 0 or index == 45:
+                improvedList.append(temLAI[index])
+            else:
+                rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
+                spaWeight = Improved_Pixel.cal_TSS(spaLAI, index)
+                temWeight = Improved_Pixel.cal_TSS(temLAI, index)
+                one = (ma.masked_greater(temLAI[index], 70) * temWeight + ma.masked_greater(spaLAI[index], 70) * spaWeight + ma.masked_greater(rawLAI[index], 70) * rawWeight) / (temWeight + spaWeight + rawWeight)
+                pos = rawLAI[index].__gt__(70)
+                one[pos] = rawLAI[index][pos]
+                improvedList.append(one)
+        improvedLAI = np.array(improvedList)
+
+        data = pd.read_csv(f'../GBOV/Site_Classification/站点_{hv}.csv', usecols= ['Site name', 'Site value', 'line', 'samp', 'c6 DOY'], dtype={'Site name': str, 'Site value': float, 'line': float, 'samp': float, 'c6 DOY': str})
+        specific = data.loc[data['Site name'] == f'{site}'] 
+
+        for i in range(46):            
+            currentDOY = i * 8 + 1 
+            ele = np.array(specific.loc[specific['c6 DOY'] == '2018%03d' % currentDOY]['Site value'])
+            if len(ele) > 0:
+                GBOVValue.append(ele.mean())
+                MODISValue.append(calculate_mean(rawLAI[i]))
+                spatialValue.append(calculate_mean(spaLAI[i]))
+                temporalValue.append(calculate_mean(temLAI[i]))
+                improvedValue.append(calculate_mean(improvedLAI[i]))
+
+    RMSE_raw = np.round(np.sqrt((1/len(MODISValue))* np.sum(np.square(np.array(MODISValue) - np.array(GBOVValue)))), 2)
+    RMSE_tem = np.round(np.sqrt((1/len(temporalValue))* np.sum(np.square(np.array(temporalValue) - np.array(GBOVValue)))), 2)
+    RMSE_spa = np.round(np.sqrt((1/len(spatialValue))* np.sum(np.square(np.array(spatialValue) - np.array(GBOVValue)))), 2)
+    RMSE_imp = np.round(np.sqrt((1/len(improvedValue))* np.sum(np.square(np.array(improvedValue) - np.array(GBOVValue)))), 2)
+        
+    Raw_RMSEs.append(RMSE_raw)
+    Tem_RMSEs.append(RMSE_tem)
+    Spa_RMSEs.append(RMSE_spa) 
+    Imp_RMSEs.append(RMSE_imp)
+
+np.save('./QC_RMSE(4_v1)', {'Raw_RMSEs':Raw_RMSEs, 'Tem_RMSEs':Tem_RMSEs, 'Spa_RMSEs': Spa_RMSEs, 'Imp_RMSEs':Imp_RMSEs})
+# RMSEValues = np.load('./QC_RMSE(BART & HARV & SCBI & TALL).npy', allow_pickle=True).item()
+# print(RMSEValues)
+print(Raw_RMSEs, Tem_RMSEs, Spa_RMSEs, Imp_RMSEs)
+Public_Methods.draw_polt_Line(np.arange(1, 10),{
+    'title': '',
+    'xlable': 'weight',
+    'ylable': 'RMSE',
+    'line': [Raw_RMSEs, Tem_RMSEs, Spa_RMSEs, Imp_RMSEs],
+    'le_name': ['Raw', 'Temporal', 'Spatial', 'Improved'],
+    'color': ['gray', '#bfdb39', '#ffe117', '#fd7400'],
+    'marker': [',', 'o', '^', '*'],
+    'size': {'width': 10, 'height': 6},
+    'lineStyle': ['solid', 'dashed', 'dashed']
+    },f'./PNG/all_qc_weight', True, 1)

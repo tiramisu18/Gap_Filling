@@ -124,18 +124,20 @@ def addStdLAI(StdLAIDatas, hv, url):
 
 # 权重加上StdLAI和相对TSS
 def addStdLAITSS(StdLAIDatas, TSSValues, hv, url):
+    boundaryValue = 4
     qualityControl = np.load(f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei.npy')
     # 将质量等级为5的备用算法修改为3
     pos = qualityControl == 5
-    qualityControl[pos] = 3
+    qualityControl[pos] = boundaryValue
     # StdLAI有效值范围为0-100
+    otherMin = boundaryValue * 0.05
     std = ma.masked_greater(StdLAIDatas, 100)
-    map_std = 0.5 + ((0.15 - 0.5) / (0.5 + ma.max(std) - ma.min(std))) * (std - ma.min(std)) 
+    map_std = 0.5 + ((otherMin - 0.5) / (0.5 + ma.max(std) - ma.min(std))) * (std - ma.min(std)) 
     tss = ma.array(TSSValues, mask = pos)
     # tss中大于1的值直接设为0.15，小于1的值映射到0.16-0.5
-    map_tss = 0.5 + ((0.16 - 0.5) / (1 - 0) * (tss - 0)) 
+    map_tss = 0.5 + ((otherMin + 0.01 - 0.5) / (1 - 0) * (tss - 0)) 
     p2 = map_tss < 0
-    map_tss[p2] = 0.15
+    map_tss[p2] = otherMin
     control = map_std + map_tss
     surplus = np.array(ma.filled(control, 1))
     final_qualityControl = surplus * qualityControl
@@ -152,9 +154,10 @@ def cal_TSS(LAIDatas, index):
     relativeTSS = np.round(absoluteTSS / LAIDatas[index], 2)
     return np.nan_to_num(relativeTSS, posinf=10, neginf=10)
     
-# hv = 'h12v05'
-hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
-
+# 站点Tile   
+# hvLists = ['h08v05', 'h09v04', 'h09v05', 'h10v04', 'h10v05', 'h10v06', 'h11v04', 'h11v05', 'h11v07', 'h12v04', 'h12v05']
+# 植被类型Tile
+hvLists = ['h23v04', 'h29v11', 'h25v06', 'h12v03', 'h11v09', 'h12v04', 'h20v02']
 
 for hv in hvLists:
     print(hv)
@@ -165,7 +168,7 @@ for hv in hvLists:
         LAIDatas.append(result['LAI'])
         QCDatas.append(result['QC'])
         StdLAIDatas.append(result['StdLAI'])
-    raw_LAI = np.array(LAIDatas)
+    raw_LAI = np.array(LAIDatas, dtype=float)
 
     TSSArray = np.ones((1,raw_LAI.shape[1], raw_LAI.shape[2])) 
     for index in range(1,45):
@@ -177,24 +180,25 @@ for hv in hvLists:
     # # 将QC转为对应的权重
     # read_QC(QCDatas, f'../QC/Version_1/{hv}_2018', hv)
     # QC_AgloPath(hv, f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei')
-    addStdLAITSS(StdLAIDatas, TSSArray, hv, f'../QC/Version_4/{hv}_2018')
+    addStdLAITSS(StdLAIDatas, TSSArray, hv, f'../QC/Version_5/{hv}_2018')
 
 
-hv = 'h12v04'
-fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
-LAIDatas, QCDatas, StdLAIDatas = [], [], []
-for file in fileLists:
-    result = ReadFile(file)
-    LAIDatas.append(result['LAI'])
-    # QCDatas.append(result['QC'])
-    # StdLAIDatas.append(result['StdLAI'])
-raw_LAI = np.array(LAIDatas)
+
+# hv = 'h12v04'
+# fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
+# LAIDatas, QCDatas, StdLAIDatas = [], [], []
+# for file in fileLists:
+#     result = ReadFile(file)
+#     LAIDatas.append(result['LAI'])
+#     # QCDatas.append(result['QC'])
+#     # StdLAIDatas.append(result['StdLAI'])
+# raw_LAI = np.array(LAIDatas)
 
 # qualityControl1 = np.load(f'../QC/Version_1/{hv}_2018/{hv}_AgloPath_Wei.npy')
 # qualityControl2 = np.load(f'../QC/Version_2/{hv}_2018/{hv}_Weight.npy')
 # qualityControl3 = np.load(f'../QC/Version_3/{hv}_2018/{hv}_Weight.npy')
 # qualityControl4 = np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')
-i = 33
+# i = 33
 # Public_Methods.render_Img(ma.array(qualityControl1[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc1')
 # Public_Methods.render_Img(ma.array(qualityControl2[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc2')
 # Public_Methods.render_Img(ma.array(qualityControl3[i], mask=raw_LAI[i]>70), issave=True, savepath='./Daily_cache/0620/qc3')
@@ -203,12 +207,3 @@ i = 33
 # std = 10
 # map_std = 0.5 + ((0.15 - 0.5) / (1 - 0)) * (std - 0) 
 # print(map_std)
-
-# aa = np.arange(0,6)
-# print(aa * 3)
-# bb = np.round(5 / aa, 2)
-# print(bb)
-# cc = np.array(bb)
-# print(cc)
-
-# print(np.nan_to_num(cc, posinf=0, neginf=1))
