@@ -29,7 +29,7 @@ def Temporal_Cal(rawDatas, index, landCover, qualityControl, half_temLength, ses
     numerators = (LAIDatas * QCDatas * SPara).sum(axis=0)
     denominators = (QCDatas * SPara).sum(axis=0)
     LAIImprovedDatas = np.round(numerators / denominators)
-    # 目前，255填充值通过计算修补了部分数据，下面两步会将原来的填充值255还原
+    # 目前，填充值通过计算修补了部分数据，下面两步会将原来的填充值还原
     pos = rawDatas[index, ...].__gt__(70)
     LAIImprovedDatas[pos] = rawDatas[index, ...][pos]
 

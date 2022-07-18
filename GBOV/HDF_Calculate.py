@@ -92,7 +92,10 @@ for key, ele in sites.items():
     # 权重计算 + 加权平均得到最终值     
     for index in range(46):
         if index == 0 or index == 45:
-            np.save(f'{url}/Improved/LAI_{index + 1}', tem_LAI[index])
+            one = (ma.masked_greater(tem_LAI[index], 70) + ma.masked_greater(spa_LAI[index], 70)) / 2
+            pos = rawLAI[index].__gt__(70)
+            one[pos] = rawLAI[index][pos]
+            np.save(f'{url}/Improved/LAI_{index + 1}', np.array(one))
         else:
             rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
             temWeight = Improved_Pixel.cal_TSS(tem_LAI, index)

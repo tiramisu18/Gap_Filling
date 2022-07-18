@@ -24,11 +24,8 @@ def cal_TSS(LAIDatas, index, landCover, lcType):
     return absoluteTSS
 
 # 计算数据提升之后不同植被类型像元平均年季曲线变化
-def landCover_Improved(raw, spatial, temporal, improvedLAI, landCover, lcType): 
-    raw_mean = []
-    spa_mean= []
-    tem_mean = []
-    imp_mean = []
+def landCover_Improved_process(raw, spatial, temporal, improvedLAI, landCover, lcType): 
+    raw_mean, spa_mean, tem_mean, imp_mean= [], [], [], []
     for i in range(0, 46):
         raw_ma = ma.array((ma.masked_greater(raw[i], 70)), mask=(landCover != lcType))
         spa_ma = ma.array((ma.masked_greater(spatial[i], 70)), mask=(landCover != lcType))
@@ -49,7 +46,27 @@ def landCover_Improved(raw, spatial, temporal, improvedLAI, landCover, lcType):
         'marker': [',', 'o', '^', '*'],
         'size': {'width': 10, 'height': 6},
         'lineStyle': ['solid', 'dashed', 'dashed']
-        },f'./Daily_cache/0630/lc_{lcType}_line', True, 1)
+        },f'./Daily_cache/0718/lc_{lcType}_process', True, 1)
+
+def landCover_Improved(raw, improvedLAI, landCover, lcType): 
+    raw_mean, imp_mean = [], []
+    for i in range(0, 46):
+        raw_ma = ma.array((ma.masked_greater(raw[i], 70)), mask=(landCover != lcType))
+        imp_ma = ma.array((ma.masked_greater(improvedLAI[i], 70)),  mask=landCover != lcType)
+        raw_mean.append(ma.mean(raw_ma) / 10)
+        imp_mean.append(ma.mean(imp_ma) / 10)
+
+    Public_Methods.draw_polt_Line(np.arange(0, 361, 8),{
+        'title': f'B{lcType}',
+        'xlable': 'Day',
+        'ylable': 'LAI',
+        'line': [raw_mean, imp_mean],
+        'le_name': ['Raw', 'Improved'],
+        'color': ['#ffe117', '#fd7400'],
+        'marker': ['o', '^'],
+        'size': {'width': 10, 'height': 6},
+        'lineStyle': ['dashed']
+        },f'./Daily_cache/0718/Biome_Type_Line/lc_{lcType}_line', True, 1)
 
 def draw_Violinplot(all_data):
     fig, ax = plt.subplots()
@@ -144,9 +161,9 @@ def draw_TSS_Image(data, tile, type):
         plt.show()
 
 
-lcType = 6
-hv = 'h12v04'
-url = f'../Improved_RealData/{hv}_2018'
+lcType = 4
+hv = 'h12v03'
+url = f'../Improved/Improved_RealData/{hv}_2018'
 # LC
 LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
 LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
@@ -172,21 +189,24 @@ raw_LAI = np.array(lai, dtype=float)
 #     np.load(f'{url}/Improved/LAI_{index+2}.npy')[50:250, 50:250])
 
 
-# Temporal Spatial LAI
-spa_LAI, tem_LAI, imp_LAI = [], [], []
+# Temporal Spatial Improved LAI
+# spa_LAI, tem_LAI, imp_LAI = [], [], []
+# for i in range(1, 47):
+#     print(i)
+#     spa_LAI.append(np.load(f'{url}/Spatial/LAI_{i}.npy'))
+#     tem_LAI.append(np.load(f'{url}/Temporal/LAI_{i}.npy'))
+#     imp_LAI.append(np.load(f'{url}/Improved/LAI_{i}.npy'))
+# spa_LAI = np.array(spa_LAI)
+# tem_LAI = np.array(tem_LAI)
+# imp_LAI = np.array(imp_LAI)
+# landCover_Improved_process(raw_LAI, spa_LAI, tem_LAI, imp_LAI, landCover, lcType)
 
+# Improved LAI
+imp_LAI = []
 for i in range(1, 47):
-    print(i)
-    spa_LAI.append(np.load(f'{url}/Spatial/LAI_{i}.npy'))
-    tem_LAI.append(np.load(f'{url}/Temporal/LAI_{i}.npy'))
     imp_LAI.append(np.load(f'{url}/Improved/LAI_{i}.npy'))
-spa_LAI = np.array(spa_LAI)
-tem_LAI = np.array(tem_LAI)
 imp_LAI = np.array(imp_LAI)
-
-
-# print(imp_LAI)
-landCover_Improved(raw_LAI, spa_LAI, tem_LAI, imp_LAI, landCover, lcType)
+landCover_Improved(raw_LAI, imp_LAI, landCover, lcType)
 
 # 计算绝对TSS
 raw_TSS = []

@@ -92,7 +92,10 @@ for hv in hvLists:
     # 权重计算 + 加权平均得到最终值   
     for index in range(46):
         if index == 0 or index == 45:
-            np.save(f'{url}/Improved/LAI_{index + 1}', temLAI[index])
+            one = (ma.masked_greater(temLAI[index], 70) + ma.masked_greater(spaLAI[index], 70)) / 2
+            pos = rawLAI[index].__gt__(70)
+            one[pos] = rawLAI[index][pos]
+            np.save(f'{url}/Improved/LAI_{index + 1}', np.array(one))
         else:
             rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
             temWeight = Improved_Pixel.cal_TSS(temLAI, index)
