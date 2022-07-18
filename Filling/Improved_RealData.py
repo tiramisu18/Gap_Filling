@@ -2,7 +2,8 @@ from re import T
 import numpy as np
 import numpy.ma as ma
 from osgeo import gdal
-from sympy import public
+from pathlib import Path
+import os
 import ReadDirFiles
 import math
 import random
@@ -29,100 +30,77 @@ def int_random(a, b, n) :
             pass
     return a_list
 
-hv = 'h12v04'
-fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
-url = f'../Improved/Improved_RealData/{hv}_2018'
-LAIDatas = []
-for file in fileLists:
-    result = ReadFile(file)
-    LAIDatas.append(result['LAI'])
-    # LAIDatas.append(ma.mean(ma.masked_greater(result['LAI'][1450:1650, 1300:1500], 70)))
+hvLists = ['h23v04', 'h29v11', 'h25v06', 'h12v03', 'h11v09', 'h12v04', 'h20v02']
 
-rawLAI = np.array(LAIDatas)
-# print(aa[16, 1422:1428, 2103:2109])
-LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
-LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
-landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
+for hv in hvLists:
+    print(hv)
+    fileLists = ReadDirFiles.readDir(f'../HDF/{hv}')
+    url = f'../Improved/Improved_RealData/{hv}_2018'
+    LAIDatas = []
+    for file in fileLists:
+        result = ReadFile(file)
+        LAIDatas.append(result['LAI'])
 
+    rawLAI = np.array(LAIDatas)
+    LC_file = gdal.Open(ReadDirFiles.readDir_LC('../LC', hv)[0])
+    LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
+    landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()
+    qualityControl = np.load(f'../QC/Version_5/{hv}_2018/{hv}_Weight.npy')
 
-qualityControl = np.load(f'../QC/Version_4/{hv}_2018/{hv}_Weight.npy')
-
-# 时空相关性计算
-# for index in range(0, 46): 
-#     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-#     print(index)
-#     Tem = Improved_Pixel.Temporal_Cal(rawLAI, index, landCover, qualityControl, 3,  0.5)
-#     np.save(f'{url}/Temporal/LAI_{index + 1}', Tem)
-#     Spa = Improved_Pixel.Spatial_Cal(rawLAI, index, landCover, qualityControl, 2,  4)
-#     np.save(f'{url}/Spatial/LAI_{index + 1}', Spa)
-
-# 时空相关性计算（不含质量控制）
-# for index in range(0, 10): 
-#     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-#     print(index)
-#     Tem = Improved_Pixel.Temporal_Cal_N(rawLAI, index, landCover, 3,  0.5)
-#     np.save(f'{url}/Temporal_N/LAI_{index + 1}', Tem)
-#     Spa = Improved_Pixel.Spatial_Cal_N(rawLAI, index, landCover, 2,  4)
-#     np.save(f'{url}/Spatial_N/LAI_{index + 1}', Spa)
-
-# print('weight')
-# 计算权重
-# tem = []
-# spa = []
-# for i in range(1, 47):
-#     # print(i)
-#     spa_data = np.load(f'{url}/Spatial/LAI_{i}.npy')
-#     tem_data = np.load(f'{url}/Temporal/LAI_{i}.npy')
-#     tem.append(tem_data)
-#     spa.append(spa_data)
-# tem_LAI = np.array(tem)
-# spa_LAI = np.array(spa)
-
-# Public_Methods.render_LAI(rawLAI[23])
-# Public_Methods.render_LAI(tem_LAI[23])
-# Public_Methods.render_LAI(spa_LAI[23])
-
-# for index in range(1, 45):
-#     print(index)
-#     rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
-#     np.save(f'{url}/Raw_Weight/LAI_{index + 1}', rawWeight)
-#     spaWeight = Improved_Pixel.cal_TSS(spa_LAI, index)
-#     np.save(f'{url}/Spatial_Weight/LAI_{index + 1}', spaWeight)
-#     temWeight = Improved_Pixel.cal_TSS(tem_LAI, index)
-#     np.save(f'{url}/Temporal_Weight/LAI_{index + 1}', temWeight)
-
-print('Improved')
-# 加权平均求最终计算值
-tem = []
-spa = []
-temWei = []
-spaWei = []
-rawWei = []
-for i in range(2, 46):
-    # print(i)
-    spa_data = np.load(f'{url}/Spatial/LAI_{i}.npy')
-    tem_data = np.load(f'{url}/Temporal/LAI_{i}.npy')
-    spa_wei = np.load(f'{url}/Spatial_Weight/LAI_{i}.npy')
-    tem_wei = np.load(f'{url}/Temporal_Weight/LAI_{i}.npy')
-    raw_wei = np.load(f'{url}/Raw_Weight/LAI_{i}.npy')
-    tem.append(tem_data)
-    spa.append(spa_data)
-    temWei.append(tem_wei)
-    spaWei.append(spa_wei)
-    rawWei.append(raw_wei)
-tem_LAI = np.array(tem)
-spa_LAI = np.array(spa)
-tem_Weight = np.array(temWei, dtype=float)
-spa_Weight = np.array(spaWei, dtype=float)
-raw_Weight = np.array(rawWei, dtype=float)
-
-# 计算权重求和后的值
-for i in range(46):
-    print(i)
-    if i == 0 or i == 45:
-        np.save(f'{url}/Improved/LAI_{i + 1}', np.load(f'{url}/Temporal/LAI_{i + 1}.npy'))
+    dirList = ['Temporal', 'Spatial', 'Temporal_Weight', 'Spatial_Weight', 'Raw_Weight', 'Improved']       
+    if not Path(url).is_dir(): 
+        os.mkdir(url)
+        for ele in dirList:
+            os.mkdir(f'{url}/{ele}')
     else:
-        one = (ma.masked_greater(tem_LAI[i-1], 70) * tem_Weight[i-1] + ma.masked_greater(spa_LAI[i-1], 70) * spa_Weight[i-1] + ma.masked_greater(rawLAI[i-1], 70) * raw_Weight[i-1]) / (tem_Weight[i-1] + spa_Weight[i-1] + raw_Weight[i-1])
-        pos = rawLAI[i-1].__gt__(70)
-        one[pos] = rawLAI[i-1][pos]
-        np.save(f'{url}/Improved/LAI_{i + 1}', np.array(one))
+        for ele in dirList:
+            if not Path(f'{url}/{ele}').is_dir(): os.mkdir(f'{url}/{ele}')
+    
+    # 时空相关性计算
+    tem_list, spa_list = [], []
+    for index in range(46): 
+        print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+        print(index)
+        Tem = Improved_Pixel.Temporal_Cal(rawLAI, index, landCover, qualityControl, 3,  0.5)
+        np.save(f'{url}/Temporal/LAI_{index + 1}', Tem)
+        Spa = Improved_Pixel.Spatial_Cal(rawLAI, index, landCover, qualityControl, 2,  4)
+        np.save(f'{url}/Spatial/LAI_{index + 1}', Spa)
+        tem_list.append(Tem)
+        spa_list.append(Spa)
+    temLAI = np.array(tem_list)
+    spaLAI = np.array(spa_list)
+
+    # 时空相关性计算（不含质量控制）
+    # for index in range(0, 10): 
+    #     print(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
+    #     print(index)
+    #     Tem = Improved_Pixel.Temporal_Cal_N(rawLAI, index, landCover, 3,  0.5)
+    #     np.save(f'{url}/Temporal_N/LAI_{index + 1}', Tem)
+    #     Spa = Improved_Pixel.Spatial_Cal_N(rawLAI, index, landCover, 2,  4)
+    #     np.save(f'{url}/Spatial_N/LAI_{index + 1}', Spa)
+
+    # tem_list, spa_list = [], []
+    # for i in range(1, 47):
+    #     # print(i)
+    #     spa_data = np.load(f'{url}/Spatial/LAI_{i}.npy')
+    #     tem_data = np.load(f'{url}/Temporal/LAI_{i}.npy')
+    #     tem_list.append(tem_data)
+    #     spa_list.append(spa_data)
+    # temLAI = np.array(tem_list)
+    # spaLAI = np.array(spa_list)
+
+    # 权重计算 + 加权平均得到最终值   
+    for index in range(46):
+        if index == 0 or index == 45:
+            np.save(f'{url}/Improved/LAI_{index + 1}', temLAI[index])
+        else:
+            rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
+            temWeight = Improved_Pixel.cal_TSS(temLAI, index)
+            spaWeight = Improved_Pixel.cal_TSS(spaLAI, index)
+            np.save(f'{url}/Raw_Weight/LAI_{index + 1}', rawWeight)
+            np.save(f'{url}/Spatial_Weight/LAI_{index + 1}', spaWeight)            
+            np.save(f'{url}/Temporal_Weight/LAI_{index + 1}', temWeight)
+            one = (ma.masked_greater(temLAI[index], 70) * temWeight + ma.masked_greater(spaLAI[index], 70) * spaWeight + ma.masked_greater(rawLAI[index], 70) * rawWeight) / (temWeight + spaWeight + rawWeight)
+            pos = rawLAI[index].__gt__(70)
+            one[pos] = rawLAI[index][pos]
+            np.save(f'{url}/Improved/LAI_{index + 1}', np.array(one))

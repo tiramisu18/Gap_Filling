@@ -69,14 +69,19 @@ for key, ele in sites.items():
     LC_subdatasets = LC_file.GetSubDatasets()  # 获取hdf中的子数据集
     landCover = gdal.Open(LC_subdatasets[2][0]).ReadAsArray()[line-10:line+11, samp-10:samp+11]
 
-    qualityControl = np.load(f'../QC/Version_6/{hv}_2018/{hv}_Weight.npy')[:, line-10:line+11, samp-10:samp+11]
+    qualityControl = np.load(f'../QC/Version_5/{hv}_2018/{hv}_Weight.npy')[:, line-10:line+11, samp-10:samp+11]
 
     # 时空相关性计算
+    tem_list, spa_list = [], []
     for index in range(0, 46): 
         Tem = Improved_Pixel.Temporal_Cal(rawLAI, index, landCover, qualityControl, 3,  0.5)
         np.save(f'{url}/Temporal/LAI_{index + 1}', Tem)
         Spa = Improved_Pixel.Spatial_Cal(rawLAI, index, landCover, qualityControl, 2,  4)
         np.save(f'{url}/Spatial/LAI_{index + 1}', Spa)
+        tem_list.append(Tem)
+        spa_list.append(Spa)
+    tem_LAI = np.array(tem_list)
+    spa_LAI = np.array(spa_list)
         
     #     # 不含质量控制
     #     Tem_N = Improved_Pixel.Temporal_Cal_N(rawLAI, index, landCover, 3,  0.5)
@@ -84,26 +89,7 @@ for key, ele in sites.items():
     #     Spa_N = Improved_Pixel.Spatial_Cal_N(rawLAI, index, landCover, 2,  4)
     #     np.save(f'{url}/Spatial_N/LAI_{index + 1}', Spa_N)
 
-    # 权重计算 + 加权平均得到最终值 
-    tem = []
-    spa = []
-    for i in range(1, 47):
-        # print(i)
-        spa_data = np.load(f'{url}/Spatial/LAI_{i}.npy')
-        tem_data = np.load(f'{url}/Temporal/LAI_{i}.npy')
-        tem.append(tem_data)
-        spa.append(spa_data)
-    tem_LAI = np.array(tem)
-    spa_LAI = np.array(spa)
-    
-    # for index in range(1, 45):
-    #     rawWeight = Improved_Pixel.cal_TSS(rawLAI, index)
-    #     np.save(f'{url}/Raw_Weight/LAI_{index + 1}', rawWeight)
-    #     spaWeight = Improved_Pixel.cal_TSS(spa_LAI, index)
-    #     np.save(f'{url}/Spatial_Weight/LAI_{index + 1}', spaWeight)
-    #     temWeight = Improved_Pixel.cal_TSS(tem_LAI, index)
-    #     np.save(f'{url}/Temporal_Weight/LAI_{index + 1}', temWeight)
-    
+    # 权重计算 + 加权平均得到最终值     
     for index in range(46):
         if index == 0 or index == 45:
             np.save(f'{url}/Improved/LAI_{index + 1}', tem_LAI[index])
