@@ -267,7 +267,7 @@ for value in range(1, 10):
     Spa_RMSEs.append(RMSE_spa) 
     Imp_RMSEs.append(RMSE_imp)
 
-np.save('./QC_RMSE(4_v1)', {'Raw_RMSEs':Raw_RMSEs, 'Tem_RMSEs':Tem_RMSEs, 'Spa_RMSEs': Spa_RMSEs, 'Imp_RMSEs':Imp_RMSEs})
+# np.save('./QC_RMSE(4_v1)', {'Raw_RMSEs':Raw_RMSEs, 'Tem_RMSEs':Tem_RMSEs, 'Spa_RMSEs': Spa_RMSEs, 'Imp_RMSEs':Imp_RMSEs})
 # RMSEValues = np.load('./QC_RMSE(BART & HARV & SCBI & TALL).npy', allow_pickle=True).item()
 # print(RMSEValues)
 print(Raw_RMSEs, Tem_RMSEs, Spa_RMSEs, Imp_RMSEs)

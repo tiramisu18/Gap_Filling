@@ -125,36 +125,30 @@ def diffLAI_histogram():
     Tem_improvedArray = []
     Spa_improvedArray = []
     for i in range(1, 47):
-        tem_data = np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % i)
-        spa_data = np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % i)
+        tem_data = np.loadtxt('../Improved/Improved_SimuData/Tem_LAI/LAI_%s' % i)
+        # spa_data = np.loadtxt('../Improved/Improved_SimuData/Spa_LAI/LAI_%s' % i)
         Tem_improvedArray.append(tem_data)
-        Spa_improvedArray.append(spa_data)
+        # Spa_improvedArray.append(spa_data)
     
     Tem_improvedLAI = np.array(Tem_improvedArray)
-    Spa_improvedLAI = np.array(Spa_improvedArray)
+    # Spa_improvedLAI = np.array(Spa_improvedArray)
 
     # 相对标准数据的绝对差
     Ina = (StandLAI - InaccurateLAI) / 10
     Tem = (StandLAI - Tem_improvedLAI) / 10
-    Spa = (StandLAI - Spa_improvedLAI) / 10
+    # Spa = (StandLAI - Spa_improvedLAI) / 10
     # i = 0
-    print(Ina.shape, np.max(Ina), np.min(Ina))
-    print(Ina.shape, np.max(Tem), np.min(Tem))
-    print(Ina.shape, np.max(Spa), np.min(Spa))
-  
-    print(np.nonzero(Spa < -4))
-    print(StandLAI[:, 337,133])
-    print(Spa_improvedLAI[:, 337,133])
-    print(Tem_improvedLAI[:, 337,133])
-    print(InaccurateLAI[:, 238,440])
+    # print(Ina.shape, np.max(Ina), np.min(Ina))
+    # print(Ina.shape, np.max(Tem), np.min(Tem))
+    # print(Ina.shape, np.max(Spa), np.min(Spa))
+      
     
-    
-
     # 绘制误差的分布密度直方图
     fig, ax = plt.subplots(figsize=(10,5))
-    ax.hist(Ina.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.8, label='Inaccurate')
-    ax.hist(Tem.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Temporal')
-    ax.hist(Spa.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Spatial')
+    ax.hist(Ina.flatten(), density=True, histtype="stepfilled", bins=80, alpha=0.8, label='Inaccurate')
+    # ax.hist(Tem.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Temporal')
+    # ax.hist(Spa.flatten(), density=True, histtype="stepfilled", bins=50, alpha=0.6, label='Spatial')
+    ax.hist(Tem.flatten(), density=True, histtype="stepfilled", bins=80, alpha=0.6, label='Improved')
 
     
     ax.set_xlabel('Absolute Difference', fontsize=15, family='Times New Roman')
@@ -163,7 +157,7 @@ def diffLAI_histogram():
     fig.tight_layout()
     plt.xticks( family='Times New Roman', fontsize=15)
     plt.yticks( family='Times New Roman', fontsize=15)
-    plt.savefig('./Daily_cache/0530/diffLAI_histogram', dpi=300)
+    plt.savefig('./Daily_cache/0718/diffLAI_histogram', dpi=300)
     plt.show()
 
 # 修改模拟数据特别异常的点
