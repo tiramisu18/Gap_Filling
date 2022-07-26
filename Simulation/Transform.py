@@ -1,8 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as pltcolor
-import random
-import numpy.ma as ma
 
 # LAI数值转为0-7
 def LAI_multiples():
@@ -21,7 +17,7 @@ def set_err_weight():
     Err = np.load('./Simulation_Dataset/LAI/Simu_Method_3/Err_peren.npy')
 
     zero = np.zeros(46*500*500, dtype=int).reshape(46, 500, 500)
-    bound = [0, 15, 40, 65, 80]
+    bound = [0, 10, 20, 30, 40]
     weight = [10, 8, 6, 4, 2]
     for i in range(0,len(bound)):
         if i == 0: 
@@ -34,4 +30,3 @@ def set_err_weight():
     pos = LAI_Simu.__gt__(70)
     zero[pos] = 0
     np.save('./Simulation_Dataset/LAI/Simu_Method_3/Err_weight', zero)
-

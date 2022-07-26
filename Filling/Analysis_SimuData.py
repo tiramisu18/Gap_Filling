@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as pltcolor
 import numpy.ma as ma
 
-def render_LAI (data, title='Image', issave=False, savepath=''):
+def render_LAI (data, title='', issave=False, savepath=''):
     colors = ['#016382', '#1f8a6f', '#bfdb39', '#ffe117', '#fd7400', '#e1dcd7','#d7efb3', '#a57d78', '#8e8681']
     bounds = [0,10,20,30,40,50,60,70,250]
     cmap = pltcolor.ListedColormap(colors)
@@ -11,8 +11,11 @@ def render_LAI (data, title='Image', issave=False, savepath=''):
     plt.title(title, family='Times New Roman', fontsize=18)
     plt.imshow(data, cmap=cmap, norm=norm)
     plt.axis('off')
+    plt.rcParams['font.size'] = 13
+    plt.rcParams['font.family'] = 'Times New Roman'
     cbar = plt.colorbar()
-    cbar.set_ticklabels(['0','1','2','3','4','5','6','7','250'])
+    cbar.set_ticklabels(['0','1','2','3','4','5','6','7','250'])   
+    # cbar.ax.tick_params(labelsize=13, bottom=True)
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
 
@@ -54,38 +57,31 @@ def calRMSE_allTile():
 def diff_LAI():
     StandLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
     InaccurateLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
-    Tem_improvedArray = []
-    Spa_improvedArray = []
-    # for i in range(3, 4):
-    #     tem_data = np.loadtxt('./Daily_cache/0506/Tem_LAI/LAI_%s' % i)
-    #     spa_data = np.loadtxt('./Daily_cache/0506/Spa_LAI/LAI_%s' % i)
-    #     Tem_improvedArray.append(tem_data)
-    #     Spa_improvedArray.append(spa_data)
+
     i = 23
-    tem_data = np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % i)
-    spa_data = np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % i)
-    Tem_improvedLAI = np.array(tem_data)
-    Spa_improvedLAI = np.array(spa_data)
+    tem_data = np.load(f'../Improved/Improved_SimuData/Temporal/LAI_{i+1}.npy')
+    spa_data = np.load(f'../Improved/Improved_SimuData/Spatial/LAI_{i+1}.npy')
+    imp_data = np.load(f'../Improved/Improved_SimuData/Improved/LAI_{i+1}.npy')
 
 
-    render_LAI(StandLAI[i], title='LAI', issave=True, savepath='./Daily_cache/0522/Standard_LAI')
-    render_LAI(InaccurateLAI[i], title='LAI', issave=True, savepath='./Daily_cache/0522/Inaccurate_LAI')
-    render_LAI(Tem_improvedLAI, title='LAI', issave=True, savepath='./Daily_cache/0522/Impro_Tem_LAI')
-    render_LAI(Spa_improvedLAI, title='LAI', issave=True, savepath='./Daily_cache/0522/Impro_Spa_LAI')
+    render_LAI(StandLAI[i], issave=True, savepath='./Daily_cache/Final_Image/Simulated_LAI/Standard_LAI')
+    render_LAI(InaccurateLAI[i], issave=True, savepath='./Daily_cache/Final_Image/Simulated_LAI/Inaccurate_LAI')
+    render_LAI(tem_data, issave=True, savepath='./Daily_cache/Final_Image/Simulated_LAI/Tem_LAI')
+    render_LAI(spa_data, issave=True, savepath='./Daily_cache/Final_Image/Simulated_LAI/Spa_LAI')
+    render_LAI(imp_data, issave=True, savepath='./Daily_cache/Final_Image/Simulated_LAI/Improved_LAI')
 
     # 相对标准数据的绝对差
     Ina = (StandLAI[i]-InaccurateLAI[i])/10
-    Tem = (StandLAI[i]-Tem_improvedLAI)/10
-    Spa = (StandLAI[i]-Spa_improvedLAI)/10
-    # render_Img((StandLAI[i]-InaccurateLAI[i])/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Inaccurate')
-    # render_Img((StandLAI[i]-Tem_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Tem')
-    # render_Img((StandLAI[i]-Spa_improvedLAI)/10,title='', issave=True, savepath='./Daily_cache/0518/diff_Spa')
-    data = [Ina, Tem, Spa]
-    fig, axs = plt.subplots(1, 3)
+    # Tem = (StandLAI[i]-tem_data)/10
+    # Spa = (StandLAI[i]-spa_data)/10
+    Imp = (StandLAI[i]-imp_data)/10
+    data = [Ina, Imp]
+    count = 2
+    fig, axs = plt.subplots(1, count)
     # fig.suptitle('Multiple images')
     images = []
 
-    for j in range(3):
+    for j in range(count):
             # Generate data with a range that varies from one plot to the next.
             # data = ((1 + i + j) / 10) * np.random.rand(10, 20)
         images.append(axs[j].imshow(data[j], cmap = plt.cm.seismic))
@@ -100,22 +96,11 @@ def diff_LAI():
         im.set_norm(norm)
 
     fig.colorbar(images[0], ax=axs,  fraction=.1)
-    plt.savefig('./Daily_cache/0522/diff_%s'% i, dpi=300)
+    plt.savefig('./Daily_cache/Final_Image/Simulated_LAI/diff', dpi=300)
     plt.show()
-    print(np.mean(np.abs(Ina)), np.mean(np.abs(Tem)), np.mean(np.abs(Spa)))
+    # print(np.mean(np.abs(Ina)), np.mean(np.abs(Tem)), np.mean(np.abs(Spa)), np.mean(np.abs(Imp)))
+    print(np.mean(np.abs(Ina)), np.mean(np.abs(Imp)))
     
-    # 当空间范围内无相同LC时，空间计算值为0
-    # LandCover = np.load('../Simulation/Simulation_Dataset/LandCover.npy')
-    # Mean_diff_Spa = mean_standard - mean_spa
-    # print(np.nonzero(Mean_diff_Spa > 10))
-    # pos = (62,494)
-    # print(StandLAI[i, pos[0], pos[1]])
-    # print(InaccurateLAI[i, pos[0], pos[1]])
-    # print(Tem_improvedLAI[pos[0], pos[1]])
-    # print(Spa_improvedLAI[pos[0], pos[1]])
-    # print(Tem_improvedLAI[:, pos[0], pos[1]])
-    # print(Spa_improvedLAI[:, pos[0], pos[1]])
-    # print(LandCover[pos])
     return
 
 # 统计LAI绝对差的误差, 绘制误差统计直方图

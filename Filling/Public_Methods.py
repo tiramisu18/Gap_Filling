@@ -12,6 +12,8 @@ def render_LAI (data, title='LAI', issave=False, savepath=''):
     plt.title(title, family='Times New Roman', fontsize=18)
     plt.imshow(data, cmap=cmap, norm=norm)
     plt.axis('off')
+    plt.rcParams['font.size'] = 13
+    plt.rcParams['font.family'] = 'Times New Roman'
     cbar = plt.colorbar()
     cbar.set_ticklabels(['0','1','2','3','4','5','6','7','250'])
     if issave :plt.savefig(savepath, dpi=300)
@@ -20,7 +22,9 @@ def render_LAI (data, title='LAI', issave=False, savepath=''):
 def render_Img (data, title='', issave=False, savepath='', color=plt.cm.jet, axisType = 'off'):
     plt.imshow(data, cmap = color)  # cmap= plt.cm.jet
     plt.title(title, family='Times New Roman', fontsize=18)
-    colbar = plt.colorbar()
+    plt.rcParams['font.size'] = 13
+    plt.rcParams['font.family'] = 'Times New Roman'
+    plt.colorbar()
     plt.axis(axisType)
     if issave :plt.savefig(savepath, dpi=300)
     plt.show()
