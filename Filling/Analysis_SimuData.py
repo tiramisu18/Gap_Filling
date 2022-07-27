@@ -29,29 +29,74 @@ def render_Img (data, title='Algo Path', issave=False, savepath=''):
     plt.show()
 
 
-# 计算数据提升之后整个tile46期与原始含有误差数据的RMSE
+# 计算数据提升之后整个tile46期与原始含有误差数据的RMSE以及RMSE的密度分布直方图
 def calRMSE_allTile():
-    improvedArray_spa = []
-    improvedArray_tem = []
+    spa_array, tem_array, imp_array = [], [], []
     for i in range(1, 47):
-        improvedArray_spa.append(np.loadtxt('./Daily_cache/0522/Spa_LAI/LAI_%s' % i))
-        improvedArray_tem.append(np.loadtxt('./Daily_cache/0522/Tem_LAI/LAI_%s' % i))
-    improvedLAI_spa = np.array(improvedArray_spa)
-    improvedLAI_tem = np.array(improvedArray_tem)
+        # spa_array.append(np.load(f'../Improved/Improved_SimuData/Spatial/LAI_{i}.npy'))
+        # tem_array.append(np.load(f'../Improved/Improved_SimuData/Temporal/LAI_{i}.npy'))
+        imp_array.append(np.load(f'../Improved/Improved_SimuData/Improved/LAI_{i}.npy'))
+    # spatialLAI = np.array(spa_array)
+    # temporalLAI = np.array(tem_array)
+    improvedLAI = np.array(imp_array)
     standLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_2/LAI_Simu_Standard.npy')
-    # Spatial
-    calRMSE_spa = np.sqrt((1/len(improvedArray_spa))* np.sum(np.square(standLAI - improvedLAI_spa), axis=0)) / 10
-    print(np.mean(calRMSE_spa))
-    render_Img(calRMSE_spa, title='RMSE', savepath='./Daily_cache/0530/RMSE_Spa_Improved', issave=True)
-    # Temporal
-    calRMSE_tem = np.sqrt((1/len(improvedArray_tem))* np.sum(np.square(standLAI - improvedLAI_tem), axis=0)) / 10
-    print(np.mean(calRMSE_tem))
-    render_Img(calRMSE_tem, title='RMSE', savepath='./Daily_cache/0530/RMSE_Tem_Improved', issave=True)  
-    # Inaccurate
-    LAI_Simu_addErr = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
-    calRMSE_inacc = np.sqrt((1/len(improvedArray_spa))* np.sum(np.square(standLAI - LAI_Simu_addErr), axis=0)) / 10
-    print(np.mean(calRMSE_inacc))
-    render_Img(calRMSE_inacc, title='RMSE', savepath='./Daily_cache/0530/RMSE', issave=True)
+    saveURL = './Daily_cache/Final_Image/Simulated_LAI/RMSE'
+    # Spatial Temporal
+    # calRMSE_spa = np.sqrt((1/len(spatialLAI))* np.sum(np.square(standLAI - spatialLAI), axis=0)) / 10
+    # render_Img(calRMSE_spa, title='RMSE', savepath=f'{saveURL}/RMSE_Spatial', issave=True)
+    # calRMSE_tem = np.sqrt((1/len(temporalLAI))* np.sum(np.square(standLAI - temporalLAI), axis=0)) / 10
+    # render_Img(calRMSE_tem, title='RMSE', savepath=f'{saveURL}/RMSE_Temoral', issave=True)  
+    # print(np.mean(calRMSE_tem), np.mean(calRMSE_spa))
+
+    # Improved Inaccurate
+    InaccurateLAI = np.load('../Simulation/Simulation_Dataset/LAI/Simu_Method_3/LAI_Simu_addErr(0-70).npy')
+    calRMSE_inacc = np.sqrt((1/len(improvedLAI))* np.sum(np.square(standLAI - InaccurateLAI), axis=0)) / 10
+    calRMSE_imp = np.sqrt((1/len(improvedLAI))* np.sum(np.square(standLAI - improvedLAI), axis=0)) / 10
+    # print(np.mean(calRMSE_inacc), np.mean(calRMSE_imp))
+    # render_Img(calRMSE_imp, title='RMSE', savepath=f'{saveURL}/RMSE_Improved', issave=True)  
+    # render_Img(calRMSE_inacc, title='RMSE', savepath=f'{saveURL}/RMSE_Inaccurate', issave=True)
+    data = [calRMSE_inacc, calRMSE_imp]
+    count = 2
+    fig, axs = plt.subplots(1, count)
+    plt.rcParams['font.size'] = 13
+    plt.rcParams['font.family'] = 'Times New Roman'
+    # fig.suptitle('Multiple images')
+    images = []
+
+    for j in range(count):
+            # Generate data with a range that varies from one plot to the next.
+            # data = ((1 + i + j) / 10) * np.random.rand(10, 20)
+        images.append(axs[j].imshow(data[j], cmap = plt.cm.coolwarm))
+        axs[j].axis('off')
+            # axs[i, j].width = 
+
+    # Find the min and max of all colors for use in setting the color scale.
+    vmin = min(image.get_array().min() for image in images)
+    # vmax = max(image.get_array().max() for image in images)
+    vmax = 1
+    norm = pltcolor.Normalize(vmin=vmin, vmax=vmax,)
+    for im in images:
+        im.set_norm(norm)
+
+    fig.colorbar(images[0], ax=axs,  fraction=.1)
+    plt.savefig(f'{saveURL}/RMSE_combine', dpi=300)
+    plt.show()
+
+    # histogram
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.hist(calRMSE_inacc.flatten(), density=True, histtype="stepfilled", bins=1000, color='#d5e6ae', label='Inaccurate')
+    ax.hist(calRMSE_imp.flatten(), density=True, histtype="stepfilled", bins=1000, alpha=0.8, color='#b8b1d1', label='Improved')
+
+    
+    ax.set_xlabel('RMSE', fontsize=20, family='Times New Roman')
+    ax.set_ylabel('Density', fontsize=20, family='Times New Roman')
+    ax.legend(framealpha=0, prop={'size':20, 'family':'Times New Roman'}, loc=1, bbox_to_anchor=(0.9, 0.75), labelspacing=1)
+    fig.tight_layout()
+    ax.set(xlim=(0.05, 1.1), ylim=(0, 6), yticks=np.arange(0, 7, 2))
+    plt.xticks( family='Times New Roman', fontsize=20)
+    plt.yticks( family='Times New Roman', fontsize=20)
+    plt.savefig(f'{saveURL}/RMSE_histogram', dpi=300)
+    plt.show()
 
 # 计算单独一期整个tile的LAI差
 def diff_LAI():
