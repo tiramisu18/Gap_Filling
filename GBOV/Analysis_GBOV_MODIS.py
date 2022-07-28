@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import stats
 import Read_HDF
 import sys
-sys.path.append("..")
+sys.path.append('..')
 from Filling import Public_Methods
 
 def readDir(dirPath):
@@ -32,24 +32,35 @@ def readDir(dirPath):
 def rsquared(x, y): 
     slope, intercept, r_value, p_value, std_err = stats.linregress(x, y) 
     #a、b、r
-    # print(slope, intercept,"r", r_value,"r-squared", r_value**2)
+    # print(slope, intercept,'r', r_value,'r-squared', r_value**2)
     return [slope, intercept, r_value**2]
     
-def drawScatter(x, y, hv, type):
+def drawScatter(x, y, hv, type, colors):
     calRMSE = np.sqrt((1/len(x))* np.sum(np.square(x - y)))
     parameter = rsquared(x, y)
     print('RMSE, a, b, R2', calRMSE, parameter)
     y2 = parameter[0] * x + parameter[1]
-
-    plt.scatter(x, y, color='#bfdb39')
+    fig, ax = plt.subplots(figsize=(6,4))
+    # ax.scatter(x, y, c=colors, s=20, marker='^')
+    ax.scatter(x, y, c=colors, s=20, marker='*')
     plt.ylabel(f'{type} LAI', fontsize=15, family='Times New Roman')
     plt.xlabel('GBOV LAI', fontsize=15, family='Times New Roman')
     plt.xticks(family='Times New Roman', fontsize=15)
     plt.yticks(family='Times New Roman', fontsize=15)
-    # parameter = np.polyfit(x, y, deg=1)
-    # print(parameter)   
-    plt.plot(x, y2, color='#ffe117', linewidth=1, alpha=1)
-    plt.plot((0, 7), (0, 7),  ls='--',c='k', alpha=0.8, label="1:1 line")
+    plt.plot(x, y2, color='#fede89', linewidth=1, alpha=1)    
+    plt.plot((0, 7), (0, 7),  ls='--',c='k', alpha=0.8, linewidth=0.8, label='1:1')
+    ax.text(0.5, 5.7, r'${R^2}$ = 'f'{round(parameter[2],2)}',
+        verticalalignment='bottom', horizontalalignment='left',
+        color='#000000', fontsize=14, family='Times New Roman')
+    ax.text(0.5, 4.9, r'${RMSE}$ = 'f'{round(calRMSE,2)}',
+        verticalalignment='bottom', horizontalalignment='left',
+        color='#000000', fontsize=14, family='Times New Roman')
+    ax.text(4.5, 2, f'Y = {round(parameter[0],2)}X + {round(parameter[1],2)}',
+        verticalalignment='bottom', horizontalalignment='left',
+        color='gray', fontsize=12, family='Times New Roman')
+    # plt.legend(loc = 2, framealpha=0, labelspacing=1,
+    #     prop={'size':20, 'family':'Times New Roman'})
+    ax.set(xlim=(0, 7), ylim=(0, 7))
     plt.savefig(f'./PNG/Scatter/{hv}_{type}', dpi=300)
     plt.show()
 
@@ -124,15 +135,14 @@ def calMean_Analysis(hv='h12v04'):
     # hv = 'h08v05'
     fileLists = readDir(f'../HDF/{hv}')
     data = pd.read_csv(f'./Site_Classification/站点_{hv}.csv', usecols= ['Site name','Site value', 'line', 'samp', 'c6 DOY'], dtype={'Site name': str, 'Site value': float, 'line': float, 'samp': float, 'c6 DOY': str})
-
-    MODISValue = []
-    spatialValue = []
-    temporalValue = []
-    spatialValue_N = []
-    temporalValue_N = []
-    improvedValue = []
+    siteInfo = pd.read_csv(f'./Site_Info.csv', usecols= ['Site','BiomeTypeMark'])    
+    MODISValue, spatialValue, temporalValue, improvedValue = [], [], [], []
+    spatialValue_N, temporalValue_N = [], []
+    biomeType = []
     for ele in data.values:
         # print(ele)
+        specific = siteInfo.loc[siteInfo['Site'] == ele[0]] 
+        biomeType.append(specific['BiomeTypeMark'].values[0])
         file_index = (int(ele[4][4:])  - 1 ) / 8
         raw = Read_HDF.calculate_RawMean(fileLists, int(file_index), int(ele[2]), int(ele[3]))
         spa = Read_HDF.calculate_part(f'./Site_Calculate/{ele[0]}/Spatial/LAI_{int(file_index) + 1}.npy')
@@ -147,7 +157,7 @@ def calMean_Analysis(hv='h12v04'):
         temporalValue_N.append(tem_n / 10)
         improvedValue.append(improved / 10)
 
-    specific = pd.DataFrame({'Site': data['Site value'], 'Raw': MODISValue, 'Spatial':spatialValue, 'Temporal': temporalValue, 'Spatial_N': spatialValue_N, 'Temporal_N': temporalValue_N, 'Improved': improvedValue})
+    specific = pd.DataFrame({'Site': data['Site value'], 'Raw': MODISValue, 'Spatial':spatialValue, 'Temporal': temporalValue, 'Spatial_N': spatialValue_N, 'Temporal_N': temporalValue_N, 'Improved': improvedValue, 'BiomeType': biomeType})
     # print(specific)
     specific.to_csv(f'./Site_Analysis/{hv}.csv')
 
@@ -212,15 +222,56 @@ def getSiteLine(hv = 'h12v04', site = 'BART'):
 # 读取分析数据文件绘制单个Tile散点图
 def getScatterPanel():
     hv = 'all'
-    data = pd.read_csv(f'./Site_Analysis/all.csv', dtype=float)
-    drawScatter(data['Site'], data['Raw'], hv, 'Raw')
-    drawScatter(data['Site'], data['Spatial'], hv, 'Spatial')
-    drawScatter(data['Site'], data['Temporal'], hv, 'Temporal')
+    data = pd.read_csv(f'./Site_Analysis/all.csv', dtype={'Site': float, 'Raw': float, 'Spatial': float, 'Temporal': float, 'Spatial_N': float, 'Temporal_N': float, 'Improved': float, 'BiomeType': int})
+    colorsPara = {1:'#e85c46', 2:'#53aead', 3:'#bee5a0', 4: '#fdbe6f'}
+    colors = [colorsPara[bioType] for bioType in data['BiomeType']]
+    drawScatter(data['Site'], data['Raw'], hv, 'Raw', colors=colors)
+    drawScatter(data['Site'], data['Spatial'], hv, 'Spatial', colors=colors)
+    drawScatter(data['Site'], data['Temporal'], hv, 'Temporal', colors=colors)
     drawScatter(data['Site'], (data['Temporal'] + data['Spatial']) / 2, hv, 'Temporal+Spatial')
     drawScatter(data['Site'], data['Spatial_N'], hv, 'Spatial_N')
     drawScatter(data['Site'], data['Temporal_N'], hv, 'Temporal_N')
     drawScatter(data['Site'], (data['Temporal_N'] + data['Spatial_N']) / 2, hv, 'Temporal_N+Spatial_N')
-    drawScatter(data['Site'], data['Improved'], hv, 'Improved')
+    drawScatter(data['Site'], data['Improved'], hv, 'Improved', colors=colors)
+
+# 按照生物群落类型计算RMSE、R2并绘图
+def biomeType_cal():
+    data = pd.read_csv(f'./Site_Analysis/all.csv', usecols= ['Site','Raw', 'Improved', 'BiomeType'],dtype={'Site': float, 'Raw': float, 'Improved': float, 'BiomeType': int})
+    raw_R2s, raw_RMSEs = [], []
+    imp_R2s, imp_RMSEs = [], []
+    for i in range(1, 5):
+        specific = data.loc[data['BiomeType'] == i] 
+        x = specific['Site']
+        y1 = specific['Raw']
+        y2 = specific['Improved']
+        y1_RMSE = np.sqrt((1/len(x))* np.sum(np.square(x - y1)))
+        y2_RMSE = np.sqrt((1/len(x))* np.sum(np.square(x - y2)))
+        y1_r2 = rsquared(x, y1)
+        y2_r2 = rsquared(x, y2)
+        raw_R2s.append(round(y1_r2[2], 2))
+        imp_R2s.append(round(y2_r2[2], 2))
+        raw_RMSEs.append(round(y1_RMSE, 2))
+        imp_RMSEs.append(round(y2_RMSE, 2))
+    
+    print(raw_R2s)
+    print(imp_R2s)
+    print(raw_RMSEs)
+    print(imp_RMSEs)
+    # plt.style.use('fivethirtyeight')
+    plt.style.use('ggplot')
+    fig, ax = plt.subplots(figsize=(6,4))
+    # ax.spines.right.set_visible(False)
+    # ax.spines.top.set_visible(False)
+    colors = ['#e85c46', '#53aead', '#bee5a0', '#fdbe6f']
+    ax.scatter(raw_R2s, raw_RMSEs, c=colors, s=200, marker='^')
+    ax.scatter(imp_R2s, imp_RMSEs, c=colors, s=300, marker='*')
+    plt.ylabel('RMSE', fontsize=15, family='Times New Roman')
+    plt.xlabel('R^2', fontsize=15, family='Times New Roman')
+    plt.xticks(family='Times New Roman', fontsize=15)
+    plt.yticks(family='Times New Roman', fontsize=15)
+    ax.set(xlim=(0.55, 0.95), ylim=(0.5, 1.1), yticks=np.arange(0.5, 1.1, 0.1), xticks=np.arange(0.6, 1, 0.05))
+    plt.savefig(f'./PNG/Scatter/biomeType', dpi=300)   
+    plt.show()
 
 # 绘制所有站点的密度分布直方图
 def getHistDensity(hv = 'h12v04', site = 'BART'):
@@ -236,13 +287,13 @@ def getHistDensity(hv = 'h12v04', site = 'BART'):
     imp = data['Improved'] - data['Site']
     # 绘制误差的分布密度直方图
     fig, ax = plt.subplots(figsize=(10,5))
-    ax.hist(raw, density=True, histtype="stepfilled", bins=50, alpha=1, label='Raw', color='#e44f35')
-    ax.hist(tem, density=True, histtype="stepfilled", bins=50, alpha=0.9, label='Temporal', color='#b8defd')
-    ax.hist(tem_n, density=True, histtype="stepfilled", bins=50, alpha=0.8, label='Temporal_N', color='#4e6ef2')
-    ax.hist(spa, density=True, histtype="stepfilled", bins=50, alpha=0.7, label='Spatial', color='#b3df72')
-    ax.hist(spa_n, density=True, histtype="stepfilled", bins=50, alpha=0.7, label='Spatial_N', color='#3faa5a')
-    ax.hist(ave, density=True, histtype="stepfilled", bins=50, alpha=0.7, label='Spa+Tem', color='#fdffbe')
-    ax.hist(imp, density=True, histtype="stepfilled", bins=50, alpha=0.5, label='Improved', color='#fd7400')
+    ax.hist(raw, density=True, histtype='stepfilled', bins=50, alpha=1, label='Raw', color='#e44f35')
+    ax.hist(tem, density=True, histtype='stepfilled', bins=50, alpha=0.9, label='Temporal', color='#b8defd')
+    ax.hist(tem_n, density=True, histtype='stepfilled', bins=50, alpha=0.8, label='Temporal_N', color='#4e6ef2')
+    ax.hist(spa, density=True, histtype='stepfilled', bins=50, alpha=0.7, label='Spatial', color='#b3df72')
+    ax.hist(spa_n, density=True, histtype='stepfilled', bins=50, alpha=0.7, label='Spatial_N', color='#3faa5a')
+    ax.hist(ave, density=True, histtype='stepfilled', bins=50, alpha=0.7, label='Spa+Tem', color='#fdffbe')
+    ax.hist(imp, density=True, histtype='stepfilled', bins=50, alpha=0.5, label='Improved', color='#fd7400')
 
         
     ax.set_xlabel('Absolute Difference', fontsize=15, family='Times New Roman')
